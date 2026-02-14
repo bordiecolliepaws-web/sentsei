@@ -55,11 +55,21 @@ _Items for cron iterations to work through, in priority order._
 
 ## P2 — Design / Branding
 - [ ] **New name** (Jimmy doesn't like "Sentsei")
-  - Generate candidates, evaluate
-- [ ] **New color palette + typography**
-  - Current purple/dark theme: needs refresh
-  - Consider warmer tones, better contrast
-  - Test on mobile
+  - Candidates for Jimmy to pick:
+    - **Mouthful** — "learn a mouthful at a time"
+    - **Ippun (一分)** — "one sentence" in Japanese
+    - **Hanmadi (한마디)** — "one word/phrase" in Korean
+    - **SayIt** — dead simple, action-oriented
+    - **Kuchinaoshi (口直し)** — "palate cleanser" / fresh start with words
+    - **Phrasecraft** — building craft with phrases
+  - Waiting for Jimmy's pick before renaming
+- [x] **New color palette + typography** ✅ 2026-02-14
+  - Warm amber/gold accent (#e8a838) replacing purple
+  - Neutral dark backgrounds (#0c0c0c / #161616 / #1e1e1e)
+  - Warm text tones (#f0ece4 / #908a7e)
+  - DM Sans font replacing Inter — rounder, warmer feel
+  - Larger border-radius (14px)
+  - Better contrast ratios on dark backgrounds
 
 ## P3 — Infrastructure & Polish (from reflection)
 - [ ] **Audio pronunciation (TTS)** — browser SpeechSynthesis or server-side TTS
