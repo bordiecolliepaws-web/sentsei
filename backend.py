@@ -1003,6 +1003,95 @@ Return JSON only in this format:
     }
 
 
+class CompareRequest(BaseModel):
+    sentence: str
+    input_language: Optional[str] = "auto"
+    speaker_gender: Optional[str] = None
+    speaker_formality: Optional[str] = None
+
+
+@app.post("/api/compare")
+async def compare_sentence(
+    request: Request,
+    req: CompareRequest,
+    x_app_password: Optional[str] = Header(default=None),
+):
+    """Translate one sentence into ALL supported languages side by side."""
+    if x_app_password != APP_PASSWORD:
+        raise HTTPException(401, "Unauthorized")
+
+    client_ip = request.client.host if request.client else "unknown"
+    _rate_limit_cleanup()
+    if not _rate_limit_check(client_ip):
+        raise HTTPException(429, "Too many requests. Please wait a minute.")
+
+    if not req.sentence.strip():
+        raise HTTPException(400, "Sentence is required")
+
+    gender = req.speaker_gender or "neutral"
+    formality = req.speaker_formality or "polite"
+
+    # Detect input language to exclude it from targets
+    input_lang = req.input_language or "auto"
+    if input_lang == "zh":
+        input_is_chinese = True
+    elif input_lang == "en":
+        input_is_chinese = False
+    else:
+        input_is_chinese = any('\u4e00' <= c <= '\u9fff' for c in req.sentence)
+
+    # Determine which languages to skip (don't translate to the source language)
+    skip_langs = set()
+    if input_is_chinese:
+        skip_langs.add("zh")
+    else:
+        skip_langs.add("en")
+
+    target_langs = [code for code in SUPPORTED_LANGUAGES if code not in skip_langs]
+
+    # Translate to each language sequentially (reuses learn_sentence with caching)
+    results = []
+    for lang_code in target_langs:
+        single_req = SentenceRequest(
+            sentence=req.sentence,
+            target_language=lang_code,
+            input_language=req.input_language,
+            speaker_gender=req.speaker_gender,
+            speaker_formality=req.speaker_formality,
+        )
+        try:
+            result = await learn_sentence(request, single_req, x_app_password)
+            # Handle both dict and Response objects
+            if hasattr(result, 'body'):
+                import json as _json
+                result = _json.loads(result.body)
+            results.append({
+                "language": lang_code,
+                "language_name": SUPPORTED_LANGUAGES[lang_code],
+                "translation": result.get("translation", ""),
+                "pronunciation": result.get("pronunciation", ""),
+                "formality": result.get("formality", ""),
+                "literal": result.get("literal", ""),
+            })
+        except HTTPException as e:
+            if e.status_code == 429:
+                # Stop if rate limited
+                break
+            results.append({
+                "language": lang_code,
+                "language_name": SUPPORTED_LANGUAGES[lang_code],
+                "error": str(e.detail),
+            })
+        except Exception as e:
+            results.append({
+                "language": lang_code,
+                "language_name": SUPPORTED_LANGUAGES[lang_code],
+                "error": str(e),
+            })
+
+    return {"sentence": req.sentence, "results": results}
+
+
 @app.get("/api/stories")
 async def list_stories():
     return [

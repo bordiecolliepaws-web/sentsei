@@ -1464,6 +1464,113 @@
             margin: 1.5rem 0;
         }
 
+        /* Comparison Mode */
+        #compare-results {
+            margin-bottom: 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.95rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .compare-results-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.45rem;
+        }
+
+        .compare-results-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-dim);
+            font-weight: 600;
+        }
+
+        .compare-results-source {
+            font-size: 0.9rem;
+            color: var(--text);
+            line-height: 1.4;
+            margin-bottom: 0.8rem;
+        }
+
+        .compare-close-btn {
+            background: transparent;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.25rem 0.55rem;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+
+        .compare-close-btn:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        .compare-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.65rem;
+        }
+
+        .compare-card {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.7rem 0.75rem;
+        }
+
+        .compare-card-lang {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            color: var(--text-dim);
+            font-size: 0.74rem;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-weight: 600;
+        }
+
+        .compare-card-lang .flag {
+            font-size: 0.9rem;
+            line-height: 1;
+        }
+
+        .compare-card-translation {
+            color: var(--text);
+            font-size: 1.12rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 0.28rem;
+        }
+
+        .compare-card-pronunciation {
+            color: var(--accent);
+            font-size: 0.84rem;
+            line-height: 1.35;
+            margin-bottom: 0.24rem;
+        }
+
+        .compare-card-literal {
+            color: var(--text-dim);
+            font-size: 0.78rem;
+            line-height: 1.35;
+        }
+
+        .compare-empty {
+            color: var(--text-dim);
+            font-size: 0.84rem;
+        }
+
         .modal-backdrop {
             position: fixed;
             inset: 0;
@@ -1635,6 +1742,10 @@
                 padding: 1rem;
             }
 
+            .compare-grid {
+                grid-template-columns: 1fr;
+            }
+
             .password-form {
                 flex-direction: column;
             }
@@ -1788,6 +1899,7 @@
                 <div class="sentence-input-actions">
                     <button id="learn-btn" onclick="learn()">Learn</button>
                     <button id="surprise-btn" class="surprise-btn" onclick="surpriseMe()">🎲 Surprise me</button>
+                    <button id="compare-btn" class="surprise-btn" onclick="compareSentence()">🌍 Compare</button>
                 </div>
             </div>
             <div class="input-hint">Press Enter to learn</div>
@@ -1835,6 +1947,7 @@
             <button id="retry-btn">Try again</button>
         </div>
 
+        <div id="compare-results" class="hidden"></div>
         <div id="results"></div>
     </div>
 
@@ -1919,8 +2032,10 @@
         const sentenceInput = document.getElementById('sentence');
         const learnBtn = document.getElementById('learn-btn');
         const surpriseBtn = document.getElementById('surprise-btn');
+        const compareBtn = document.getElementById('compare-btn');
         const loadingEl = document.getElementById('loading');
         const loadingTipEl = document.getElementById('loading-tip');
+        const compareResultsEl = document.getElementById('compare-results');
         const resultsEl = document.getElementById('results');
         const sentenceHistoryWrapEl = document.getElementById('sentence-history-wrap');
         const sentenceHistoryEl = document.getElementById('sentence-history');
@@ -2500,12 +2615,14 @@
             sentenceInput.disabled = true;
             langSelect.disabled = true;
             learnBtn.disabled = true;
+            compareBtn.disabled = true;
         }
 
         function unlockApp() {
             sentenceInput.disabled = false;
             langSelect.disabled = false;
             learnBtn.disabled = false;
+            compareBtn.disabled = false;
         }
 
         function showPasswordError(message) {
@@ -2810,6 +2927,7 @@
         let currentAbortController = null;
         let loadingTimer = null;
         let lastLearnSentence = '';
+        let lastActionType = 'learn';
 
         const LOADING_PHASES = [
             { at: 0, msg: 'Translating...' },
@@ -2851,6 +2969,45 @@
 
         function hideError() { errorBannerEl.style.display = 'none'; }
 
+        function closeCompareResults() {
+            compareResultsEl.classList.add('hidden');
+            compareResultsEl.innerHTML = '';
+        }
+
+        function renderCompareResults(data) {
+            const results = Array.isArray(data.results) ? data.results : [];
+            const originalSentence = data.sentence || sentenceInput.value.trim();
+            const cardsHTML = results.map(entry => {
+                const code = (entry.language || '').toLowerCase();
+                const flag = LANG_FLAGS[code] || '🌐';
+                const languageName = entry.language_name || code.toUpperCase() || 'Language';
+                const translation = entry.translation || 'No translation';
+                const pronunciation = entry.pronunciation || 'Pronunciation unavailable';
+                const literal = entry.literal || 'No literal translation';
+                return `
+                    <div class="compare-card">
+                        <div class="compare-card-lang"><span class="flag">${flag}</span>${languageName}</div>
+                        <div class="compare-card-translation">${translation}</div>
+                        <div class="compare-card-pronunciation">${pronunciation}</div>
+                        <div class="compare-card-literal">Literal: ${literal}</div>
+                    </div>
+                `;
+            }).join('');
+
+            compareResultsEl.innerHTML = `
+                <div class="compare-results-head">
+                    <div class="compare-results-label">Comparison mode</div>
+                    <button type="button" class="compare-close-btn" id="compare-close-btn">✕ Close</button>
+                </div>
+                <div class="compare-results-source">"${originalSentence}"</div>
+                ${results.length ? `<div class="compare-grid">${cardsHTML}</div>` : '<div class="compare-empty">No comparison results returned.</div>'}
+            `;
+            const closeBtn = document.getElementById('compare-close-btn');
+            if (closeBtn) closeBtn.addEventListener('click', closeCompareResults);
+            compareResultsEl.classList.remove('hidden');
+            compareResultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
         loadingCancelBtn.addEventListener('click', () => {
             if (currentAbortController) currentAbortController.abort();
         });
@@ -2859,7 +3016,11 @@
             hideError();
             if (lastLearnSentence) {
                 sentenceInput.value = lastLearnSentence;
-                learn();
+                if (lastActionType === 'compare') {
+                    compareSentence();
+                } else {
+                    learn();
+                }
             }
         });
 
@@ -2877,9 +3038,11 @@
             const sentence = sentenceInput.value.trim();
             if (!sentence) return;
             lastLearnSentence = sentence;
+            lastActionType = 'learn';
             hideError();
 
             learnBtn.disabled = true;
+            compareBtn.disabled = true;
             setRandomLoadingTip();
             loadingEl.classList.remove('hidden');
             startLoadingTimer();
@@ -2989,6 +3152,7 @@
                 currentAbortController = null;
                 if (appPassword === APP_PASSWORD) {
                     learnBtn.disabled = false;
+                    compareBtn.disabled = false;
                 } else {
                     lockApp();
                 }
@@ -3170,6 +3334,75 @@
                 card.scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
         }
+
+        async function compareSentence() {
+            if (!ensurePassword()) return;
+
+            const sentence = sentenceInput.value.trim();
+            if (!sentence) return;
+            lastLearnSentence = sentence;
+            lastActionType = 'compare';
+
+            hideError();
+            learnBtn.disabled = true;
+            compareBtn.disabled = true;
+            setRandomLoadingTip();
+            loadingEl.classList.remove('hidden');
+            loadingMessageEl.textContent = 'Comparing across languages...';
+            startLoadingTimer();
+
+            currentAbortController = new AbortController();
+            const timeoutId = setTimeout(() => currentAbortController.abort(), LEARN_TIMEOUT_MS);
+
+            try {
+                const resp = await fetch('/api/compare', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-App-Password': appPassword
+                    },
+                    body: JSON.stringify({
+                        sentence: sentence,
+                        input_language: selectedInputLang,
+                        speaker_gender: selectedGender,
+                        speaker_formality: selectedFormality
+                    }),
+                    signal: currentAbortController.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (resp.status === 401) {
+                    localStorage.removeItem(PASSWORD_STORAGE_KEY);
+                    appPassword = '';
+                    openPasswordModal('Session expired. Enter password again.');
+                    throw new Error('Unauthorized');
+                }
+                if (!resp.ok) throw new Error('API error');
+
+                const data = await resp.json();
+                renderCompareResults(data);
+            } catch (err) {
+                clearTimeout(timeoutId);
+                console.error(err);
+                if (err.name === 'AbortError') {
+                    showError('Comparison timed out — tap compare again.');
+                } else if (err.message !== 'Unauthorized') {
+                    showError('Could not compare this sentence right now.');
+                }
+            } finally {
+                stopLoadingTimer();
+                currentAbortController = null;
+                if (appPassword === APP_PASSWORD) {
+                    learnBtn.disabled = false;
+                    compareBtn.disabled = false;
+                } else {
+                    lockApp();
+                }
+                loadingEl.classList.add('hidden');
+            }
+        }
+
         // === Surprise Me ===
         async function surpriseMe() {
             if (!ensurePassword()) return;
