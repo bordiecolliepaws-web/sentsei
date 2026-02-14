@@ -44,7 +44,7 @@ _Items for cron iterations to work through, in priority order._
   - Click entry to reload sentence + select target language
   - Badge shows count, clear all button, up to 50 entries
   - Survives refresh via localStorage
-- [ ] **"Surprise me" + Story Mode 📖**
+- [x] **"Surprise me" + Story Mode 📖** ✅ 2026-02-14
   - **Surprise me**: random curated sentence per target language + difficulty
   - **Story Mode**: continuous sentence-by-sentence playthrough drawn from famous modern literature, TV series, movies, anime
     - Curated sentence sets per language (Japanese → anime/drama, Korean → K-drama, Hebrew → modern novels, etc.)
