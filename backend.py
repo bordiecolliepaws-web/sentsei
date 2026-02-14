@@ -456,7 +456,7 @@ Respond with ONLY valid JSON (no markdown, no code fences) in this exact structu
   "cultural_note": "optional cultural context or usage tip (in the detected source language), null if none",
   "formality": "casual|polite|formal — what register this translation uses",
   "alternative": "an alternative way to say this (different formality or phrasing), or null",
-  "native_expression": "ALWAYS provide this. This is how a native {lang_name} speaker would NATURALLY rephrase this — more colloquial, idiomatic, or restructured compared to the direct translation above. Format: 'native sentence | FULL PRONUNCIATION | EXPLANATION IN {source_lang_short}'. Example for Chinese: '這咖啡也太好喝了吧 | zhè kāfēi yě tài hǎo hē le ba | Uses 也太...了吧 (yě tài...le ba), a common exclamation pattern meaning \"this is way too [good]\"'. When mentioning {lang_name} words in the explanation, always add pronunciation and meaning in parentheses. Only null if the direct translation is already exactly how a native would say it."
+  "native_expression": "ALWAYS provide this. This is how a native {lang_name} speaker would NATURALLY rephrase this — more colloquial, idiomatic, or restructured compared to the direct translation above. Format: 'native sentence | FULL PRONUNCIATION | EXPLANATION IN {source_lang_short}'. Example for Chinese: '這咖啡也太好喝了吧 | zhè kāfēi yě tài hǎo hē le ba | Uses 也太...了吧 (yě tài...le ba), a common exclamation pattern meaning \"this is way too [good]\"'. When mentioning {lang_name} words in the explanation, always add pronunciation and meaning in parentheses. IMPORTANT: If the native expression uses different words or structures from the direct translation, EXPLAIN the differences (e.g. why 有進步 is used instead of 有自信, what the nuance is). Only null if the direct translation is already exactly how a native would say it."
 }}"""
 
     # Inject speaker identity
@@ -579,15 +579,51 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
             existing_notes.insert(0, f"Gender/formality note: {gender_note}")
             result["grammar_notes"] = existing_notes
 
-    # Post-process: null out native_expression if it's just repeating the translation
+    # Post-process: fix native_expression pronunciation and check for duplicates
     native = result.get("native_expression")
     translation = result.get("translation", "")
-    if native and translation:
-        # Strip pronunciation/explanation suffixes to compare core sentence
+    if native and "|" in native:
+        parts = native.split("|", 2)
+        if len(parts) >= 3:
+            native_sentence = parts[0].strip()
+            native_explanation = parts[2].strip()
+            # Generate correct pronunciation using deterministic lib
+            native_pron = deterministic_pronunciation(native_sentence, lang_code)
+            if native_pron:
+                result["native_expression"] = f"{native_sentence} | {native_pron} | {native_explanation}"
+            # Also fix any target-language words in explanation that need pronunciation
+    elif native and translation:
         native_core = native.split("(")[0].strip().rstrip("。.!！")
         trans_core = translation.strip().rstrip("。.!！")
         if native_core == trans_core:
             result["native_expression"] = None
+
+    # Post-process: enforce explanations in source language
+    if not input_is_chinese:
+        # When input is English, grammar_notes and meanings must be in English
+        # Strip Chinese-only content; if a note is mostly Chinese, re-wrap it
+        def _mostly_cjk(s):
+            if not s:
+                return False
+            cjk = sum(1 for c in s if '\u4e00' <= c <= '\u9fff')
+            return cjk / max(len(s.replace(" ", "")), 1) > 0.3
+
+        notes = result.get("grammar_notes", []) or []
+        cleaned_notes = []
+        for note in notes:
+            if not _mostly_cjk(note):
+                cleaned_notes.append(note)
+            # else: drop notes that are mostly Chinese when source is English
+        result["grammar_notes"] = cleaned_notes
+
+        for item in result.get("breakdown", []):
+            meaning = item.get("meaning", "")
+            if _mostly_cjk(meaning):
+                # Try to extract English part from patterns like "word (English meaning)"
+                import re as _re2
+                en_match = _re2.search(r'[A-Za-z][A-Za-z\s,\-]+', meaning)
+                if en_match:
+                    item["meaning"] = en_match.group().strip()
 
     # Ensure all Chinese text is Traditional Chinese (Taiwan)
     result = ensure_traditional_chinese(result)
