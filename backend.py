@@ -773,22 +773,54 @@ async def export_anki(
     headers = {"Content-Disposition": 'attachment; filename="sentsei-flashcards.txt"'}
     return Response(content=content, media_type="text/tab-separated-values", headers=headers)
 
+SURPRISE_SENTENCES_EN = [
+    {"sentence": "I want to eat ramen for dinner tonight", "difficulty": "easy", "category": "daily life"},
+    {"sentence": "Where is the nearest train station?", "difficulty": "easy", "category": "travel"},
+    {"sentence": "This coffee tastes absolutely amazing", "difficulty": "easy", "category": "food"},
+    {"sentence": "Could you please speak a little slower?", "difficulty": "easy", "category": "travel"},
+    {"sentence": "I've been studying this language for three months", "difficulty": "medium", "category": "learning"},
+    {"sentence": "The sunset over the ocean was breathtaking", "difficulty": "medium", "category": "nature"},
+    {"sentence": "I'm sorry, I don't understand what you're saying", "difficulty": "easy", "category": "travel"},
+    {"sentence": "Let's grab a beer after work", "difficulty": "easy", "category": "social"},
+    {"sentence": "I need to wake up early tomorrow morning", "difficulty": "easy", "category": "daily life"},
+    {"sentence": "What do you recommend from the menu?", "difficulty": "easy", "category": "food"},
+    {"sentence": "I've been meaning to tell you something important", "difficulty": "medium", "category": "social"},
+    {"sentence": "The more I practice, the more confident I feel", "difficulty": "medium", "category": "learning"},
+    {"sentence": "Can I get the bill please?", "difficulty": "easy", "category": "travel"},
+    {"sentence": "I think we're lost, let me check the map", "difficulty": "medium", "category": "travel"},
+    {"sentence": "If I had known earlier, I would have come sooner", "difficulty": "hard", "category": "grammar"},
+]
+
+SURPRISE_SENTENCES_ZH = [
+    {"sentence": "今天晚上我想吃拉麵", "difficulty": "easy", "category": "日常生活"},
+    {"sentence": "請問最近的捷運站在哪裡？", "difficulty": "easy", "category": "旅遊"},
+    {"sentence": "這杯咖啡真的超好喝", "difficulty": "easy", "category": "美食"},
+    {"sentence": "你可以講慢一點嗎？", "difficulty": "easy", "category": "旅遊"},
+    {"sentence": "我學這個語言已經三個月了", "difficulty": "medium", "category": "學習"},
+    {"sentence": "海邊的夕陽真的美到不行", "difficulty": "medium", "category": "自然"},
+    {"sentence": "不好意思，我聽不懂你在說什麼", "difficulty": "easy", "category": "旅遊"},
+    {"sentence": "下班之後一起去喝一杯吧", "difficulty": "easy", "category": "社交"},
+    {"sentence": "我明天早上要早起", "difficulty": "easy", "category": "日常生活"},
+    {"sentence": "你們推薦菜單上的什麼？", "difficulty": "easy", "category": "美食"},
+    {"sentence": "我一直想跟你說一件很重要的事", "difficulty": "medium", "category": "社交"},
+    {"sentence": "越練習就越有自信", "difficulty": "medium", "category": "學習"},
+    {"sentence": "可以幫我結帳嗎？", "difficulty": "easy", "category": "旅遊"},
+    {"sentence": "我覺得我們迷路了，讓我看一下地圖", "difficulty": "medium", "category": "旅遊"},
+    {"sentence": "如果我早點知道的話，我就會早點來", "difficulty": "hard", "category": "文法"},
+]
+
 @app.get("/api/surprise")
-async def get_surprise_sentence(lang: str):
+async def get_surprise_sentence(lang: str, input_lang: str = "en"):
     if lang not in SUPPORTED_LANGUAGES:
         raise HTTPException(400, "Unsupported language")
 
-    sentence_pool = CURATED_SENTENCES.get(lang, [])
-    if not sentence_pool:
-        raise HTTPException(404, "No curated sentences found for this language")
-
-    picked = random.choice(sentence_pool)
+    pool = SURPRISE_SENTENCES_ZH if input_lang == "zh" else SURPRISE_SENTENCES_EN
+    picked = random.choice(pool)
     return {
         "language": lang,
         "sentence": picked["sentence"],
         "difficulty": picked["difficulty"],
         "category": picked["category"],
-        "source": picked["source"],
     }
 
 

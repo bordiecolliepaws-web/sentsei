@@ -76,7 +76,7 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Loading UX** ✅ 2026-02-14 — elapsed timer, progressive messages ("Translating..." → "Analyzing grammar..." → "Almost there..."), 45s timeout with retry button, cancel after 8s
 - [x] **Multi-sentence input** ✅ 2026-02-14 — split paragraphs into individual sentences, /api/learn-multi endpoint, frontend auto-detects and renders stacked cards
 - [x] **Reverse mode / Quiz** ✅ 2026-02-14 — see target language, guess the English/Chinese. 🧠 Quiz toggle, LLM-graded semantic matching, score tracking
-- [ ] **Save/export** — Anki flashcard export, PDF, screenshot-friendly format
+- [x] **Save/export** ✅ 2026-02-14 — Anki TSV export (📥 button in history panel, /api/export-anki endpoint), Copy All to clipboard (📋), styled with amber toggle pills
 - [x] **Caching** ✅ 2026-02-14 — in-memory LRU cache (500 entries, 24h TTL), keyed by sentence+target+gender+formality
 - [x] **Rate limiting** ✅ 2026-02-14 — IP-based sliding window (30 req/min per IP), cleanup every 100 checks, 429 response when exceeded
 - [x] **Onboarding** ✅ 2026-02-14 — first-visit overlay with 3 suggested sentences (ja/ko/zh), click to auto-fill + learn, skip option, localStorage flag

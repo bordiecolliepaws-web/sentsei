@@ -3178,7 +3178,8 @@
             surpriseBtn.disabled = true;
             try {
                 const lang = langSelect.value;
-                const resp = await fetch(`/api/surprise?lang=${encodeURIComponent(lang)}`);
+                const inputLang = selectedInputLang === 'auto' ? 'en' : selectedInputLang;
+                const resp = await fetch(`/api/surprise?lang=${encodeURIComponent(lang)}&input_lang=${encodeURIComponent(inputLang)}`);
                 if (!resp.ok) throw new Error('API error');
                 const data = await resp.json();
                 sentenceInput.value = data.sentence;
