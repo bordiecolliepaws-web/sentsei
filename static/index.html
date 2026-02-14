@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentsei — Learn by Saying</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #14141f;
+            --surface2: #1e1e2e;
+            --border: #2a2a3e;
+            --text: #e8e8f0;
+            --text-dim: #8888a0;
+            --accent: #7c6aff;
+            --accent-glow: rgba(124, 106, 255, 0.15);
+            --easy: #4ade80;
+            --medium: #fbbf24;
+            --hard: #f87171;
+            --radius: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 720px;
+            padding: 2rem 1.5rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--accent), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .input-area {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .language-select {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .language-select label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            white-space: nowrap;
+        }
+
+        .language-select select {
+            flex: 1;
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.6rem 0.75rem;
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .language-select select:focus {
+            border-color: var(--accent);
+        }
+
+        .sentence-input {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .sentence-input textarea {
+            flex: 1;
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+            min-height: 52px;
+            max-height: 120px;
+        }
+
+        .sentence-input textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .sentence-input textarea::placeholder {
+            color: var(--text-dim);
+        }
+
+        .sentence-input button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .sentence-input button:hover {
+            filter: brightness(1.15);
+            transform: translateY(-1px);
+        }
+
+        .sentence-input button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Result Card */
+        .result-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-main {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .result-translation {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            line-height: 1.4;
+        }
+
+        .result-pronunciation {
+            font-size: 1rem;
+            color: var(--accent);
+            margin-bottom: 0.3rem;
+        }
+
+        .result-literal {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            font-style: italic;
+        }
+
+        .result-formality {
+            display: inline-block;
+            margin-top: 0.75rem;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 99px;
+            background: var(--accent-glow);
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        /* Breakdown */
+        .breakdown-section {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .word-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .word-chip {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.6rem 0.8rem;
+            min-width: 80px;
+            cursor: default;
+            transition: border-color 0.2s;
+        }
+
+        .word-chip:hover {
+            border-color: var(--accent);
+        }
+
+        .word-chip .word-target {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.15rem;
+        }
+
+        .word-chip .word-pron {
+            font-size: 0.75rem;
+            color: var(--accent);
+        }
+
+        .word-chip .word-meaning {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 0.2rem;
+        }
+
+        .word-chip .word-note {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-top: 0.3rem;
+            padding-top: 0.3rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .difficulty-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+
+        .difficulty-dot.easy { background: var(--easy); }
+        .difficulty-dot.medium { background: var(--medium); }
+        .difficulty-dot.hard { background: var(--hard); }
+
+        /* Grammar & Notes */
+        .notes-section {
+            padding: 1.5rem;
+        }
+
+        .grammar-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .grammar-list li {
+            font-size: 0.9rem;
+            color: var(--text);
+            padding-left: 1.2rem;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        .grammar-list li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+        }
+
+        .cultural-note, .alternative-note {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            padding: 0.75rem;
+            background: var(--accent-glow);
+            border-radius: 8px;
+            line-height: 1.5;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-dim);
+        }
+
+        .loading .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* History */
+        .history-divider {
+            margin: 1.5rem 0;
+        }
+
+        .hidden { display: none; }
+
+        @media (max-width: 600px) {
+            .container { padding: 1.5rem 1rem; }
+            .result-translation { font-size: 1.3rem; }
+            .sentence-input { flex-direction: column; }
+            .sentence-input button { padding: 0.75rem; }
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sentsei</h1>
+            <p>Say what's on your mind. Learn it in any language.</p>
+        </header>
+
+        <div class="input-area">
+            <div class="language-select">
+                <label for="lang">I want to learn</label>
+                <select id="lang"></select>
+            </div>
+            <div class="sentence-input">
+                <textarea id="sentence" placeholder="Type any sentence you want to say..." rows="1"></textarea>
+                <button id="learn-btn" onclick="learn()">Learn</button>
+            </div>
+        </div>
+
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Breaking it down...</p>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const langSelect = document.getElementById('lang');
+        const sentenceInput = document.getElementById('sentence');
+        const learnBtn = document.getElementById('learn-btn');
+        const loadingEl = document.getElementById('loading');
+        const resultsEl = document.getElementById('results');
+
+        // Auto-resize textarea
+        sentenceInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+
+        // Enter to submit
+        sentenceInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                learn();
+            }
+        });
+
+        // Load languages
+        fetch('/api/languages')
+            .then(r => r.json())
+            .then(langs => {
+                for (const [code, name] of Object.entries(langs)) {
+                    const opt = document.createElement('option');
+                    opt.value = code;
+                    opt.textContent = name;
+                    langSelect.appendChild(opt);
+                }
+                // Default to Korean
+                langSelect.value = 'ko';
+            });
+
+        async function learn() {
+            const sentence = sentenceInput.value.trim();
+            if (!sentence) return;
+
+            learnBtn.disabled = true;
+            loadingEl.classList.remove('hidden');
+
+            try {
+                const resp = await fetch('/api/learn', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sentence: sentence,
+                        target_language: langSelect.value
+                    })
+                });
+
+                if (!resp.ok) throw new Error('API error');
+                const data = await resp.json();
+                renderResult(data, sentence);
+                sentenceInput.value = '';
+                sentenceInput.style.height = 'auto';
+            } catch (err) {
+                console.error(err);
+                alert('Something went wrong. Try again.');
+            } finally {
+                learnBtn.disabled = false;
+                loadingEl.classList.add('hidden');
+            }
+        }
+
+        function renderResult(data, original) {
+            const card = document.createElement('div');
+            card.className = 'result-card';
+
+            const breakdownHTML = data.breakdown.map(w => `
+                <div class="word-chip">
+                    <div class="word-target">
+                        <span class="difficulty-dot ${w.difficulty}"></span>
+                        ${w.word}
+                    </div>
+                    <div class="word-pron">${w.pronunciation}</div>
+                    <div class="word-meaning">${w.meaning}</div>
+                    ${w.note ? `<div class="word-note">${w.note}</div>` : ''}
+                </div>
+            `).join('');
+
+            const grammarHTML = data.grammar_notes.map(n => `<li>${n}</li>`).join('');
+
+            card.innerHTML = `
+                <div class="result-main">
+                    <div style="font-size:0.8rem;color:var(--text-dim);margin-bottom:0.5rem;">"${original}"</div>
+                    <div class="result-translation">${data.translation}</div>
+                    <div class="result-pronunciation">${data.pronunciation}</div>
+                    <div class="result-literal">${data.literal}</div>
+                    <div class="result-formality">${data.formality}</div>
+                </div>
+                <div class="breakdown-section">
+                    <div class="section-title">Word Breakdown</div>
+                    <div class="word-chips">${breakdownHTML}</div>
+                </div>
+                <div class="notes-section">
+                    <div class="section-title">Grammar Notes</div>
+                    <ul class="grammar-list">${grammarHTML}</ul>
+                    ${data.cultural_note ? `<div class="cultural-note">💡 ${data.cultural_note}</div>` : ''}
+                    ${data.alternative ? `<div class="alternative-note">🔄 Alternative: ${data.alternative}</div>` : ''}
+                </div>
+            `;
+
+            // Prepend new result
+            if (resultsEl.children.length > 0) {
+                const divider = document.createElement('div');
+                divider.className = 'history-divider';
+                resultsEl.insertBefore(divider, resultsEl.firstChild);
+            }
+            resultsEl.insertBefore(card, resultsEl.firstChild);
+        }
+    </script>
+</body>
+</html>
