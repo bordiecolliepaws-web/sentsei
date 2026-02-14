@@ -83,6 +83,11 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Comparison mode** ✅ 2026-02-14 — one sentence → all languages side by side
 - [x] **Progress tracking** — sentences learned, languages used, streaks ✅ (2026-02-14)
 
+## P4 — Future Polish
+- [ ] **Watchdog cron conflicts with test suite** — watchdog `pkill -f "uvicorn backend"` kills server during test runs; needs PID-file approach or lock file
+- [ ] **Grammar notes sometimes empty after English source filter** — LLM returns Chinese-only notes, post-processing drops them, leaving no notes; consider retry/reprompt in English
+- [ ] **Rule 18 test flaky** — Japanese ramen translation sometimes times out, causing Rule 18 tests to be silently skipped; add retry logic to test suite
+
 ## Cron Test Matrix
 Each iteration should run these checks:
 1. English → Korean: explanations in English? Translation in 한글?
