@@ -3422,7 +3422,7 @@
             hideError();
 
             learnBtn.disabled = true;
-            compareBtn && compareBtn.disabled = true;
+            if (compareBtn) compareBtn.disabled = true;
             setRandomLoadingTip();
             loadingEl.classList.remove('hidden');
             startLoadingTimer();
@@ -3532,7 +3532,7 @@
                 currentAbortController = null;
                 if (appPassword === APP_PASSWORD) {
                     learnBtn.disabled = false;
-                    compareBtn && compareBtn.disabled = false;
+                    if (compareBtn) compareBtn.disabled = false;
                 } else {
                     lockApp();
                 }
@@ -3725,7 +3725,7 @@
 
             hideError();
             learnBtn.disabled = true;
-            compareBtn && compareBtn.disabled = true;
+            if (compareBtn) compareBtn.disabled = true;
             setRandomLoadingTip();
             loadingEl.classList.remove('hidden');
             loadingMessageEl.textContent = 'Comparing across languages...';
@@ -3775,7 +3775,7 @@
                 currentAbortController = null;
                 if (appPassword === APP_PASSWORD) {
                     learnBtn.disabled = false;
-                    compareBtn && compareBtn.disabled = false;
+                    if (compareBtn) compareBtn.disabled = false;
                 } else {
                     lockApp();
                 }
