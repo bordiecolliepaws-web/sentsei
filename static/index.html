@@ -2027,21 +2027,18 @@
         <div id="quiz-area" class="quiz-area hidden">
             <div class="quiz-header">
                 <div>
-                    <div class="quiz-title">Reverse Mode Quiz</div>
+                    <div class="quiz-title">Quiz</div>
                     <div id="quiz-meta" class="quiz-meta"></div>
                 </div>
                 <div id="quiz-score" class="quiz-score">0/0</div>
             </div>
             <div class="quiz-card">
-                <div class="quiz-label">Translate Into English or Chinese</div>
+                <div class="quiz-label" id="quiz-label">What does this mean?</div>
                 <div id="quiz-sentence" class="quiz-sentence">Loading...</div>
                 <div id="quiz-pronunciation" class="quiz-pronunciation"></div>
                 <div id="quiz-source" class="quiz-source"></div>
                 <div id="quiz-hint" class="quiz-hint"></div>
-                <div class="quiz-answer-row">
-                    <input id="quiz-answer" class="quiz-answer-input" type="text" placeholder="Type your translation..." autocomplete="off">
-                    <button id="quiz-check-btn" class="quiz-check-btn" type="button">Check</button>
-                </div>
+                <div id="quiz-choices" style="display:flex;flex-direction:column;gap:0.5rem;margin:1rem 0;"></div>
                 <div id="quiz-result" class="quiz-result hidden"></div>
                 <div class="quiz-actions">
                     <button id="quiz-next-btn" class="quiz-next-btn" type="button">Next Question</button>
@@ -2274,8 +2271,8 @@
         const quizPronunciationEl = document.getElementById('quiz-pronunciation');
         const quizSourceEl = document.getElementById('quiz-source');
         const quizHintEl = document.getElementById('quiz-hint');
-        const quizAnswerInputEl = document.getElementById('quiz-answer');
-        const quizCheckBtn = document.getElementById('quiz-check-btn');
+        const quizAnswerInputEl = document.getElementById('quiz-answer'); // removed from HTML, may be null
+        const quizCheckBtn = document.getElementById('quiz-check-btn'); // removed from HTML, may be null
         const quizResultEl = document.getElementById('quiz-result');
         const quizNextBtn = document.getElementById('quiz-next-btn');
         const quizExitBtn = document.getElementById('quiz-exit-btn');
@@ -2607,61 +2604,103 @@
             renderQuizMeta();
             clearQuizResult();
             currentQuiz = null;
-            quizAnswerInputEl.value = '';
 
-            quizSentenceEl.textContent = 'Loading question...';
+            const choicesEl = document.getElementById('quiz-choices');
+            choicesEl.innerHTML = '';
+            quizSentenceEl.textContent = 'Loading...';
             quizPronunciationEl.textContent = '';
             quizSourceEl.textContent = '';
             quizHintEl.textContent = '';
-            quizCheckBtn.disabled = true;
             quizNextBtn.disabled = true;
 
-            try {
-                // Build quiz from user's own history when available
-                const histSentences = richHistory
-                    .filter(e => e.lang === langSelect.value && e.result && e.result.translation)
-                    .map(e => ({ sentence: e.sentence, translation: e.result.translation, pronunciation: e.result.pronunciation }));
+            // Get history items for current target language
+            const histItems = richHistory
+                .filter(e => e.lang === langSelect.value && e.result && e.result.translation)
+                .map(e => ({ sentence: e.sentence, translation: e.result.translation, pronunciation: e.result.pronunciation }));
 
-                const params = new URLSearchParams({
-                    lang: langSelect.value,
-                    gender: selectedGender,
-                    formality: selectedFormality
-                });
-                const quizBody = histSentences.length > 0 ? JSON.stringify({ history: histSentences }) : null;
-                const resp = await fetch(`/api/quiz?${params.toString()}`, {
-                    method: quizBody ? 'POST' : 'GET',
-                    headers: {
-                        'X-App-Password': appPassword,
-                        ...(quizBody ? { 'Content-Type': 'application/json' } : {})
-                    },
-                    ...(quizBody ? { body: quizBody } : {})
-                });
-
-                if (resp.status === 401) {
-                    localStorage.removeItem(PASSWORD_STORAGE_KEY);
-                    appPassword = '';
-                    openPasswordModal('Session expired. Enter password again.');
-                    return;
-                }
-                if (!resp.ok) throw new Error('API error');
-
-                const data = await resp.json();
-                currentQuiz = data;
-                quizSentenceEl.textContent = data.sentence || '';
-                quizPronunciationEl.textContent = data.pronunciation ? `Pronunciation: ${data.pronunciation}` : 'Pronunciation: —';
-                quizSourceEl.textContent = data.source ? `Source: ${data.source}` : 'Source: Curated sentence';
-                quizHintEl.textContent = data.hint ? `Hint: starts with "${data.hint}"` : '';
-                quizCheckBtn.disabled = false;
+            if (histItems.length < 2) {
+                quizSentenceEl.textContent = 'Learn at least 2 sentences first!';
+                quizSourceEl.textContent = 'Go back and translate some sentences, then try the quiz.';
                 quizNextBtn.disabled = false;
-                quizAnswerInputEl.focus();
-            } catch (err) {
-                console.error(err);
-                quizSentenceEl.textContent = 'Could not load a question right now.';
-                quizSourceEl.textContent = 'Try again.';
-                quizHintEl.textContent = '';
-                quizCheckBtn.disabled = true;
-                quizNextBtn.disabled = false;
+                return;
             }
+
+            // Pick a random question from history
+            const qIdx = Math.floor(Math.random() * histItems.length);
+            const question = histItems[qIdx];
+
+            // Randomly decide: show translation → pick meaning, or show meaning → pick translation
+            const showTranslation = Math.random() > 0.5;
+
+            if (showTranslation) {
+                // Show target language, pick the correct input sentence
+                document.getElementById('quiz-label').textContent = 'What does this mean?';
+                quizSentenceEl.textContent = question.translation;
+                quizPronunciationEl.textContent = question.pronunciation ? question.pronunciation : '';
+                
+                // Build wrong answers from other history items
+                const wrongItems = histItems.filter((_, i) => i !== qIdx);
+                const shuffledWrong = wrongItems.sort(() => Math.random() - 0.5).slice(0, 3);
+                const choices = shuffledWrong.map(w => ({ text: w.sentence, correct: false }));
+                choices.push({ text: question.sentence, correct: true });
+                choices.sort(() => Math.random() - 0.5);
+
+                currentQuiz = { correctAnswer: question.sentence, choices };
+            } else {
+                // Show input sentence, pick the correct translation
+                document.getElementById('quiz-label').textContent = 'How do you say this?';
+                quizSentenceEl.textContent = question.sentence;
+                quizPronunciationEl.textContent = '';
+
+                const wrongItems = histItems.filter((_, i) => i !== qIdx);
+                const shuffledWrong = wrongItems.sort(() => Math.random() - 0.5).slice(0, 3);
+                const choices = shuffledWrong.map(w => ({ text: w.translation, correct: false }));
+                choices.push({ text: question.translation, correct: true });
+                choices.sort(() => Math.random() - 0.5);
+
+                currentQuiz = { correctAnswer: question.translation, choices };
+            }
+
+            quizSourceEl.textContent = 'From your history';
+
+            // Render choice buttons
+            currentQuiz.choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = choice.text;
+                btn.style.cssText = 'padding:0.75rem 1rem;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.95rem;cursor:pointer;text-align:left;transition:all 0.2s;';
+                btn.addEventListener('click', () => {
+                    // Disable all buttons
+                    choicesEl.querySelectorAll('button').forEach(b => { b.disabled = true; b.style.cursor = 'default'; });
+                    
+                    if (choice.correct) {
+                        btn.style.background = '#1a4a2a';
+                        btn.style.borderColor = 'var(--easy)';
+                        btn.style.color = 'var(--easy)';
+                        quizCorrect++;
+                        updateProgressStats('quiz_correct');
+                    } else {
+                        btn.style.background = '#4a1a1a';
+                        btn.style.borderColor = 'var(--hard)';
+                        btn.style.color = 'var(--hard)';
+                        // Highlight correct answer
+                        choicesEl.querySelectorAll('button').forEach(b => {
+                            if (b.textContent === currentQuiz.correctAnswer) {
+                                b.style.background = '#1a4a2a';
+                                b.style.borderColor = 'var(--easy)';
+                                b.style.color = 'var(--easy)';
+                            }
+                        });
+                        updateProgressStats('quiz_wrong');
+                    }
+                    quizTotal++;
+                    quizScoreEl.textContent = `${quizCorrect}/${quizTotal}`;
+                    quizNextBtn.disabled = false;
+                });
+                choicesEl.appendChild(btn);
+            });
+
+            quizNextBtn.disabled = true;
         }
 
         async function checkQuizAnswer() {
