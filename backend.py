@@ -443,15 +443,15 @@ Respond with ONLY valid JSON (no markdown, no code fences) in this exact structu
   "literal": "word-by-word literal translation back to the detected source language",
   "breakdown": [
     {{
-      "word": "each word/particle written in {lang_name} script",
+      "word": "each word/particle EXACTLY as it appears in the translation above — do NOT invent words that aren't in the translation. Split naturally (e.g. for Chinese: 我/練得越多/越/覺得/自信, NOT 越自信 if the sentence says 越覺得自信). For grammar patterns like 越...越..., show each 越 with its attached word separately.",
       "pronunciation": "romanized pronunciation (Japanese: Hepburn romaji like 'kudasai', NOT made-up spellings)",
-      "meaning": "meaning in the detected source language",
+      "meaning": "meaning in {source_lang_short} ONLY",
       "difficulty": "easy|medium|hard",
-      "note": "brief grammar/usage note if helpful, otherwise null"
+      "note": "brief grammar/usage note in {source_lang_short} ONLY, otherwise null. NEVER write notes in {lang_name} when source is {source_lang_short}."
     }}
   ],
   "grammar_notes": [
-    "Key grammar pattern or structure explanation (1-3 short notes, in the detected source language)"
+    "Key grammar pattern or structure explanation (1-3 short notes). MUST be written in {source_lang_short}. NEVER in {lang_name} unless {lang_name} IS {source_lang_short}."
   ],
   "cultural_note": "optional cultural context or usage tip (in the detected source language), null if none",
   "formality": "casual|polite|formal — what register this translation uses",
