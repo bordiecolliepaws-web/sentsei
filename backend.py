@@ -5,8 +5,8 @@ import hashlib
 import time
 from typing import Optional
 from pathlib import Path
-from collections import OrderedDict
-from fastapi import FastAPI, HTTPException, Header
+from collections import OrderedDict, defaultdict
+from fastapi import FastAPI, HTTPException, Header, Request
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import httpx
@@ -66,6 +66,39 @@ def cache_put(key: str, result: dict):
     _translation_cache[key] = (time.time(), result)
     if len(_translation_cache) > CACHE_MAX:
         _translation_cache.popitem(last=False)
+
+
+# --- IP-based sliding window rate limiter ---
+RATE_LIMIT_REQUESTS = 30   # max requests per window
+RATE_LIMIT_WINDOW = 60     # window in seconds
+_rate_buckets: dict = defaultdict(list)  # ip -> [timestamps]
+
+
+def _rate_limit_check(ip: str) -> bool:
+    """Return True if request is allowed, False if rate-limited."""
+    now = time.time()
+    cutoff = now - RATE_LIMIT_WINDOW
+    # Prune old timestamps
+    _rate_buckets[ip] = [t for t in _rate_buckets[ip] if t > cutoff]
+    if len(_rate_buckets[ip]) >= RATE_LIMIT_REQUESTS:
+        return False
+    _rate_buckets[ip].append(now)
+    return True
+
+
+# Periodic cleanup of stale IPs (run every 100 checks)
+_rate_check_counter = 0
+
+
+def _rate_limit_cleanup():
+    global _rate_check_counter
+    _rate_check_counter += 1
+    if _rate_check_counter % 100 == 0:
+        now = time.time()
+        cutoff = now - RATE_LIMIT_WINDOW
+        stale = [ip for ip, ts in _rate_buckets.items() if not ts or ts[-1] < cutoff]
+        for ip in stale:
+            del _rate_buckets[ip]
 
 
 APP_PASSWORD = "sentsei2026"
@@ -251,11 +284,18 @@ class SentenceRequest(BaseModel):
 
 @app.post("/api/learn")
 async def learn_sentence(
+    request: Request,
     req: SentenceRequest,
     x_app_password: Optional[str] = Header(default=None),
 ):
     if x_app_password != APP_PASSWORD:
         raise HTTPException(401, "Unauthorized")
+
+    # Rate limiting
+    client_ip = request.client.host if request.client else "unknown"
+    _rate_limit_cleanup()
+    if not _rate_limit_check(client_ip):
+        raise HTTPException(429, "Too many requests. Please wait a minute.")
 
     if req.target_language not in SUPPORTED_LANGUAGES:
         raise HTTPException(400, "Unsupported language")
@@ -459,11 +499,18 @@ class WordDetailRequest(BaseModel):
 
 @app.post("/api/word-detail")
 async def word_detail(
+    request: Request,
     req: WordDetailRequest,
     x_app_password: Optional[str] = Header(default=None),
 ):
     if x_app_password != APP_PASSWORD:
         raise HTTPException(401, "Unauthorized")
+
+    # Rate limiting
+    client_ip = request.client.host if request.client else "unknown"
+    _rate_limit_cleanup()
+    if not _rate_limit_check(client_ip):
+        raise HTTPException(429, "Too many requests. Please wait a minute.")
 
     if req.target_language not in SUPPORTED_LANGUAGES:
         raise HTTPException(400, "Unsupported language")
