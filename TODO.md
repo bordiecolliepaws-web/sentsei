@@ -80,7 +80,7 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Caching** ✅ 2026-02-14 — in-memory LRU cache (500 entries, 24h TTL), keyed by sentence+target+gender+formality
 - [x] **Rate limiting** ✅ 2026-02-14 — IP-based sliding window (30 req/min per IP), cleanup every 100 checks, 429 response when exceeded
 - [x] **Onboarding** ✅ 2026-02-14 — first-visit overlay with 3 suggested sentences (ja/ko/zh), click to auto-fill + learn, skip option, localStorage flag
-- [ ] **Comparison mode** — one sentence → all languages side by side
+- [x] **Comparison mode** ✅ 2026-02-14 — one sentence → all languages side by side
 - [ ] **Progress tracking** — sentences learned, languages used, streaks
 
 ## Cron Test Matrix
