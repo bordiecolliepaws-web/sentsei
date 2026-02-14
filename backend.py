@@ -40,24 +40,46 @@ async def learn_sentence(
 
     lang_name = SUPPORTED_LANGUAGES[req.target_language]
 
-    prompt = f"""You are a language learning assistant. The user wants to learn how to say something in {lang_name}.
+    lang_code = req.target_language
 
-The input sentence is either English or Chinese. Detect which one it is automatically.
+    # Build script examples for the target language
+    script_examples = {
+        "ko": "Korean script (한국어). Example: 커피 한 잔 주문하고 싶어요",
+        "ja": "Japanese script (日本語). Example: コーヒーを一杯注文したいです",
+        "he": "Hebrew script (עברית). Example: אני רוצה להזמין כוס קפה",
+        "el": "Greek script (Ελληνικά). Example: Θέλω να παραγγείλω έναν καφέ",
+        "zh": "Traditional Chinese (繁體中文). Example: 我想點一杯咖啡",
+        "en": "English. Example: I want to order a coffee",
+        "it": "Italian. Example: Vorrei ordinare un caffè",
+        "es": "Spanish. Example: Quiero pedir un café",
+    }
+    script_hint = script_examples.get(lang_code, f"{lang_name} script")
 
-Input sentence: "{req.sentence}"
+    prompt = f"""TASK: Translate this sentence into {lang_name} and break it down.
 
-Use the detected source language for explanations:
-- If source is English, write literal/meanings/grammar notes in English.
-- If source is Chinese, write literal/meanings/grammar notes in Chinese.
+TARGET: {lang_name} — {script_hint}
+
+INPUT: "{req.sentence}"
+
+You MUST translate into {lang_name}. For example, if target is Korean, write 한국어. If Japanese, write 日本語. If Hebrew, write עברית. Do NOT output Chinese unless the target language IS Chinese.
+
+The input is either English or Chinese (Traditional). Detect which one automatically.
+
+CRITICAL RULES:
+1. The "translation" field MUST be written in {lang_name} using {script_hint}. NOT Chinese, NOT English (unless target IS English).
+2. The "word" fields in breakdown MUST be {lang_name} words in {lang_name} script.
+3. ALL explanations, meanings, notes MUST match the INPUT language (English explanations for English input, Traditional Chinese for Chinese input).
+4. When writing ANY Chinese text, use ONLY Traditional Chinese (繁體中文) with Taiwan usage. NEVER Simplified Chinese.
+5. Do NOT mix languages. Explanations in one language only.
 
 Respond with ONLY valid JSON (no markdown, no code fences) in this exact structure:
 {{
-  "translation": "the full sentence in {lang_name}",
+  "translation": "the full sentence in {lang_name} script (e.g. for Korean use 한글, for Japanese use 日本語, etc.)",
   "pronunciation": "romanized pronunciation guide (e.g. pinyin, romaji, romanization)",
   "literal": "word-by-word literal translation back to the detected source language",
   "breakdown": [
     {{
-      "word": "each word/particle in {lang_name}",
+      "word": "each word/particle written in {lang_name} script",
       "pronunciation": "romanized pronunciation",
       "meaning": "meaning in the detected source language",
       "difficulty": "easy|medium|hard",
@@ -67,17 +89,23 @@ Respond with ONLY valid JSON (no markdown, no code fences) in this exact structu
   "grammar_notes": [
     "Key grammar pattern or structure explanation (1-3 short notes, in the detected source language)"
   ],
-  "cultural_note": "optional cultural context or usage tip, null if none",
+  "cultural_note": "optional cultural context or usage tip (in the detected source language), null if none",
   "formality": "casual|polite|formal — what register this translation uses",
-  "alternative": "an alternative way to say this (different formality or phrasing), or null"
+  "alternative": "an alternative way to say this (different formality or phrasing), or null",
+  "native_expression": "How a native {lang_name} speaker would naturally express this same idea (may differ significantly from direct translation). Include pronunciation and a brief explanation of why a native would say it this way. null if the translation is already how a native would say it."
 }}"""
+
+    system_msg = f"You are a {lang_name} language teacher. You ONLY output {lang_name} translations. You NEVER translate into Chinese unless the target language is Chinese. When the target is Korean, you write in 한국어. When Japanese, you write in 日本語. Always respond with valid JSON only."
 
     async with httpx.AsyncClient(timeout=120) as client:
         resp = await client.post(
-            f"{OLLAMA_URL}/api/generate",
+            f"{OLLAMA_URL}/api/chat",
             json={
                 "model": OLLAMA_MODEL,
-                "prompt": prompt,
+                "messages": [
+                    {"role": "system", "content": system_msg},
+                    {"role": "user", "content": prompt},
+                ],
                 "stream": False,
                 "options": {"temperature": 0.3},
             },
@@ -87,7 +115,7 @@ Respond with ONLY valid JSON (no markdown, no code fences) in this exact structu
         raise HTTPException(502, f"LLM API error: {resp.status_code}")
 
     data = resp.json()
-    text = data.get("response", "")
+    text = data.get("message", {}).get("content", "")
 
     try:
         result = json.loads(text)
