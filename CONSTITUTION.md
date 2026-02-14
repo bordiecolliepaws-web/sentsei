@@ -71,6 +71,8 @@ _Every design decision Jimmy has made. Test against this._
 
 20. **Server must stay up** — watchdog auto-restarts if it crashes
 
+21. **OpenCC s2twp post-processing on ALL output** — even if the model returns simplified Chinese, the backend converts it to Traditional Chinese with Taiwan phrases before sending to the client. Zero tolerance for simplified characters in output.
+
 ---
 _Last updated: 2026-02-14_
 _Source: Jimmy's commands in #⚡ Build Lab_
