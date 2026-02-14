@@ -68,32 +68,62 @@
         }
 
         .language-select {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
             margin-bottom: 1rem;
         }
 
         .language-select label {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             color: var(--text-dim);
-            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5rem;
         }
 
-        .language-select select {
-            flex: 1;
+        .lang-pills {
+            display: flex;
+            gap: 0.4rem;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding-bottom: 2px;
+        }
+
+        .lang-pills::-webkit-scrollbar { display: none; }
+
+        .lang-pill {
             background: var(--surface2);
-            color: var(--text);
+            color: var(--text-dim);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 0.6rem 0.75rem;
-            font-size: 0.9rem;
-            outline: none;
+            border-radius: 999px;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.82rem;
+            font-weight: 500;
             cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-family: inherit;
         }
 
-        .language-select select:focus {
+        .lang-pill:hover {
             border-color: var(--accent);
+            color: var(--text);
+        }
+
+        .lang-pill.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .lang-pill .flag {
+            font-size: 1rem;
+            line-height: 1;
         }
 
         .sentence-input {
@@ -620,8 +650,9 @@
 
         <div class="input-area">
             <div class="language-select">
-                <label for="lang">Target language</label>
-                <select id="lang"></select>
+                <label>Target language</label>
+                <div id="lang-pills" class="lang-pills"></div>
+                <select id="lang" style="display:none"></select>
             </div>
             <div class="sentence-input">
                 <textarea id="sentence" placeholder="Type a sentence in English or Chinese..." rows="1"></textarea>
@@ -657,6 +688,13 @@
 
     <script>
         const langSelect = document.getElementById('lang');
+        const langPillsEl = document.getElementById('lang-pills');
+        const LANG_FLAGS = {
+            ko: '🇰🇷', ja: '🇯🇵', zh: '🇹🇼', en: '🇺🇸',
+            he: '🇮🇱', el: '🇬🇷', it: '🇮🇹', es: '🇪🇸',
+            fr: '🇫🇷', de: '🇩🇪', pt: '🇧🇷', ar: '🇸🇦',
+            th: '🇹🇭', vi: '🇻🇳', hi: '🇮🇳', ru: '🇷🇺'
+        };
         const sentenceInput = document.getElementById('sentence');
         const learnBtn = document.getElementById('learn-btn');
         const loadingEl = document.getElementById('loading');
@@ -856,21 +894,36 @@
             }
         });
 
+        function selectLangPill(code) {
+            langSelect.value = code;
+            langPillsEl.querySelectorAll('.lang-pill').forEach(p => {
+                p.classList.toggle('active', p.dataset.lang === code);
+            });
+        }
+
         async function loadLanguages() {
             if (languagesLoaded) return;
             const langs = await fetch('/api/languages').then(r => r.json());
+            langPillsEl.innerHTML = '';
             for (const [code, name] of Object.entries(langs)) {
+                // Hidden select for compatibility
                 const opt = document.createElement('option');
                 opt.value = code;
                 opt.textContent = name;
                 langSelect.appendChild(opt);
+                // Pill button
+                const pill = document.createElement('button');
+                pill.type = 'button';
+                pill.className = 'lang-pill';
+                pill.dataset.lang = code;
+                const flag = LANG_FLAGS[code] || '🌐';
+                pill.innerHTML = `<span class="flag">${flag}</span>${name}`;
+                pill.addEventListener('click', () => selectLangPill(code));
+                langPillsEl.appendChild(pill);
             }
             // Default to Korean
-            if (Object.prototype.hasOwnProperty.call(langs, 'ko')) {
-                langSelect.value = 'ko';
-            } else if (langSelect.options.length > 0) {
-                langSelect.selectedIndex = 0;
-            }
+            const defaultLang = Object.prototype.hasOwnProperty.call(langs, 'ko') ? 'ko' : Object.keys(langs)[0];
+            if (defaultLang) selectLangPill(defaultLang);
             languagesLoaded = true;
         }
 
