@@ -3289,12 +3289,13 @@
         });
 
         renderSentenceHistory();
+        // Always load languages (not gated by password)
+        loadLanguages().catch(err => {
+            console.error(err);
+            alert('Failed to load languages.');
+        });
         if (ensurePassword()) {
             unlockApp();
-            loadLanguages().catch(err => {
-                console.error(err);
-                alert('Failed to load languages.');
-            });
         }
 
         const loadingMessageEl = document.getElementById('loading-message');
