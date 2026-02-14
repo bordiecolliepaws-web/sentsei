@@ -387,7 +387,9 @@ SOURCE LANGUAGE (what the user typed in): {source_lang}
 
 INPUT: "{req.sentence}"
 
-You MUST translate into {lang_name}. For example, if target is Korean, write 한국어. If Japanese, write 日本語. If Hebrew, write עברית. Do NOT output Chinese unless the target language IS Chinese.
+IMPORTANT: The input may contain mixed languages (e.g. Chinese + English words). Understand the MEANING of the entire sentence, then translate the WHOLE MEANING into {lang_name}. Do NOT keep any source language words in the translation.
+
+You MUST translate into {lang_name}. For example, if target is Korean, write 한국어. If Japanese, write 日本語. If Hebrew, write עברית. Do NOT output Chinese unless the target language IS Chinese. Do NOT echo back the input sentence as the translation.
 
 CRITICAL RULES:
 1. The "translation" field MUST be written in {lang_name} using {script_hint}. NOT Chinese, NOT English (unless target IS English).
@@ -491,8 +493,21 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
         else:
             raise HTTPException(502, f"Failed to parse LLM response: {text[:300]}")
 
-    # Post-process: override LLM pronunciation with deterministic libraries
+    # Validation: check if translation is just echoing back the input
     translation_text = result.get("translation", "")
+    input_clean = req.sentence.strip().replace(" ", "")
+    trans_clean = translation_text.strip().replace(" ", "")
+    if lang_code not in ("zh", "en") and input_is_chinese and trans_clean and input_clean:
+        # If translation is mostly CJK and looks like input was echoed back
+        cjk_ratio = sum(1 for c in trans_clean if '\u4e00' <= c <= '\u9fff') / max(len(trans_clean), 1)
+        if cjk_ratio > 0.5 and lang_code in ("ja",):
+            # For Japanese, CJK is normal (kanji), but check if it's identical to input
+            if trans_clean == input_clean or input_clean in trans_clean:
+                result["_warning"] = "Translation may be echoing input. Model struggled with this input."
+        elif cjk_ratio > 0.5 and lang_code not in ("ja", "zh"):
+            result["_warning"] = "Translation may be in the wrong language."
+
+    # Post-process: override LLM pronunciation with deterministic libraries
     det_pron = deterministic_pronunciation(translation_text, lang_code)
     if det_pron:
         result["pronunciation"] = det_pron
