@@ -72,7 +72,7 @@ _Items for cron iterations to work through, in priority order._
   - Better contrast ratios on dark backgrounds
 
 ## P3 — Infrastructure & Polish (from reflection)
-- [ ] **Audio pronunciation (TTS)** — browser SpeechSynthesis or server-side TTS
+- [x] **Audio pronunciation (TTS)** ✅ 2026-02-14 — browser SpeechSynthesis with BCP-47 language mapping, 0.85 rate for learners, visual feedback
 - [x] **Loading UX** ✅ 2026-02-14 — elapsed timer, progressive messages ("Translating..." → "Analyzing grammar..." → "Almost there..."), 45s timeout with retry button, cancel after 8s
 - [ ] **Multi-sentence input** — split paragraphs into individual sentences
 - [ ] **Reverse mode / Quiz** — see target language, type the English/Chinese
