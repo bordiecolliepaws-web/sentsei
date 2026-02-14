@@ -37,11 +37,13 @@ _Items for cron iterations to work through, in priority order._
   - Expanded chip spans full width for readability
 - [x] **Speaker/identity toggles (gender, age, formality)** ⭐ ✅ 2026-02-14
   - Combined with Speaker toggles above — same implementation
-- [ ] **Persistent sentence history (sidebar/drawer)**
-  - Already in localStorage
-  - Promote to visible side panel (desktop) or bottom drawer (mobile)
-  - Show target language + translation preview
-  - Survives refresh (already does via localStorage)
+- [x] **Persistent sentence history (sidebar/drawer)** ✅ 2026-02-14
+  - Rich history with translation preview, target language flag, timestamp
+  - Desktop: 320px slide-out side panel from right
+  - Mobile: 60vh bottom drawer with rounded top corners
+  - Click entry to reload sentence + select target language
+  - Badge shows count, clear all button, up to 50 entries
+  - Survives refresh via localStorage
 - [ ] **"Surprise me" + Story Mode 📖**
   - **Surprise me**: random curated sentence per target language + difficulty
   - **Story Mode**: continuous sentence-by-sentence playthrough drawn from famous modern literature, TV series, movies, anime

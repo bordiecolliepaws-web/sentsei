@@ -177,6 +177,13 @@
             gap: 0.75rem;
         }
 
+        .sentence-input-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.55rem;
+            min-width: 152px;
+        }
+
         .sentence-input textarea {
             flex: 1;
             background: var(--surface2);
@@ -205,12 +212,30 @@
             color: white;
             border: none;
             border-radius: 8px;
-            padding: 0 1.5rem;
+            padding: 0 1.1rem;
             font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
             white-space: nowrap;
+            min-height: 52px;
+        }
+
+        .sentence-input .surprise-btn {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+
+        .sentence-input .surprise-btn:hover {
+            filter: none;
+            background: var(--accent-glow);
+        }
+
+        .sentence-input .surprise-btn:disabled {
+            border-color: var(--border);
+            color: var(--text-dim);
+            background: transparent;
         }
 
         .sentence-input button:hover {
@@ -449,12 +474,265 @@
             pointer-events: auto;
         }
 
+        /* Stories Panel */
+        .stories-toggle-btn {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 25;
+            background: var(--surface);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: inherit;
+        }
+
+        .stories-toggle-btn:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        .stories-toggle-btn .badge {
+            background: var(--accent);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            border-radius: 99px;
+            padding: 0.1rem 0.4rem;
+            min-width: 1.1rem;
+            text-align: center;
+        }
+
+        .stories-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(6, 6, 10, 0.5);
+            z-index: 19;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .stories-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .stories-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 340px;
+            height: 100vh;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            z-index: 20;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .stories-panel.open {
+            transform: translateX(0);
+        }
+
+        .stories-panel-header {
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .stories-panel-header h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .stories-panel-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .stories-browser {
+            padding: 0.8rem 0;
+        }
+
+        .stories-filter {
+            padding: 0 1rem 0.7rem;
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        .stories-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stories-empty {
+            padding: 1.2rem 1rem;
+            color: var(--text-dim);
+            font-size: 0.84rem;
+            text-align: center;
+        }
+
+        .story-list-item {
+            background: transparent;
+            color: var(--text);
+            border: none;
+            border-top: 1px solid rgba(42, 42, 62, 0.5);
+            border-bottom: 1px solid rgba(42, 42, 62, 0.5);
+            margin-top: -1px;
+            text-align: left;
+            padding: 0.8rem 1rem;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-family: inherit;
+        }
+
+        .story-list-item:hover {
+            background: var(--surface2);
+        }
+
+        .story-list-title {
+            font-size: 0.92rem;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+
+        .story-list-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.45rem;
+            font-size: 0.73rem;
+            color: var(--text-dim);
+        }
+
+        .story-list-progress {
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .story-reader {
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+        }
+
+        .story-reader-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.9rem;
+        }
+
+        .story-back-btn {
+            background: transparent;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.4rem 0.6rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .story-back-btn:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        .story-progress {
+            color: var(--accent);
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .story-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+
+        .story-source {
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            margin-bottom: 0.95rem;
+        }
+
+        .story-sentence {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.95rem;
+            font-size: 1.05rem;
+            line-height: 1.5;
+            min-height: 110px;
+            margin-bottom: 1rem;
+        }
+
+        .story-nav {
+            margin-top: auto;
+            display: flex;
+            gap: 0.55rem;
+        }
+
+        .story-nav button {
+            flex: 1;
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.62rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .story-nav button:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .story-nav button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            color: var(--text-dim);
+            border-color: var(--border);
+        }
+
         /* Mobile: bottom drawer instead of side panel */
         @media (max-width: 600px) {
             .history-toggle-btn {
                 top: auto;
                 bottom: 1rem;
                 right: 1rem;
+                border-radius: 99px;
+                padding: 0.6rem 0.8rem;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            }
+
+            .stories-toggle-btn {
+                top: auto;
+                bottom: 1rem;
+                left: 1rem;
                 border-radius: 99px;
                 padding: 0.6rem 0.8rem;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.4);
@@ -475,6 +753,24 @@
             }
 
             .history-panel.open {
+                transform: translateY(0);
+            }
+
+            .stories-panel {
+                top: auto;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                height: 62vh;
+                max-height: 62vh;
+                border-right: none;
+                border-top: 1px solid var(--border);
+                border-radius: 16px 16px 0 0;
+                transform: translateY(100%);
+            }
+
+            .stories-panel.open {
                 transform: translateY(0);
             }
         }
@@ -939,9 +1235,17 @@
                 gap: 0.5rem;
             }
 
+            .sentence-input-actions {
+                flex-direction: row;
+                min-width: 0;
+                width: 100%;
+            }
+
             .sentence-input button {
+                flex: 1;
                 padding: 0.75rem;
                 font-size: 0.95rem;
+                min-height: 46px;
             }
 
             .sentence-input textarea {
@@ -1027,7 +1331,10 @@
             </div>
             <div class="sentence-input">
                 <textarea id="sentence" placeholder="Type a sentence in English or Chinese..." rows="1"></textarea>
-                <button id="learn-btn" onclick="learn()">Learn</button>
+                <div class="sentence-input-actions">
+                    <button id="learn-btn" onclick="learn()">Learn</button>
+                    <button id="surprise-btn" class="surprise-btn" onclick="surpriseMe()">🎲 Surprise me</button>
+                </div>
             </div>
             <div class="input-hint">Press Enter to learn</div>
             <div id="sentence-history-wrap" class="sentence-history-wrap hidden">
@@ -1043,6 +1350,37 @@
         </div>
 
         <div id="results"></div>
+    </div>
+
+    <!-- Stories Panel -->
+    <button id="stories-toggle" class="stories-toggle-btn" aria-label="Toggle stories">
+        📖 Stories <span id="stories-badge" class="badge">0</span>
+    </button>
+    <div id="stories-overlay" class="stories-overlay"></div>
+    <div id="stories-panel" class="stories-panel">
+        <div class="stories-panel-header">
+            <h3>Stories</h3>
+            <button id="stories-panel-close" class="history-panel-close" aria-label="Close stories">✕</button>
+        </div>
+        <div class="stories-panel-content">
+            <div id="stories-browser" class="stories-browser">
+                <div id="stories-filter" class="stories-filter"></div>
+                <div id="stories-list" class="stories-list"></div>
+            </div>
+            <div id="story-reader" class="story-reader hidden">
+                <div class="story-reader-head">
+                    <button id="story-back-btn" class="story-back-btn" type="button">← All stories</button>
+                    <div id="story-progress" class="story-progress">1/1</div>
+                </div>
+                <div id="story-title" class="story-title"></div>
+                <div id="story-source" class="story-source"></div>
+                <div id="story-sentence" class="story-sentence"></div>
+                <div class="story-nav">
+                    <button id="story-prev-btn" type="button">← Prev</button>
+                    <button id="story-next-btn" type="button">Next →</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- History Panel -->
@@ -1086,6 +1424,7 @@
         };
         const sentenceInput = document.getElementById('sentence');
         const learnBtn = document.getElementById('learn-btn');
+        const surpriseBtn = document.getElementById('surprise-btn');
         const loadingEl = document.getElementById('loading');
         const loadingTipEl = document.getElementById('loading-tip');
         const resultsEl = document.getElementById('results');
@@ -1121,7 +1460,24 @@
         const PASSWORD_STORAGE_KEY = 'sentsei_app_password';
         const SENTENCE_HISTORY_KEY = 'sentsei_sentence_history';
         const RICH_HISTORY_KEY = 'sentsei_rich_history';
+        const STORY_PROGRESS_KEY = 'sentsei_story_progress';
         const HISTORY_LIMIT = 50;
+        const storiesToggleBtn = document.getElementById('stories-toggle');
+        const storiesBadgeEl = document.getElementById('stories-badge');
+        const storiesPanelEl = document.getElementById('stories-panel');
+        const storiesOverlayEl = document.getElementById('stories-overlay');
+        const storiesPanelCloseBtn = document.getElementById('stories-panel-close');
+        const storiesFilterEl = document.getElementById('stories-filter');
+        const storiesListEl = document.getElementById('stories-list');
+        const storiesBrowserEl = document.getElementById('stories-browser');
+        const storyReaderEl = document.getElementById('story-reader');
+        const storyBackBtn = document.getElementById('story-back-btn');
+        const storyTitleEl = document.getElementById('story-title');
+        const storySourceEl = document.getElementById('story-source');
+        const storySentenceEl = document.getElementById('story-sentence');
+        const storyProgressEl = document.getElementById('story-progress');
+        const storyPrevBtn = document.getElementById('story-prev-btn');
+        const storyNextBtn = document.getElementById('story-next-btn');
         const historyToggleBtn = document.getElementById('history-toggle');
         const historyBadgeEl = document.getElementById('history-badge');
         const historyPanelEl = document.getElementById('history-panel');
@@ -1170,6 +1526,12 @@
         let sentenceHistory = loadSentenceHistory();
         let richHistory = loadRichHistory();
         let languagesLoaded = false;
+        let stories = [];
+        let storyPanelOpen = false;
+        let storyProgress = loadStoryProgress();
+        let activeStory = null;
+        let activeStoryIndex = 0;
+        let storyCache = {};
         let historyPanelOpen = false;
 
         function loadRichHistory() {
@@ -1183,6 +1545,41 @@
 
         function saveRichHistory() {
             localStorage.setItem(RICH_HISTORY_KEY, JSON.stringify(richHistory));
+        }
+
+        function loadStoryProgress() {
+            try {
+                const raw = localStorage.getItem(STORY_PROGRESS_KEY) || '{}';
+                const parsed = JSON.parse(raw);
+                if (!parsed || typeof parsed !== 'object') return {};
+                return parsed;
+            } catch {
+                return {};
+            }
+        }
+
+        function saveStoryProgress() {
+            localStorage.setItem(STORY_PROGRESS_KEY, JSON.stringify(storyProgress));
+        }
+
+        function updateStoriesBadge() {
+            if (!storiesBadgeEl) return;
+            const selectedLang = langSelect.value;
+            const count = selectedLang ? stories.filter(s => s.language === selectedLang).length : stories.length;
+            storiesBadgeEl.textContent = count;
+        }
+
+        function getStoryProgress(storyId, sentenceCount) {
+            const raw = Number(storyProgress[storyId] || 0);
+            if (!Number.isFinite(raw) || raw < 0) return 0;
+            if (!sentenceCount || sentenceCount < 1) return 0;
+            return Math.min(raw, sentenceCount - 1);
+        }
+
+        function setStoryProgress(storyId, index) {
+            if (!storyId || !Number.isFinite(index) || index < 0) return;
+            storyProgress[storyId] = index;
+            saveStoryProgress();
         }
 
         function addToRichHistory(sentence, translation, targetLang, pronunciation) {
@@ -1694,6 +2091,157 @@
                 card.scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
         }
+        // === Surprise Me ===
+        async function surpriseMe() {
+            if (!ensurePassword()) return;
+            const surpriseBtn = document.getElementById('surprise-btn');
+            surpriseBtn.disabled = true;
+            try {
+                const lang = langSelect.value;
+                const resp = await fetch(`/api/surprise?lang=${encodeURIComponent(lang)}`);
+                if (!resp.ok) throw new Error('API error');
+                const data = await resp.json();
+                sentenceInput.value = data.sentence;
+                sentenceInput.style.height = 'auto';
+                sentenceInput.style.height = sentenceInput.scrollHeight + 'px';
+                await learn();
+            } catch (err) {
+                console.error(err);
+                alert('Could not fetch a surprise sentence.');
+            } finally {
+                surpriseBtn.disabled = false;
+            }
+        }
+
+        // === Stories ===
+        function toggleStoriesPanel() {
+            storyPanelOpen = !storyPanelOpen;
+            storiesPanelEl.classList.toggle('open', storyPanelOpen);
+            storiesOverlayEl.classList.toggle('open', storyPanelOpen);
+            if (storyPanelOpen) {
+                renderStoriesBrowser();
+            }
+        }
+
+        function closeStoriesPanel() {
+            storyPanelOpen = false;
+            storiesPanelEl.classList.remove('open');
+            storiesOverlayEl.classList.remove('open');
+        }
+
+        async function loadStories() {
+            try {
+                const resp = await fetch('/api/stories');
+                if (!resp.ok) return;
+                stories = await resp.json();
+                updateStoriesBadge();
+            } catch (e) { console.error(e); }
+        }
+
+        function renderStoriesBrowser() {
+            const selectedLang = langSelect.value;
+            const langName = langSelect.options[langSelect.selectedIndex]?.textContent || selectedLang;
+            const flag = LANG_FLAGS[selectedLang] || '🌐';
+            storiesFilterEl.textContent = `${flag} ${langName} stories`;
+
+            const filtered = stories.filter(s => s.language === selectedLang);
+            if (filtered.length === 0) {
+                storiesListEl.innerHTML = '<div class="stories-empty">No stories for this language yet.</div>';
+                return;
+            }
+
+            storiesListEl.innerHTML = filtered.map(s => {
+                const prog = getStoryProgress(s.id, s.sentence_count);
+                const progText = `${prog + 1}/${s.sentence_count}`;
+                return `<button class="story-list-item" data-story-id="${s.id}">
+                    <div class="story-list-title">${s.title}</div>
+                    <div class="story-list-meta">
+                        <span>${s.source}</span>
+                        <span class="story-list-progress">${progText}</span>
+                    </div>
+                </button>`;
+            }).join('');
+
+            storiesListEl.querySelectorAll('.story-list-item').forEach(btn => {
+                btn.addEventListener('click', () => openStoryReader(btn.dataset.storyId));
+            });
+
+            storiesBrowserEl.classList.remove('hidden');
+            storyReaderEl.classList.add('hidden');
+        }
+
+        async function openStoryReader(storyId) {
+            let story = storyCache[storyId];
+            if (!story) {
+                try {
+                    const resp = await fetch(`/api/story/${encodeURIComponent(storyId)}`);
+                    if (!resp.ok) return;
+                    story = await resp.json();
+                    storyCache[storyId] = story;
+                } catch (e) { console.error(e); return; }
+            }
+
+            activeStory = story;
+            activeStoryIndex = getStoryProgress(storyId, story.sentences.length);
+
+            storiesBrowserEl.classList.add('hidden');
+            storyReaderEl.classList.remove('hidden');
+            renderStoryReader();
+        }
+
+        function renderStoryReader() {
+            if (!activeStory) return;
+            const total = activeStory.sentences.length;
+            storyTitleEl.textContent = activeStory.title;
+            storySourceEl.textContent = activeStory.source;
+            storySentenceEl.textContent = activeStory.sentences[activeStoryIndex];
+            storyProgressEl.textContent = `${activeStoryIndex + 1}/${total}`;
+            storyPrevBtn.disabled = activeStoryIndex <= 0;
+            storyNextBtn.disabled = activeStoryIndex >= total - 1;
+        }
+
+        storyPrevBtn.addEventListener('click', () => {
+            if (!activeStory || activeStoryIndex <= 0) return;
+            activeStoryIndex--;
+            setStoryProgress(activeStory.id, activeStoryIndex);
+            renderStoryReader();
+        });
+
+        storyNextBtn.addEventListener('click', () => {
+            if (!activeStory || activeStoryIndex >= activeStory.sentences.length - 1) return;
+            activeStoryIndex++;
+            setStoryProgress(activeStory.id, activeStoryIndex);
+            renderStoryReader();
+        });
+
+        // "Learn this sentence" — clicking the story sentence fills input
+        storySentenceEl.addEventListener('click', () => {
+            if (!activeStory) return;
+            const sentence = activeStory.sentences[activeStoryIndex];
+            sentenceInput.value = sentence;
+            sentenceInput.style.height = 'auto';
+            sentenceInput.style.height = sentenceInput.scrollHeight + 'px';
+            // Select the story's language
+            selectLangPill(activeStory.language);
+            closeStoriesPanel();
+            sentenceInput.focus();
+        });
+
+        storyBackBtn.addEventListener('click', () => {
+            activeStory = null;
+            renderStoriesBrowser();
+        });
+
+        storiesToggleBtn.addEventListener('click', toggleStoriesPanel);
+        storiesOverlayEl.addEventListener('click', closeStoriesPanel);
+        storiesPanelCloseBtn.addEventListener('click', closeStoriesPanel);
+
+        // Load stories after languages load
+        const origLoadLanguages = loadLanguages;
+        loadLanguages = async function() {
+            await origLoadLanguages();
+            await loadStories();
+        };
     </script>
 </body>
 </html>
