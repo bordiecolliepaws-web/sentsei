@@ -320,6 +320,7 @@ STORIES = {
 class SentenceRequest(BaseModel):
     sentence: str
     target_language: str
+    input_language: Optional[str] = "auto"
     speaker_gender: Optional[str] = None
     speaker_formality: Optional[str] = None
 
@@ -366,8 +367,14 @@ async def learn_sentence(
     }
     script_hint = script_examples.get(lang_code, f"{lang_name} script")
 
-    # Detect if input looks Chinese (contains CJK unified ideographs)
-    input_is_chinese = any('\u4e00' <= c <= '\u9fff' for c in req.sentence)
+    # Determine input language (explicit or auto-detect)
+    input_lang = getattr(req, 'input_language', 'auto') or 'auto'
+    if input_lang == "zh":
+        input_is_chinese = True
+    elif input_lang == "en":
+        input_is_chinese = False
+    else:  # auto-detect
+        input_is_chinese = any('\u4e00' <= c <= '\u9fff' for c in req.sentence)
 
     # Detect source language
     source_lang = "Traditional Chinese (繁體中文, 台灣用法)" if input_is_chinese else "English"
@@ -546,6 +553,7 @@ def _split_sentences(text: str) -> List[str]:
 class MultiSentenceRequest(BaseModel):
     sentences: str  # raw paragraph text
     target_language: str
+    input_language: Optional[str] = "auto"
     speaker_gender: Optional[str] = None
     speaker_formality: Optional[str] = None
 

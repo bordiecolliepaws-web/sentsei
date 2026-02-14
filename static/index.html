@@ -83,14 +83,10 @@
 
         .lang-pills {
             display: flex;
+            flex-wrap: wrap;
             gap: 0.4rem;
-            overflow-x: auto;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
             padding-bottom: 2px;
         }
-
-        .lang-pills::-webkit-scrollbar { display: none; }
 
         .lang-pill {
             background: var(--surface2);
@@ -1735,7 +1731,15 @@
 
         <div class="input-area">
             <div class="language-select">
-                <label>Target language</label>
+                <label>I'm typing in</label>
+                <div id="input-lang-pills" class="lang-pills">
+                    <button type="button" class="lang-pill active" data-lang="auto">🔍 Auto-detect</button>
+                    <button type="button" class="lang-pill" data-lang="en">🇺🇸 English</button>
+                    <button type="button" class="lang-pill" data-lang="zh">🇹🇼 中文</button>
+                </div>
+            </div>
+            <div class="language-select">
+                <label>Translate to</label>
                 <div id="lang-pills" class="lang-pills"></div>
                 <select id="lang" style="display:none"></select>
             </div>
@@ -1917,6 +1921,20 @@
 
         initToggle(genderPillsEl, selectedGender, GENDER_KEY, v => selectedGender = v);
         initToggle(formalityPillsEl, selectedFormality, FORMALITY_KEY, v => selectedFormality = v);
+
+        // Input language selector
+        const INPUT_LANG_KEY = 'sentsei_input_lang';
+        let selectedInputLang = localStorage.getItem(INPUT_LANG_KEY) || 'auto';
+        const inputLangPillsEl = document.getElementById('input-lang-pills');
+        inputLangPillsEl.querySelectorAll('.lang-pill').forEach(p => {
+            p.classList.toggle('active', p.dataset.lang === selectedInputLang);
+            p.addEventListener('click', () => {
+                inputLangPillsEl.querySelectorAll('.lang-pill').forEach(q => q.classList.remove('active'));
+                p.classList.add('active');
+                selectedInputLang = p.dataset.lang;
+                localStorage.setItem(INPUT_LANG_KEY, selectedInputLang);
+            });
+        });
 
         const APP_PASSWORD = 'sentsei2026';
         const PASSWORD_STORAGE_KEY = 'sentsei_app_password';
@@ -2751,7 +2769,7 @@
                         },
                         body: JSON.stringify({
                             sentences: sentence,
-                            target_language: langSelect.value,
+                            target_language: langSelect.value, input_language: selectedInputLang,
                             speaker_gender: selectedGender,
                             speaker_formality: selectedFormality
                         }),
@@ -2768,7 +2786,7 @@
                     }
                     if (!resp.ok) throw new Error('API error');
                     const data = await resp.json();
-                    const reqCtx = { target_language: langSelect.value, sentence: sentence };
+                    const reqCtx = { target_language: langSelect.value, input_language: selectedInputLang, sentence: sentence };
 
                     // Render each result as a separate card
                     data.results.forEach(item => {
@@ -2796,7 +2814,7 @@
                         },
                         body: JSON.stringify({
                             sentence: sentence,
-                            target_language: langSelect.value,
+                            target_language: langSelect.value, input_language: selectedInputLang,
                             speaker_gender: selectedGender,
                             speaker_formality: selectedFormality
                         }),
@@ -2813,7 +2831,7 @@
                     }
                     if (!resp.ok) throw new Error('API error');
                     const data = await resp.json();
-                    const reqCtx = { target_language: langSelect.value, sentence: sentence };
+                    const reqCtx = { target_language: langSelect.value, input_language: selectedInputLang, sentence: sentence };
                     renderResult(data, sentence, reqCtx);
                     saveSentenceToHistory(sentence);
                     addToRichHistory(sentence, data.translation, langSelect.value, data.pronunciation);
