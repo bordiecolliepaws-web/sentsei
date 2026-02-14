@@ -2000,9 +2000,9 @@
             <div class="toggle-row">
                 <label>Speaking as</label>
                 <div class="toggle-pills" id="gender-pills">
-                    <button type="button" class="toggle-pill" data-value="female">♀ Female</button>
-                    <button type="button" class="toggle-pill" data-value="male">♂ Male</button>
-                    <button type="button" class="toggle-pill active" data-value="neutral">⚪ Neutral</button>
+                    <button type="button" class="toggle-pill" data-value="female"><span style="font-size:0.85em;line-height:1">♀</span> Female</button>
+                    <button type="button" class="toggle-pill" data-value="male"><span style="font-size:0.85em;line-height:1">♂</span> Male</button>
+                    <button type="button" class="toggle-pill active" data-value="neutral"><span style="font-size:0.7em;line-height:1">⚪</span> Neutral</button>
                 </div>
             </div>
             <div class="toggle-row">
@@ -3992,7 +3992,7 @@
 
     <!-- Feedback Button & Modal -->
     <style>
-        .feedback-btn { position: fixed; bottom: 60px; right: 16px; z-index: 900; background: var(--surface2); border: 1px solid var(--border); border-radius: 999px; padding: 0.5rem 0.8rem; font-size: 0.8rem; color: var(--text-dim); cursor: pointer; transition: all 0.2s; }
+        .feedback-btn { display: block; margin: 1rem auto; background: transparent; border: 1px solid var(--border); border-radius: 999px; padding: 0.4rem 1rem; font-size: 0.75rem; color: var(--text-dim); cursor: pointer; transition: all 0.2s; }
         .feedback-btn:hover { border-color: var(--accent); color: var(--text); }
         .feedback-modal { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; padding: 1rem; }
         .feedback-modal.open { display: flex; }
