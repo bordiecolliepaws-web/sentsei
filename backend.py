@@ -374,6 +374,9 @@ async def learn_sentence(
     if not _rate_limit_check(client_ip):
         raise HTTPException(429, "Too many requests. Please wait a minute.")
 
+    if not req.sentence or not req.sentence.strip():
+        raise HTTPException(400, "Sentence cannot be empty")
+
     if req.target_language not in SUPPORTED_LANGUAGES:
         raise HTTPException(400, "Unsupported language")
 

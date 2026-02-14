@@ -2221,7 +2221,7 @@
 
         // Input language selector
         const INPUT_LANG_KEY = 'sent-say_input_lang';
-        let selectedInputLang = localStorage.getItem(INPUT_LANG_KEY) || 'auto';
+        let selectedInputLang = localStorage.getItem(INPUT_LANG_KEY) || 'en';
         const inputLangPillsEl = document.getElementById('input-lang-pills');
         inputLangPillsEl.querySelectorAll('.lang-pill').forEach(p => {
             p.classList.toggle('active', p.dataset.lang === selectedInputLang);
@@ -3254,7 +3254,7 @@
                 langPillsEl.appendChild(pill);
             }
             // Default to Korean
-            const defaultLang = Object.prototype.hasOwnProperty.call(langs, 'ko') ? 'ko' : Object.keys(langs)[0];
+            const defaultLang = Object.prototype.hasOwnProperty.call(langs, 'zh') ? 'zh' : Object.keys(langs)[0];
             if (defaultLang) selectLangPill(defaultLang);
             languagesLoaded = true;
             renderHistoryPanel();
