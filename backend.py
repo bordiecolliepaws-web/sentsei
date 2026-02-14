@@ -17,7 +17,20 @@ import pykakasi
 from pypinyin import pinyin, Style as PinyinStyle
 from korean_romanizer.romanizer import Romanizer
 
+from opencc import OpenCC
 _kakasi = pykakasi.kakasi()
+_s2twp = OpenCC('s2twp')  # Simplified → Traditional (Taiwan phrases)
+
+
+def ensure_traditional_chinese(obj):
+    """Recursively convert any simplified Chinese to Traditional Chinese (Taiwan) in JSON output."""
+    if isinstance(obj, str):
+        return _s2twp.convert(obj)
+    elif isinstance(obj, list):
+        return [ensure_traditional_chinese(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {k: ensure_traditional_chinese(v) for k, v in obj.items()}
+    return obj
 
 
 def deterministic_pronunciation(text: str, lang_code: str) -> Optional[str]:
@@ -572,6 +585,9 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
         trans_core = translation.strip().rstrip("。.!！")
         if native_core == trans_core or native_core in trans_core or trans_core in native_core:
             result["native_expression"] = None
+
+    # Ensure all Chinese text is Traditional Chinese (Taiwan)
+    result = ensure_traditional_chinese(result)
 
     # Cache the result
     cache_put(ck, result)
