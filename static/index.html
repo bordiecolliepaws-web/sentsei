@@ -3141,12 +3141,22 @@
             speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = LANG_SPEECH_MAP[langCode] || langCode;
-            utterance.rate = 0.85;
-            // Try to find a matching voice
+            utterance.rate = 0.9;
+            // Try to find the best matching voice — prefer non-compact, local voices
             const voices = speechSynthesis.getVoices();
-            const match = voices.find(v => v.lang === utterance.lang) ||
-                          voices.find(v => v.lang.startsWith(langCode));
-            if (match) utterance.voice = match;
+            const exactVoices = voices.filter(v => v.lang === utterance.lang);
+            const prefixVoices = voices.filter(v => v.lang.startsWith(langCode));
+            const candidates = exactVoices.length > 0 ? exactVoices : prefixVoices;
+            // Prefer local (non-remote) voices, then by name (avoid "compact" variants)
+            const sorted = candidates.sort((a, b) => {
+                const aLocal = !a.localService ? 1 : 0;
+                const bLocal = !b.localService ? 1 : 0;
+                if (aLocal !== bLocal) return aLocal - bLocal;
+                const aCompact = a.name.toLowerCase().includes('compact') ? 1 : 0;
+                const bCompact = b.name.toLowerCase().includes('compact') ? 1 : 0;
+                return aCompact - bCompact;
+            });
+            if (sorted.length > 0) utterance.voice = sorted[0];
             if (btn) {
                 btn.classList.add('speaking');
                 const label = btn.querySelector('.speak-label');
