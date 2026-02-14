@@ -166,6 +166,17 @@ if d:
     has_japanese = any('\u3040' <= c <= '\u309f' or '\u30a0' <= c <= '\u30ff' or '\u4e00' <= c <= '\u9fff' for c in trans)
     test("Japanese translation contains Japanese characters", has_japanese, f"Got: {trans}")
 
+# Rule 19: Empty sentence validation
+print("\n[Rule 19: Empty Sentence Validation]")
+r = requests.post(f"{BASE}/api/learn", headers=HEADERS, json={
+    "sentence": "", "target_language": "ja", "input_language": "en"
+}, timeout=10)
+test("API rejects empty sentence", r.status_code == 400, f"Got status {r.status_code}")
+r2 = requests.post(f"{BASE}/api/learn", headers=HEADERS, json={
+    "sentence": "   ", "target_language": "ja", "input_language": "en"
+}, timeout=10)
+test("API rejects whitespace-only sentence", r2.status_code == 400, f"Got status {r2.status_code}")
+
 # Rule 20: Password protection
 print("\n[Rule 20: Password Protection]")
 r = requests.post(f"{BASE}/api/learn", headers={"Content-Type": "application/json"}, json={
