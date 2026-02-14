@@ -44,6 +44,8 @@ app = FastAPI()
 CACHE_MAX = 500          # max entries
 CACHE_TTL = 3600 * 24    # 24h expiry
 _translation_cache: OrderedDict = OrderedDict()  # key -> (timestamp, result)
+QUIZ_ANSWER_TTL = 3600   # quiz answer retention (seconds)
+_quiz_answers: dict = {}  # quiz_id -> answer payload
 
 
 def _cache_key(sentence: str, target: str, gender: str, formality: str) -> str:
@@ -67,6 +69,44 @@ def cache_put(key: str, result: dict):
     _translation_cache[key] = (time.time(), result)
     if len(_translation_cache) > CACHE_MAX:
         _translation_cache.popitem(last=False)
+
+
+def _cleanup_quiz_answers():
+    cutoff = time.time() - QUIZ_ANSWER_TTL
+    stale_ids = [qid for qid, payload in _quiz_answers.items() if payload.get("created_at", 0) < cutoff]
+    for qid in stale_ids:
+        _quiz_answers.pop(qid, None)
+
+
+def _new_quiz_id(lang: str, sentence: str) -> str:
+    raw = f"{lang}|{sentence}|{time.time_ns()}|{random.random()}"
+    return hashlib.sha256(raw.encode()).hexdigest()[:20]
+
+
+def _translation_hint(text: str) -> str:
+    cleaned = (text or "").strip().strip("\"'“”‘’")
+    if not cleaned:
+        return ""
+    first = _re.split(r"\s+", cleaned)[0]
+    first = _re.sub(r"^[^\w\u4e00-\u9fff]+|[^\w\u4e00-\u9fff]+$", "", first)
+    if not first:
+        first = cleaned[:2]
+    if any('\u4e00' <= c <= '\u9fff' for c in first) and len(first) > 2:
+        first = first[:2]
+    return first
+
+
+def _parse_json_object(text: str) -> Optional[dict]:
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        match = _re.search(r'\{.*\}', text, _re.DOTALL)
+        if not match:
+            return None
+        try:
+            return json.loads(match.group())
+        except json.JSONDecodeError:
+            return None
 
 
 # --- IP-based sliding window rate limiter ---
@@ -510,6 +550,12 @@ class MultiSentenceRequest(BaseModel):
     speaker_formality: Optional[str] = None
 
 
+class QuizCheckRequest(BaseModel):
+    quiz_id: str
+    answer: str
+    target_language: str
+
+
 @app.post("/api/learn-multi")
 async def learn_multi(
     request: Request,
@@ -665,6 +711,184 @@ async def get_surprise_sentence(lang: str):
         "category": picked["category"],
         "source": picked["source"],
     }
+
+
+@app.get("/api/quiz")
+async def get_quiz(
+    lang: str,
+    gender: str = "neutral",
+    formality: str = "polite",
+    x_app_password: Optional[str] = Header(default=None),
+):
+    if x_app_password != APP_PASSWORD:
+        raise HTTPException(401, "Unauthorized")
+
+    if lang not in SUPPORTED_LANGUAGES:
+        raise HTTPException(400, "Unsupported language")
+
+    sentence_pool = CURATED_SENTENCES.get(lang, [])
+    if not sentence_pool:
+        raise HTTPException(404, "No curated sentences found for this language")
+
+    picked = random.choice(sentence_pool)
+    sentence = picked["sentence"]
+    lang_name = SUPPORTED_LANGUAGES[lang]
+
+    prompt = f"""Translate this {lang_name} sentence into both English and Traditional Chinese (Taiwan usage).
+
+Sentence: "{sentence}"
+Context:
+- Speaker gender: {gender}
+- Formality: {formality}
+
+Return ONLY valid JSON:
+{{
+  "translation_en": "Natural English meaning",
+  "translation_zh": "Natural Traditional Chinese meaning (Taiwan usage)"
+}}"""
+
+    system_msg = "You are a translation assistant. Return valid JSON only."
+
+    async with httpx.AsyncClient(timeout=60) as client:
+        resp = await client.post(
+            f"{OLLAMA_URL}/api/chat",
+            json={
+                "model": OLLAMA_MODEL,
+                "messages": [
+                    {"role": "system", "content": system_msg},
+                    {"role": "user", "content": prompt},
+                ],
+                "stream": False,
+                "options": {"temperature": 0.2, "num_predict": 256},
+            },
+        )
+
+    if resp.status_code != 200:
+        raise HTTPException(502, f"LLM API error: {resp.status_code}")
+
+    content = resp.json().get("message", {}).get("content", "")
+    parsed = _parse_json_object(content) or {}
+
+    translation_en = (parsed.get("translation_en") or "").strip()
+    translation_zh = (parsed.get("translation_zh") or "").strip()
+
+    if not translation_en and not translation_zh:
+        raise HTTPException(502, "Failed to generate quiz answer")
+    if not translation_en:
+        translation_en = translation_zh
+    if not translation_zh:
+        translation_zh = translation_en
+
+    quiz_id = _new_quiz_id(lang, sentence)
+    _cleanup_quiz_answers()
+    _quiz_answers[quiz_id] = {
+        "created_at": time.time(),
+        "sentence": sentence,
+        "language": lang,
+        "source": picked.get("source", ""),
+        "answer_en": translation_en,
+        "answer_zh": translation_zh,
+    }
+
+    return {
+        "quiz_id": quiz_id,
+        "sentence": sentence,
+        "source": picked.get("source", ""),
+        "language": lang,
+        "hint": _translation_hint(translation_en),
+        "pronunciation": deterministic_pronunciation(sentence, lang),
+    }
+
+
+@app.post("/api/quiz-check")
+async def quiz_check(
+    request: Request,
+    req: QuizCheckRequest,
+    x_app_password: Optional[str] = Header(default=None),
+):
+    if x_app_password != APP_PASSWORD:
+        raise HTTPException(401, "Unauthorized")
+
+    client_ip = request.client.host if request.client else "unknown"
+    _rate_limit_cleanup()
+    if not _rate_limit_check(client_ip):
+        raise HTTPException(429, "Too many requests. Please wait a minute.")
+
+    answer = req.answer.strip()
+    if not answer:
+        raise HTTPException(400, "Answer is required")
+
+    _cleanup_quiz_answers()
+    quiz = _quiz_answers.get(req.quiz_id)
+    if not quiz:
+        raise HTTPException(404, "Quiz not found or expired")
+
+    if req.target_language != quiz.get("language"):
+        raise HTTPException(400, "Quiz language mismatch")
+
+    lang_name = SUPPORTED_LANGUAGES.get(quiz["language"], quiz["language"])
+
+    prompt = f"""Evaluate whether the learner answer captures the MEANING of the target sentence.
+Do not require exact wording.
+
+Target sentence ({lang_name}): "{quiz['sentence']}"
+Reference English meaning: "{quiz['answer_en']}"
+Reference Traditional Chinese meaning: "{quiz['answer_zh']}"
+Learner answer: "{answer}"
+
+Scoring rubric:
+- perfect: meaning is fully accurate and complete
+- good: meaning is correct with minor wording differences
+- partial: some meaning is correct but key details are missing or off
+- wrong: meaning is mostly incorrect
+
+Return JSON only in this format:
+{{"score": "perfect|good|partial|wrong", "feedback": "brief explanation"}}"""
+
+    system_msg = (
+        "You are a translation quiz grader. Grade semantic equivalence only. "
+        "Return strict JSON only."
+    )
+
+    async with httpx.AsyncClient(timeout=60) as client:
+        resp = await client.post(
+            f"{OLLAMA_URL}/api/chat",
+            json={
+                "model": OLLAMA_MODEL,
+                "messages": [
+                    {"role": "system", "content": system_msg},
+                    {"role": "user", "content": prompt},
+                ],
+                "stream": False,
+                "options": {"temperature": 0.1, "num_predict": 196},
+            },
+        )
+
+    if resp.status_code != 200:
+        raise HTTPException(502, f"LLM API error: {resp.status_code}")
+
+    content = resp.json().get("message", {}).get("content", "")
+    parsed = _parse_json_object(content) or {}
+
+    score = str(parsed.get("score", "")).strip().lower()
+    if score not in {"perfect", "good", "partial", "wrong"}:
+        score = "wrong"
+    feedback = str(parsed.get("feedback", "")).strip() or "Meaning does not match closely enough."
+
+    answer_en = quiz.get("answer_en", "").strip()
+    answer_zh = quiz.get("answer_zh", "").strip()
+    if answer_en and answer_zh and answer_zh != answer_en:
+        correct_answer = f"{answer_en} / {answer_zh}"
+    else:
+        correct_answer = answer_en or answer_zh
+
+    return {
+        "correct": score in {"perfect", "good"},
+        "score": score,
+        "correct_answer": correct_answer,
+        "feedback": feedback,
+    }
+
 
 @app.get("/api/stories")
 async def list_stories():

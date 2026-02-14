@@ -74,8 +74,8 @@ _Items for cron iterations to work through, in priority order._
 ## P3 — Infrastructure & Polish (from reflection)
 - [x] **Audio pronunciation (TTS)** ✅ 2026-02-14 — browser SpeechSynthesis with BCP-47 language mapping, 0.85 rate for learners, visual feedback
 - [x] **Loading UX** ✅ 2026-02-14 — elapsed timer, progressive messages ("Translating..." → "Analyzing grammar..." → "Almost there..."), 45s timeout with retry button, cancel after 8s
-- [ ] **Multi-sentence input** — split paragraphs into individual sentences
-- [ ] **Reverse mode / Quiz** — see target language, type the English/Chinese
+- [x] **Multi-sentence input** ✅ 2026-02-14 — split paragraphs into individual sentences, /api/learn-multi endpoint, frontend auto-detects and renders stacked cards
+- [ ] **Reverse mode / Quiz** — see target language, guess the English/Chinese
 - [ ] **Save/export** — Anki flashcard export, PDF, screenshot-friendly format
 - [x] **Caching** ✅ 2026-02-14 — in-memory LRU cache (500 entries, 24h TTL), keyed by sentence+target+gender+formality
 - [x] **Rate limiting** ✅ 2026-02-14 — IP-based sliding window (30 req/min per IP), cleanup every 100 checks, 429 response when exceeded
