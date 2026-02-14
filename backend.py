@@ -1,4 +1,4 @@
-"""Sentsei — Sentence-based language learning app."""
+"""Sent-Say — Sentence-based language learning app."""
 import json
 import re as _re
 import random
@@ -772,7 +772,7 @@ async def export_anki(
         rows.append(f"{front}\t{back}")
 
     content = "\n".join(rows)
-    headers = {"Content-Disposition": 'attachment; filename="sentsei-flashcards.txt"'}
+    headers = {"Content-Disposition": 'attachment; filename="sent-say-flashcards.txt"'}
     return Response(content=content, media_type="text/tab-separated-values", headers=headers)
 
 SURPRISE_SENTENCES_EN = [

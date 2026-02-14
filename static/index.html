@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sentsei — Learn by Saying</title>
+    <title>Sent-Say — Learn by Saying</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50%25' y='56%25' dominant-baseline='middle' text-anchor='middle' font-size='74'%3E%E5%AD%B8%3C/text%3E%3C/svg%3E">
     <style>
         :root {
@@ -1955,7 +1955,7 @@
     <!-- Onboarding overlay for first-time users -->
     <div id="onboarding-overlay" class="onboarding-overlay hidden">
         <div class="onboarding-card">
-            <h2>⚡ Welcome to Sentsei</h2>
+            <h2>⚡ Welcome to Sent-Say</h2>
             <p>Type any sentence and learn how to say it in another language — with pronunciation, grammar notes, and word-by-word breakdown.</p>
             <p style="color: var(--text); font-weight: 500;">Try one of these to start:</p>
             <div class="onboarding-suggestions">
@@ -1979,7 +1979,7 @@
     <div class="container">
         <header>
             <div class="header-title-row">
-                <h1>Sentsei</h1>
+                <h1>Sent-Say</h1>
                 <button id="stats-toggle" class="stats-btn" type="button" aria-label="Show learning stats">📊 Stats</button>
             </div>
             <p>Say what's on your mind. Learn it in any language.</p>
@@ -2131,7 +2131,7 @@
 
     <div id="password-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="password-modal-title">
         <div class="modal">
-            <h2 id="password-modal-title">Unlock Sentsei</h2>
+            <h2 id="password-modal-title">Unlock Sent-Say</h2>
             <p>Enter the app password to start learning.</p>
             <form id="password-form" class="password-form">
                 <input id="password-input" type="password" placeholder="Password" autocomplete="current-password" required>
@@ -2205,8 +2205,8 @@
         const statsLearningSinceEl = document.getElementById('stats-learning-since');
         const genderPillsEl = document.getElementById('gender-pills');
         const formalityPillsEl = document.getElementById('formality-pills');
-        const GENDER_KEY = 'sentsei_speaker_gender';
-        const FORMALITY_KEY = 'sentsei_speaker_formality';
+        const GENDER_KEY = 'sent-say_speaker_gender';
+        const FORMALITY_KEY = 'sent-say_speaker_formality';
         let selectedGender = localStorage.getItem(GENDER_KEY) || 'neutral';
         let selectedFormality = localStorage.getItem(FORMALITY_KEY) || 'polite';
 
@@ -2226,7 +2226,7 @@
         initToggle(formalityPillsEl, selectedFormality, FORMALITY_KEY, v => selectedFormality = v);
 
         // Input language selector
-        const INPUT_LANG_KEY = 'sentsei_input_lang';
+        const INPUT_LANG_KEY = 'sent-say_input_lang';
         let selectedInputLang = localStorage.getItem(INPUT_LANG_KEY) || 'auto';
         const inputLangPillsEl = document.getElementById('input-lang-pills');
         inputLangPillsEl.querySelectorAll('.lang-pill').forEach(p => {
@@ -2240,11 +2240,11 @@
         });
 
         const APP_PASSWORD = 'sentsei2026';
-        const PASSWORD_STORAGE_KEY = 'sentsei_app_password';
-        const SENTENCE_HISTORY_KEY = 'sentsei_sentence_history';
-        const RICH_HISTORY_KEY = 'sentsei_rich_history';
-        const STORY_PROGRESS_KEY = 'sentsei_story_progress';
-        const PROGRESS_STATS_KEY = 'sentsei_progress_stats';
+        const PASSWORD_STORAGE_KEY = 'sent-say_app_password';
+        const SENTENCE_HISTORY_KEY = 'sent-say_sentence_history';
+        const RICH_HISTORY_KEY = 'sent-say_rich_history';
+        const STORY_PROGRESS_KEY = 'sent-say_story_progress';
+        const PROGRESS_STATS_KEY = 'sent-say_progress_stats';
         const HISTORY_LIMIT = 50;
         const MS_PER_DAY = 24 * 60 * 60 * 1000;
         const storiesToggleBtn = document.getElementById('stories-toggle');
@@ -2840,7 +2840,7 @@
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = 'sentsei-flashcards.txt';
+                link.download = 'sent-say-flashcards.txt';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -3148,7 +3148,7 @@
         }
 
         // --- Onboarding ---
-        const ONBOARDED_KEY = 'sentsei_onboarded';
+        const ONBOARDED_KEY = 'sent-say_onboarded';
         const onboardingOverlay = document.getElementById('onboarding-overlay');
 
         function showOnboarding() {
