@@ -574,6 +574,21 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
         if word_pron:
             item["pronunciation"] = word_pron
 
+    # Filter out hallucinated breakdown words not in the translation
+    if breakdown and translation_text:
+        clean_translation = translation_text.replace(" ", "").replace("，", "").replace(",", "").replace("。", "").replace(".", "").replace("！", "").replace("!", "").replace("？", "").replace("?", "")
+        filtered = []
+        for item in breakdown:
+            word = item.get("word", "").strip()
+            if not word:
+                continue
+            # Check if the word actually appears in the translation
+            word_clean = word.replace(" ", "")
+            if word_clean in clean_translation:
+                filtered.append(item)
+            # else: hallucinated word, skip it
+        result["breakdown"] = filtered
+
     # Post-process: Japanese gender/pronoun warnings
     if lang_code == "ja" and translation_text:
         gender_markers = {
