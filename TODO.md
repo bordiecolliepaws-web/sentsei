@@ -63,6 +63,18 @@ _Items for cron iterations to work through, in priority order._
   - Consider warmer tones, better contrast
   - Test on mobile
 
+## P3 — Infrastructure & Polish (from reflection)
+- [ ] **Audio pronunciation (TTS)** — browser SpeechSynthesis or server-side TTS
+- [ ] **Loading UX** — better feedback for slow model responses (10-20s), timeout/retry
+- [ ] **Multi-sentence input** — split paragraphs into individual sentences
+- [ ] **Reverse mode / Quiz** — see target language, type the English/Chinese
+- [ ] **Save/export** — Anki flashcard export, PDF, screenshot-friendly format
+- [ ] **Caching** — same sentence + same target = cached result, no repeat API call
+- [ ] **Rate limiting** — prevent API hammering once past password
+- [ ] **Onboarding** — first-time "try this" example for new users
+- [ ] **Comparison mode** — one sentence → all languages side by side
+- [ ] **Progress tracking** — sentences learned, languages used, streaks
+
 ## Cron Test Matrix
 Each iteration should run these checks:
 1. English → Korean: explanations in English? Translation in 한글?
