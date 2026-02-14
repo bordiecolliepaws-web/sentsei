@@ -56,6 +56,9 @@ async def learn_sentence(
     }
     script_hint = script_examples.get(lang_code, f"{lang_name} script")
 
+    # Detect if input looks Chinese (contains CJK unified ideographs)
+    input_is_chinese = any('\u4e00' <= c <= '\u9fff' for c in req.sentence)
+
     # Detect source language
     source_lang = "Traditional Chinese (繁體中文, 台灣用法)" if input_is_chinese else "English"
     source_lang_short = "繁體中文" if input_is_chinese else "English"
@@ -98,9 +101,6 @@ Respond with ONLY valid JSON (no markdown, no code fences) in this exact structu
   "alternative": "an alternative way to say this (different formality or phrasing), or null",
   "native_expression": "How a native {lang_name} speaker would naturally express this same idea (may differ significantly from direct translation). Include pronunciation and a brief explanation of why a native would say it this way. null if the translation is already how a native would say it."
 }}"""
-
-    # Detect if input looks Chinese (contains CJK unified ideographs)
-    input_is_chinese = any('\u4e00' <= c <= '\u9fff' for c in req.sentence)
 
     # Always use qwen2.5 for structured JSON (TAIDE can't reliably produce JSON)
     model = OLLAMA_MODEL
