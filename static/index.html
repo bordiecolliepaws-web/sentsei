@@ -44,6 +44,12 @@
             margin-bottom: 2.5rem;
         }
 
+        .header-title-row {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
         header h1 {
             font-size: 2rem;
             font-weight: 700;
@@ -51,6 +57,25 @@
             background: linear-gradient(135deg, var(--accent), #f0c96e);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+        }
+
+        .stats-btn {
+            background: var(--surface2);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            border-radius: 99px;
+            padding: 0.3rem 0.62rem;
+            font-size: 0.74rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+
+        .stats-btn:hover {
+            background: var(--accent-glow);
+            color: var(--text);
         }
 
         header p {
@@ -1605,6 +1630,86 @@
             line-height: 1.45;
         }
 
+        .progress-modal {
+            max-width: 430px;
+        }
+
+        .progress-modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.6rem;
+            margin-bottom: 0.95rem;
+        }
+
+        .progress-modal-head h2 {
+            margin-bottom: 0;
+        }
+
+        .progress-close-btn {
+            background: transparent;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            line-height: 1;
+            font-family: inherit;
+        }
+
+        .progress-close-btn:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        .progress-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 0.62rem;
+        }
+
+        .progress-stat {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.68rem 0.78rem;
+        }
+
+        .progress-stat-label {
+            color: var(--text-dim);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.22rem;
+            font-weight: 600;
+        }
+
+        .progress-stat-value {
+            color: var(--text);
+            font-size: 0.95rem;
+            font-weight: 600;
+            line-height: 1.35;
+        }
+
+        .progress-languages {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+        }
+
+        .progress-lang-chip {
+            background: var(--accent-glow);
+            color: var(--text);
+            border: 1px solid rgba(232, 168, 56, 0.35);
+            border-radius: 999px;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.75rem;
+            line-height: 1.35;
+        }
+
         .password-form {
             display: flex;
             gap: 0.55rem;
@@ -1669,6 +1774,15 @@
 
             header h1 {
                 font-size: 1.5rem;
+            }
+
+            .header-title-row {
+                gap: 0.45rem;
+            }
+
+            .stats-btn {
+                font-size: 0.7rem;
+                padding: 0.26rem 0.54rem;
             }
 
             header p {
@@ -1748,6 +1862,10 @@
 
             .password-form {
                 flex-direction: column;
+            }
+
+            .progress-modal {
+                max-width: 100%;
             }
 
             .input-hint {
@@ -1860,7 +1978,10 @@
 
     <div class="container">
         <header>
-            <h1>Sentsei</h1>
+            <div class="header-title-row">
+                <h1>Sentsei</h1>
+                <button id="stats-toggle" class="stats-btn" type="button" aria-label="Show learning stats">📊 Stats</button>
+            </div>
             <p>Say what's on your mind. Learn it in any language.</p>
         </header>
 
@@ -2020,6 +2141,37 @@
         </div>
     </div>
 
+    <div id="stats-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="stats-modal-title">
+        <div class="modal progress-modal">
+            <div class="progress-modal-head">
+                <h2 id="stats-modal-title">Learning Stats</h2>
+                <button id="stats-modal-close" class="progress-close-btn" type="button" aria-label="Close stats">✕</button>
+            </div>
+            <div class="progress-stats">
+                <div class="progress-stat">
+                    <div class="progress-stat-label">Total sentences learned</div>
+                    <div id="stats-total-sentences" class="progress-stat-value">0</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-label">Languages practiced</div>
+                    <div id="stats-languages" class="progress-languages"></div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-label">Quiz accuracy</div>
+                    <div id="stats-quiz-accuracy" class="progress-stat-value">No quizzes taken yet</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-label">Current streak</div>
+                    <div id="stats-streak" class="progress-stat-value">0 days</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-label">Learning since</div>
+                    <div id="stats-learning-since" class="progress-stat-value">Not started yet</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const langSelect = document.getElementById('lang');
         const langPillsEl = document.getElementById('lang-pills');
@@ -2043,6 +2195,14 @@
         const passwordFormEl = document.getElementById('password-form');
         const passwordInputEl = document.getElementById('password-input');
         const passwordErrorEl = document.getElementById('password-error');
+        const statsToggleBtn = document.getElementById('stats-toggle');
+        const statsModalEl = document.getElementById('stats-modal');
+        const statsModalCloseBtn = document.getElementById('stats-modal-close');
+        const statsTotalSentencesEl = document.getElementById('stats-total-sentences');
+        const statsLanguagesEl = document.getElementById('stats-languages');
+        const statsQuizAccuracyEl = document.getElementById('stats-quiz-accuracy');
+        const statsStreakEl = document.getElementById('stats-streak');
+        const statsLearningSinceEl = document.getElementById('stats-learning-since');
         const genderPillsEl = document.getElementById('gender-pills');
         const formalityPillsEl = document.getElementById('formality-pills');
         const GENDER_KEY = 'sentsei_speaker_gender';
@@ -2084,8 +2244,9 @@
         const SENTENCE_HISTORY_KEY = 'sentsei_sentence_history';
         const RICH_HISTORY_KEY = 'sentsei_rich_history';
         const STORY_PROGRESS_KEY = 'sentsei_story_progress';
-        const QUIZ_SCORE_KEY = 'sentsei_quiz_score';
+        const PROGRESS_STATS_KEY = 'sentsei_progress_stats';
         const HISTORY_LIMIT = 50;
+        const MS_PER_DAY = 24 * 60 * 60 * 1000;
         const storiesToggleBtn = document.getElementById('stories-toggle');
         const storiesBadgeEl = document.getElementById('stories-badge');
         const storiesPanelEl = document.getElementById('stories-panel');
@@ -2174,6 +2335,7 @@
         let historyPanelOpen = false;
         let quizMode = false;
         let currentQuiz = null;
+        let progressStats = loadProgressStats();
         let quizStats = loadQuizStats();
 
         const QUIZ_SCORE_LABELS = {
@@ -2211,23 +2373,205 @@
             localStorage.setItem(STORY_PROGRESS_KEY, JSON.stringify(storyProgress));
         }
 
-        function loadQuizStats() {
+        function loadProgressStats() {
+            const base = {
+                sentencesLearned: 0,
+                languagesUsed: [],
+                quiz: { correct: 0, total: 0 },
+                streak: 0,
+                lastActivityDate: '',
+                firstActivityDate: '',
+                lastLearnDate: ''
+            };
+
             try {
-                const raw = sessionStorage.getItem(QUIZ_SCORE_KEY) || '{}';
+                const raw = localStorage.getItem(PROGRESS_STATS_KEY) || '{}';
                 const parsed = JSON.parse(raw);
-                const correct = Number(parsed.correct) || 0;
-                const total = Number(parsed.total) || 0;
+                if (!parsed || typeof parsed !== 'object') return base;
+
+                const sentencesLearned = Math.max(0, Number(parsed.sentencesLearned) || 0);
+                const languagesRaw = Array.isArray(parsed.languagesUsed) ? parsed.languagesUsed : [];
+                const languagesUsed = [...new Set(languagesRaw
+                    .map(v => (typeof v === 'string' ? v.trim().toLowerCase() : ''))
+                    .filter(Boolean))];
+                const quizRaw = parsed.quiz && typeof parsed.quiz === 'object' ? parsed.quiz : {};
+                const quiz = {
+                    correct: Math.max(0, Number(quizRaw.correct) || 0),
+                    total: Math.max(0, Number(quizRaw.total) || 0)
+                };
+                const streak = Math.max(0, Number(parsed.streak) || 0);
+                const lastActivityDate = typeof parsed.lastActivityDate === 'string' ? parsed.lastActivityDate : '';
+                const firstActivityDate = typeof parsed.firstActivityDate === 'string' ? parsed.firstActivityDate : '';
+                const lastLearnDate = typeof parsed.lastLearnDate === 'string' ? parsed.lastLearnDate : '';
+
                 return {
-                    correct: Math.max(0, correct),
-                    total: Math.max(0, total)
+                    sentencesLearned,
+                    languagesUsed,
+                    quiz,
+                    streak,
+                    lastActivityDate,
+                    firstActivityDate,
+                    lastLearnDate
                 };
             } catch {
-                return { correct: 0, total: 0 };
+                return base;
             }
         }
 
+        function saveProgressStats() {
+            localStorage.setItem(PROGRESS_STATS_KEY, JSON.stringify(progressStats));
+        }
+
+        function todayDateKey() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function parseDateKey(dateKey) {
+            if (!dateKey || typeof dateKey !== 'string') return null;
+            const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey);
+            if (!match) return null;
+
+            const year = Number(match[1]);
+            const monthIndex = Number(match[2]) - 1;
+            const day = Number(match[3]);
+            const date = new Date(year, monthIndex, day);
+            if (
+                date.getFullYear() !== year ||
+                date.getMonth() !== monthIndex ||
+                date.getDate() !== day
+            ) {
+                return null;
+            }
+            return date;
+        }
+
+        function dayDiff(fromDateKey, toDateKey) {
+            const from = parseDateKey(fromDateKey);
+            const to = parseDateKey(toDateKey);
+            if (!from || !to) return null;
+            return Math.round((to.getTime() - from.getTime()) / MS_PER_DAY);
+        }
+
+        function formatDateLabel(dateKey) {
+            const parsed = parseDateKey(dateKey);
+            if (!parsed) return '';
+            return parsed.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function addProgressLanguage(languageCode) {
+            const code = typeof languageCode === 'string' ? languageCode.trim().toLowerCase() : '';
+            if (!code) return;
+            if (!progressStats.languagesUsed.includes(code)) {
+                progressStats.languagesUsed.push(code);
+            }
+        }
+
+        function renderProgressLanguages() {
+            if (!statsLanguagesEl) return;
+            statsLanguagesEl.innerHTML = '';
+
+            const langNames = getLanguageNamesMap();
+            if (!progressStats.languagesUsed.length) {
+                const empty = document.createElement('span');
+                empty.className = 'progress-stat-value';
+                empty.textContent = 'No languages yet';
+                statsLanguagesEl.appendChild(empty);
+                return;
+            }
+
+            progressStats.languagesUsed.forEach(code => {
+                const chip = document.createElement('span');
+                chip.className = 'progress-lang-chip';
+                const flag = LANG_FLAGS[code] || '🌐';
+                const name = langNames[code] || code.toUpperCase();
+                chip.textContent = `${flag} ${name}`;
+                statsLanguagesEl.appendChild(chip);
+            });
+        }
+
+        function renderProgressStats() {
+            if (!statsTotalSentencesEl) return;
+
+            statsTotalSentencesEl.textContent = String(progressStats.sentencesLearned || 0);
+            renderProgressLanguages();
+
+            const quizTotal = Math.max(0, Number(progressStats.quiz?.total) || 0);
+            const quizCorrect = Math.max(0, Number(progressStats.quiz?.correct) || 0);
+            if (quizTotal > 0) {
+                const accuracy = Math.round((quizCorrect / quizTotal) * 100);
+                statsQuizAccuracyEl.textContent = `${accuracy}% (${quizCorrect}/${quizTotal})`;
+            } else {
+                statsQuizAccuracyEl.textContent = 'No quizzes taken yet';
+            }
+
+            const streak = Math.max(0, Number(progressStats.streak) || 0);
+            statsStreakEl.textContent = `${streak} ${streak === 1 ? 'day' : 'days'}`;
+
+            const learningSince = formatDateLabel(progressStats.firstActivityDate);
+            statsLearningSinceEl.textContent = learningSince || 'Not started yet';
+        }
+
+        function persistProgressAndRefresh() {
+            saveProgressStats();
+            renderProgressStats();
+        }
+
+        function recordLearnProgress(languageCode, learnedCount = 1) {
+            const increment = Math.max(0, Number(learnedCount) || 0);
+            if (increment < 1) return;
+
+            const today = todayDateKey();
+            if (!progressStats.firstActivityDate) {
+                progressStats.firstActivityDate = today;
+            }
+            progressStats.lastActivityDate = today;
+            progressStats.sentencesLearned += increment;
+            addProgressLanguage(languageCode);
+
+            if (!progressStats.lastLearnDate) {
+                progressStats.streak = 1;
+                progressStats.lastLearnDate = today;
+            } else if (progressStats.lastLearnDate !== today) {
+                const diff = dayDiff(progressStats.lastLearnDate, today);
+                progressStats.streak = diff === 1 ? progressStats.streak + 1 : 1;
+                progressStats.lastLearnDate = today;
+            }
+
+            persistProgressAndRefresh();
+        }
+
+        function loadQuizStats() {
+            const quiz = progressStats.quiz && typeof progressStats.quiz === 'object' ? progressStats.quiz : {};
+            return {
+                correct: Math.max(0, Number(quiz.correct) || 0),
+                total: Math.max(0, Number(quiz.total) || 0)
+            };
+        }
+
         function saveQuizStats() {
-            sessionStorage.setItem(QUIZ_SCORE_KEY, JSON.stringify(quizStats));
+            progressStats.quiz = {
+                correct: Math.max(0, Number(quizStats.correct) || 0),
+                total: Math.max(0, Number(quizStats.total) || 0)
+            };
+            persistProgressAndRefresh();
+        }
+
+        function recordQuizCompletion(isCorrect, languageCode) {
+            const today = todayDateKey();
+            if (!progressStats.firstActivityDate) {
+                progressStats.firstActivityDate = today;
+            }
+            progressStats.lastActivityDate = today;
+            addProgressLanguage(languageCode);
+
+            quizStats.total += 1;
+            if (isCorrect) quizStats.correct += 1;
+            saveQuizStats();
+            renderQuizScore();
         }
 
         function renderQuizScore() {
@@ -2352,10 +2696,7 @@
                 if (!resp.ok) throw new Error('API error');
 
                 const data = await resp.json();
-                quizStats.total += 1;
-                if (data.correct) quizStats.correct += 1;
-                saveQuizStats();
-                renderQuizScore();
+                recordQuizCompletion(Boolean(data.correct), currentQuiz.language || langSelect.value);
                 showQuizResult(data);
             } catch (err) {
                 console.error(err);
@@ -2597,6 +2938,16 @@
         historyPanelCloseBtn.addEventListener('click', closeHistoryPanel);
         historyExportAnkiBtn.addEventListener('click', exportHistoryAsAnki);
         historyCopyAllBtn.addEventListener('click', copyAllHistoryToClipboard);
+        statsToggleBtn.addEventListener('click', openStatsModal);
+        statsModalCloseBtn.addEventListener('click', closeStatsModal);
+        statsModalEl.addEventListener('click', (e) => {
+            if (e.target === statsModalEl) closeStatsModal();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !statsModalEl.classList.contains('hidden')) {
+                closeStatsModal();
+            }
+        });
         historyClearBtn.addEventListener('click', () => {
             if (confirm('Clear all history?')) {
                 richHistory = [];
@@ -2610,6 +2961,7 @@
         });
 
         updateHistoryBadge();
+        renderProgressStats();
 
         function lockApp() {
             sentenceInput.disabled = true;
@@ -2634,10 +2986,26 @@
             passwordErrorEl.classList.add('hidden');
         }
 
+        function syncModalOpenState() {
+            const modalOpen = !passwordModalEl.classList.contains('hidden') || !statsModalEl.classList.contains('hidden');
+            document.body.classList.toggle('modal-open', modalOpen);
+        }
+
+        function openStatsModal() {
+            renderProgressStats();
+            statsModalEl.classList.remove('hidden');
+            syncModalOpenState();
+        }
+
+        function closeStatsModal() {
+            statsModalEl.classList.add('hidden');
+            syncModalOpenState();
+        }
+
         function openPasswordModal(message = '') {
             lockApp();
             passwordModalEl.classList.remove('hidden');
-            document.body.classList.add('modal-open');
+            syncModalOpenState();
             passwordInputEl.value = '';
             if (message) {
                 showPasswordError(message);
@@ -2649,7 +3017,7 @@
 
         function closePasswordModal() {
             passwordModalEl.classList.add('hidden');
-            document.body.classList.remove('modal-open');
+            syncModalOpenState();
             hidePasswordError();
         }
 
@@ -2885,6 +3253,7 @@
             if (defaultLang) selectLangPill(defaultLang);
             languagesLoaded = true;
             renderHistoryPanel();
+            renderProgressStats();
         }
 
         passwordFormEl.addEventListener('submit', async function(e) {
@@ -3088,21 +3457,20 @@
                     if (!resp.ok) throw new Error('API error');
                     const data = await resp.json();
                     const reqCtx = { target_language: langSelect.value, input_language: selectedInputLang, sentence: sentence };
+                    const successfulResults = Array.isArray(data.results) ? data.results.filter(item => item && item.result) : [];
 
                     // Render each result as a separate card
-                    data.results.forEach(item => {
-                        if (item.result) {
-                            renderResult(item.result, item.sentence, { ...reqCtx, sentence: item.sentence });
-                        }
-                        // Skip errors silently (or could show inline)
+                    successfulResults.forEach(item => {
+                        renderResult(item.result, item.sentence, { ...reqCtx, sentence: item.sentence });
                     });
 
                     saveSentenceToHistory(sentence);
                     // Add first result to rich history
-                    if (data.results.length && data.results[0].result) {
-                        const first = data.results[0];
+                    if (successfulResults.length) {
+                        const first = successfulResults[0];
                         addToRichHistory(sentence, first.result.translation, langSelect.value, first.result.pronunciation);
                     }
+                    recordLearnProgress(langSelect.value, successfulResults.length);
                     sentenceInput.value = '';
                     sentenceInput.style.height = 'auto';
                 } else {
@@ -3136,6 +3504,7 @@
                     renderResult(data, sentence, reqCtx);
                     saveSentenceToHistory(sentence);
                     addToRichHistory(sentence, data.translation, langSelect.value, data.pronunciation);
+                    recordLearnProgress(langSelect.value, 1);
                     sentenceInput.value = '';
                     sentenceInput.style.height = 'auto';
                 }
