@@ -1,8 +1,11 @@
 """Sentsei — Sentence-based language learning app."""
 import json
 import random
+import hashlib
+import time
 from typing import Optional
 from pathlib import Path
+from collections import OrderedDict
 from fastapi import FastAPI, HTTPException, Header
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -35,6 +38,35 @@ def deterministic_word_pronunciation(word: str, lang_code: str) -> Optional[str]
     return deterministic_pronunciation(word, lang_code)
 
 app = FastAPI()
+
+# --- In-memory LRU cache for translations ---
+CACHE_MAX = 500          # max entries
+CACHE_TTL = 3600 * 24    # 24h expiry
+_translation_cache: OrderedDict = OrderedDict()  # key -> (timestamp, result)
+
+
+def _cache_key(sentence: str, target: str, gender: str, formality: str) -> str:
+    raw = f"{sentence.strip().lower()}|{target}|{gender}|{formality}"
+    return hashlib.sha256(raw.encode()).hexdigest()
+
+
+def cache_get(key: str):
+    entry = _translation_cache.get(key)
+    if entry is None:
+        return None
+    ts, result = entry
+    if time.time() - ts > CACHE_TTL:
+        _translation_cache.pop(key, None)
+        return None
+    _translation_cache.move_to_end(key)
+    return result
+
+
+def cache_put(key: str, result: dict):
+    _translation_cache[key] = (time.time(), result)
+    if len(_translation_cache) > CACHE_MAX:
+        _translation_cache.popitem(last=False)
+
 
 APP_PASSWORD = "sentsei2026"
 OLLAMA_URL = "http://localhost:11434"
@@ -228,6 +260,14 @@ async def learn_sentence(
     if req.target_language not in SUPPORTED_LANGUAGES:
         raise HTTPException(400, "Unsupported language")
 
+    # Check cache first
+    gender = req.speaker_gender or "neutral"
+    formality = req.speaker_formality or "polite"
+    ck = _cache_key(req.sentence, req.target_language, gender, formality)
+    cached = cache_get(ck)
+    if cached:
+        return cached
+
     lang_name = SUPPORTED_LANGUAGES[req.target_language]
 
     lang_code = req.target_language
@@ -291,9 +331,7 @@ Respond with ONLY valid JSON (no markdown, no code fences) in this exact structu
   "native_expression": "How a native {lang_name} speaker would NATURALLY say this — MUST be a DIFFERENT sentence from the translation, not a rewording or repetition. Show a genuinely different way a native would express the same idea (different structure, idiom, or colloquial phrasing). Include pronunciation and a brief explanation. MUST be null if you cannot think of a meaningfully different expression."
 }}"""
 
-    # Inject speaker identity if provided
-    gender = req.speaker_gender or "neutral"
-    formality = req.speaker_formality or "polite"
+    # Inject speaker identity
     speaker_block = f"""
 SPEAKER IDENTITY:
 - Gender: {gender} — adjust pronouns, gendered words accordingly. For Japanese: use 僕/俺 for male, あたし for female, 私 for neutral. For Hebrew: adjust verb conjugation, adjectives, pronouns. For Spanish/Italian: adjust adjective agreement.
@@ -407,6 +445,9 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
         trans_core = translation.strip().rstrip("。.!！")
         if native_core == trans_core or native_core in trans_core or trans_core in native_core:
             result["native_expression"] = None
+
+    # Cache the result
+    cache_put(ck, result)
 
     return result
 

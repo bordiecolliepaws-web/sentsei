@@ -77,7 +77,7 @@ _Items for cron iterations to work through, in priority order._
 - [ ] **Multi-sentence input** — split paragraphs into individual sentences
 - [ ] **Reverse mode / Quiz** — see target language, type the English/Chinese
 - [ ] **Save/export** — Anki flashcard export, PDF, screenshot-friendly format
-- [ ] **Caching** — same sentence + same target = cached result, no repeat API call
+- [x] **Caching** ✅ 2026-02-14 — in-memory LRU cache (500 entries, 24h TTL), keyed by sentence+target+gender+formality
 - [ ] **Rate limiting** — prevent API hammering once past password
 - [ ] **Onboarding** — first-time "try this" example for new users
 - [ ] **Comparison mode** — one sentence → all languages side by side
