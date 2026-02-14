@@ -3095,6 +3095,7 @@
 
             card.innerHTML = `
                 <div class="result-main">
+                    <div class="result-source">"${original}"</div>
                     <div class="result-head">
                         <div class="result-translation">${data.translation}</div>
                         <button type="button" class="speak-btn" aria-label="Listen to pronunciation" data-lang="${langSelect.value}">
@@ -3114,7 +3115,6 @@
                         </button>
                     </div>
                     <div class="result-pronunciation">${data.pronunciation}</div>
-                    <div class="result-source">"${original}"</div>
                     <div class="result-literal">${data.literal}</div>
                     <div class="result-formality">${data.formality}</div>
                 </div>
