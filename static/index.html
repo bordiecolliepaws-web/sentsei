@@ -3989,5 +3989,65 @@
             await loadStories();
         };
     </script>
+
+    <!-- Feedback Button & Modal -->
+    <style>
+        .feedback-btn { position: fixed; bottom: 60px; right: 16px; z-index: 900; background: var(--surface2); border: 1px solid var(--border); border-radius: 999px; padding: 0.5rem 0.8rem; font-size: 0.8rem; color: var(--text-dim); cursor: pointer; transition: all 0.2s; }
+        .feedback-btn:hover { border-color: var(--accent); color: var(--text); }
+        .feedback-modal { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; padding: 1rem; }
+        .feedback-modal.open { display: flex; }
+        .feedback-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; max-width: 400px; width: 100%; }
+        .feedback-card h3 { margin-bottom: 0.5rem; }
+        .feedback-card textarea { width: 100%; min-height: 80px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 0.5rem; font-family: inherit; font-size: 0.85rem; resize: vertical; }
+        .feedback-card textarea:focus { outline: none; border-color: var(--accent); }
+        .feedback-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+        .feedback-actions button { flex: 1; padding: 0.5rem; border-radius: 8px; font-size: 0.85rem; cursor: pointer; border: 1px solid var(--border); }
+        .feedback-send { background: var(--accent); color: white; border-color: var(--accent) !important; }
+        .feedback-cancel { background: transparent; color: var(--text-dim); }
+    </style>
+    <button class="feedback-btn" id="feedback-btn">💬 Feedback</button>
+    <div class="feedback-modal" id="feedback-modal">
+        <div class="feedback-card">
+            <h3>💬 Send Feedback</h3>
+            <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:0.75rem;">Bug report, suggestion, or anything else</p>
+            <textarea id="feedback-text" placeholder="What's on your mind?"></textarea>
+            <div class="feedback-actions">
+                <button class="feedback-cancel" id="feedback-cancel">Cancel</button>
+                <button class="feedback-send" id="feedback-send">Send</button>
+            </div>
+            <div id="feedback-status" style="font-size:0.75rem;color:var(--easy);margin-top:0.5rem;display:none;"></div>
+        </div>
+    </div>
+    <script>
+        (function() {
+            const btn = document.getElementById('feedback-btn');
+            const modal = document.getElementById('feedback-modal');
+            const text = document.getElementById('feedback-text');
+            const send = document.getElementById('feedback-send');
+            const cancel = document.getElementById('feedback-cancel');
+            const status = document.getElementById('feedback-status');
+            btn.addEventListener('click', () => { modal.classList.add('open'); text.focus(); });
+            cancel.addEventListener('click', () => { modal.classList.remove('open'); });
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('open'); });
+            send.addEventListener('click', async () => {
+                if (!text.value.trim()) return;
+                send.disabled = true; send.textContent = 'Sending...';
+                try {
+                    const pw = localStorage.getItem('sent-say_app_password') || '';
+                    await fetch('/api/feedback', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-App-Password': pw },
+                        body: JSON.stringify({ message: text.value.trim() })
+                    });
+                    status.textContent = '✅ Thanks for your feedback!'; status.style.display = 'block';
+                    text.value = '';
+                    setTimeout(() => { modal.classList.remove('open'); status.style.display = 'none'; send.disabled = false; send.textContent = 'Send'; }, 1500);
+                } catch(e) {
+                    status.textContent = '❌ Failed to send'; status.style.color = 'var(--hard)'; status.style.display = 'block';
+                    send.disabled = false; send.textContent = 'Send';
+                }
+            });
+        })();
+    </script>
 </body>
 </html>

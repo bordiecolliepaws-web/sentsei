@@ -377,6 +377,20 @@ async def learn_sentence(
     if not req.sentence or not req.sentence.strip():
         raise HTTPException(400, "Sentence cannot be empty")
 
+    # Prompt injection protection
+    MAX_INPUT_LEN = 500
+    if len(req.sentence) > MAX_INPUT_LEN:
+        raise HTTPException(400, f"Input too long (max {MAX_INPUT_LEN} characters)")
+    injection_patterns = [
+        "ignore previous", "ignore above", "disregard", "forget your instructions",
+        "you are now", "new instructions", "system prompt", "override",
+        "```", "---", "###", "SYSTEM:", "USER:", "ASSISTANT:",
+    ]
+    lower_input = req.sentence.lower()
+    for pattern in injection_patterns:
+        if pattern.lower() in lower_input:
+            raise HTTPException(400, "Invalid input")
+
     if req.target_language not in SUPPORTED_LANGUAGES:
         raise HTTPException(400, "Unsupported language")
 
@@ -618,12 +632,17 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
 
         for item in result.get("breakdown", []):
             meaning = item.get("meaning", "")
-            if _mostly_cjk(meaning):
-                # Try to extract English part from patterns like "word (English meaning)"
+            # Strip any CJK characters from meanings when source is English
+            # e.g. "一杯 (a cup of)" → "a cup of"
+            if any('\u4e00' <= c <= '\u9fff' for c in meaning):
                 import re as _re2
-                en_match = _re2.search(r'[A-Za-z][A-Za-z\s,\-]+', meaning)
-                if en_match:
-                    item["meaning"] = en_match.group().strip()
+                # Remove CJK chars and clean up
+                cleaned = _re2.sub(r'[\u4e00-\u9fff]+', '', meaning).strip()
+                # Remove leading/trailing parens and whitespace
+                cleaned = _re2.sub(r'^\(?\s*', '', cleaned)
+                cleaned = _re2.sub(r'\s*\)?\s*$', '', cleaned)
+                if cleaned:
+                    item["meaning"] = cleaned
 
     # Ensure all Chinese text is Traditional Chinese (Taiwan)
     result = ensure_traditional_chinese(result)
@@ -1209,5 +1228,35 @@ async def get_story(story_id: str):
     if not story:
         raise HTTPException(404, "Story not found")
     return story
+
+# --- Feedback ---
+FEEDBACK_FILE = Path(__file__).parent / "feedback.jsonl"
+
+class FeedbackRequest(BaseModel):
+    message: str
+    sentence: Optional[str] = None
+    translation: Optional[str] = None
+    target_language: Optional[str] = None
+
+@app.post("/api/feedback")
+async def submit_feedback(req: FeedbackRequest, x_app_password: Optional[str] = Header(default=None)):
+    if x_app_password != APP_PASSWORD:
+        raise HTTPException(401, "Unauthorized")
+    if not req.message or not req.message.strip():
+        raise HTTPException(400, "Feedback cannot be empty")
+    if len(req.message) > 1000:
+        raise HTTPException(400, "Feedback too long")
+
+    import datetime
+    entry = {
+        "timestamp": datetime.datetime.utcnow().isoformat(),
+        "message": req.message.strip(),
+        "sentence": req.sentence,
+        "translation": req.translation,
+        "target_language": req.target_language,
+    }
+    with open(FEEDBACK_FILE, "a") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    return {"ok": True}
 
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
