@@ -1496,7 +1496,7 @@
                 </div>
             </div>
             <div class="sentence-input">
-                <textarea id="sentence" placeholder="Type a sentence in English or Chinese..." rows="1"></textarea>
+                <textarea id="sentence" placeholder="Type a sentence or paragraph in English or Chinese..." rows="1"></textarea>
                 <div class="sentence-input-actions">
                     <button id="learn-btn" onclick="learn()">Learn</button>
                     <button id="surprise-btn" class="surprise-btn" onclick="surpriseMe()">🎲 Surprise me</button>
@@ -2211,6 +2211,12 @@
 
         const LEARN_TIMEOUT_MS = 45000;
 
+        function _hasMultipleSentences(text) {
+            // Split on sentence terminators; if >1 non-empty part, it's multi
+            const parts = text.split(/(?<=[.!?。！？])\s*/).filter(s => s.trim());
+            return parts.length > 1;
+        }
+
         async function learn() {
             if (!ensurePassword()) return;
 
@@ -2221,45 +2227,101 @@
 
             learnBtn.disabled = true;
             setRandomLoadingTip();
-            loadingMessageEl.textContent = 'Translating...';
             loadingEl.classList.remove('hidden');
             startLoadingTimer();
 
+            const isMulti = _hasMultipleSentences(sentence);
+            if (isMulti) {
+                loadingMessageEl.textContent = 'Translating multiple sentences...';
+            } else {
+                loadingMessageEl.textContent = 'Translating...';
+            }
+
             currentAbortController = new AbortController();
-            const timeoutId = setTimeout(() => currentAbortController.abort(), LEARN_TIMEOUT_MS);
+            // Longer timeout for multi-sentence (2 min per sentence, max 10)
+            const timeoutMs = isMulti ? Math.min(sentence.split(/(?<=[.!?。！？])\s*/).filter(s=>s.trim()).length, 10) * 120000 : LEARN_TIMEOUT_MS;
+            const timeoutId = setTimeout(() => currentAbortController.abort(), timeoutMs);
 
             try {
-                const resp = await fetch('/api/learn', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-App-Password': appPassword
-                    },
-                    body: JSON.stringify({
-                        sentence: sentence,
-                        target_language: langSelect.value,
-                        speaker_gender: selectedGender,
-                        speaker_formality: selectedFormality
-                    }),
-                    signal: currentAbortController.signal
-                });
+                if (isMulti) {
+                    // Multi-sentence path
+                    const resp = await fetch('/api/learn-multi', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-App-Password': appPassword
+                        },
+                        body: JSON.stringify({
+                            sentences: sentence,
+                            target_language: langSelect.value,
+                            speaker_gender: selectedGender,
+                            speaker_formality: selectedFormality
+                        }),
+                        signal: currentAbortController.signal
+                    });
 
-                clearTimeout(timeoutId);
+                    clearTimeout(timeoutId);
 
-                if (resp.status === 401) {
-                    localStorage.removeItem(PASSWORD_STORAGE_KEY);
-                    appPassword = '';
-                    openPasswordModal('Session expired. Enter password again.');
-                    throw new Error('Unauthorized');
+                    if (resp.status === 401) {
+                        localStorage.removeItem(PASSWORD_STORAGE_KEY);
+                        appPassword = '';
+                        openPasswordModal('Session expired. Enter password again.');
+                        throw new Error('Unauthorized');
+                    }
+                    if (!resp.ok) throw new Error('API error');
+                    const data = await resp.json();
+                    const reqCtx = { target_language: langSelect.value, sentence: sentence };
+
+                    // Render each result as a separate card
+                    data.results.forEach(item => {
+                        if (item.result) {
+                            renderResult(item.result, item.sentence, { ...reqCtx, sentence: item.sentence });
+                        }
+                        // Skip errors silently (or could show inline)
+                    });
+
+                    saveSentenceToHistory(sentence);
+                    // Add first result to rich history
+                    if (data.results.length && data.results[0].result) {
+                        const first = data.results[0];
+                        addToRichHistory(sentence, first.result.translation, langSelect.value, first.result.pronunciation);
+                    }
+                    sentenceInput.value = '';
+                    sentenceInput.style.height = 'auto';
+                } else {
+                    // Single sentence path (original)
+                    const resp = await fetch('/api/learn', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-App-Password': appPassword
+                        },
+                        body: JSON.stringify({
+                            sentence: sentence,
+                            target_language: langSelect.value,
+                            speaker_gender: selectedGender,
+                            speaker_formality: selectedFormality
+                        }),
+                        signal: currentAbortController.signal
+                    });
+
+                    clearTimeout(timeoutId);
+
+                    if (resp.status === 401) {
+                        localStorage.removeItem(PASSWORD_STORAGE_KEY);
+                        appPassword = '';
+                        openPasswordModal('Session expired. Enter password again.');
+                        throw new Error('Unauthorized');
+                    }
+                    if (!resp.ok) throw new Error('API error');
+                    const data = await resp.json();
+                    const reqCtx = { target_language: langSelect.value, sentence: sentence };
+                    renderResult(data, sentence, reqCtx);
+                    saveSentenceToHistory(sentence);
+                    addToRichHistory(sentence, data.translation, langSelect.value, data.pronunciation);
+                    sentenceInput.value = '';
+                    sentenceInput.style.height = 'auto';
                 }
-                if (!resp.ok) throw new Error('API error');
-                const data = await resp.json();
-                const reqCtx = { target_language: langSelect.value, sentence: sentence };
-                renderResult(data, sentence, reqCtx);
-                saveSentenceToHistory(sentence);
-                addToRichHistory(sentence, data.translation, langSelect.value, data.pronunciation);
-                sentenceInput.value = '';
-                sentenceInput.style.height = 'auto';
             } catch (err) {
                 clearTimeout(timeoutId);
                 console.error(err);

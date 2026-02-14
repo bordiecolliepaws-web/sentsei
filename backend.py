@@ -1,9 +1,10 @@
 """Sentsei — Sentence-based language learning app."""
 import json
+import re as _re
 import random
 import hashlib
 import time
-from typing import Optional
+from typing import Optional, List
 from pathlib import Path
 from collections import OrderedDict, defaultdict
 from fastapi import FastAPI, HTTPException, Header, Request
@@ -490,6 +491,67 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
     cache_put(ck, result)
 
     return result
+
+
+# --- Multi-sentence splitter ---
+
+def _split_sentences(text: str) -> List[str]:
+    """Split text into individual sentences on common terminators."""
+    # Split on sentence-ending punctuation followed by space or end
+    parts = _re.split(r'(?<=[.!?。！？])\s*', text.strip())
+    # Filter empty strings, strip whitespace
+    return [s.strip() for s in parts if s.strip()]
+
+
+class MultiSentenceRequest(BaseModel):
+    sentences: str  # raw paragraph text
+    target_language: str
+    speaker_gender: Optional[str] = None
+    speaker_formality: Optional[str] = None
+
+
+@app.post("/api/learn-multi")
+async def learn_multi(
+    request: Request,
+    req: MultiSentenceRequest,
+    x_app_password: Optional[str] = Header(default=None),
+):
+    """Split input into sentences and translate each one."""
+    if x_app_password != APP_PASSWORD:
+        raise HTTPException(401, "Unauthorized")
+
+    parts = _split_sentences(req.sentences)
+    if not parts:
+        raise HTTPException(400, "No sentences detected")
+
+    if len(parts) == 1:
+        # Single sentence — delegate to normal endpoint
+        single_req = SentenceRequest(
+            sentence=parts[0],
+            target_language=req.target_language,
+            speaker_gender=req.speaker_gender,
+            speaker_formality=req.speaker_formality,
+        )
+        result = await learn_sentence(request, single_req, x_app_password)
+        return {"mode": "single", "results": [{"sentence": parts[0], "result": result}]}
+
+    # Multiple sentences — process sequentially (respects rate limits)
+    results = []
+    for sentence in parts[:10]:  # cap at 10 sentences
+        single_req = SentenceRequest(
+            sentence=sentence,
+            target_language=req.target_language,
+            speaker_gender=req.speaker_gender,
+            speaker_formality=req.speaker_formality,
+        )
+        try:
+            result = await learn_sentence(request, single_req, x_app_password)
+            results.append({"sentence": sentence, "result": result})
+        except HTTPException as e:
+            results.append({"sentence": sentence, "error": e.detail})
+
+    return {"mode": "multi", "results": results}
+
 
 class WordDetailRequest(BaseModel):
     word: str
