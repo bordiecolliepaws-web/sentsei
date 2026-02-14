@@ -435,8 +435,8 @@ CRITICAL RULES:
 
 Respond with ONLY valid JSON (no markdown, no code fences) in this exact structure:
 {{
-  "translation": "the full sentence in {lang_name} script (e.g. for Korean use 한글, for Japanese use 日本語, etc.)",
-  "pronunciation": "romanized pronunciation guide using standard systems: Japanese=Hepburn romaji (e.g. oshiete kudasai, NOT OLLOW-te), Chinese=pinyin with tones, Korean=Revised Romanization, Hebrew=standard transliteration, Greek=standard transliteration",
+  "translation": "DIRECT translation — stay close to the structure and meaning of the input sentence. Translate faithfully in {lang_name} script (e.g. for Korean use 한글, for Japanese use 日本語, etc.)",
+  "pronunciation": "FULL romanized pronunciation of the translation using standard systems: Japanese=Hepburn romaji (e.g. oshiete kudasai, NOT OLLOW-te), Chinese=pinyin with tones, Korean=Revised Romanization, Hebrew=standard transliteration, Greek=standard transliteration",
   "literal": "word-by-word literal translation back to the detected source language",
   "breakdown": [
     {{
@@ -453,7 +453,7 @@ Respond with ONLY valid JSON (no markdown, no code fences) in this exact structu
   "cultural_note": "optional cultural context or usage tip (in the detected source language), null if none",
   "formality": "casual|polite|formal — what register this translation uses",
   "alternative": "an alternative way to say this (different formality or phrasing), or null",
-  "native_expression": "ALWAYS provide this unless the translation is already perfectly natural. Show how a native {lang_name} speaker would actually say this in daily life — use colloquial phrasing, idioms, or slang. Must be a DIFFERENT sentence from the translation (different structure or wording). Format: 'native sentence (pronunciation) — EXPLANATION IN {source_lang_short}'. When using {lang_name} words in the explanation, add their meaning and pronunciation in parentheses, e.g. '好喝 (hǎo hē, tasty to drink)'. THE EXPLANATION AFTER THE DASH MUST BE IN {source_lang_short}, NOT in {lang_name}. Only null if the translation is already exactly how a native would say it."
+  "native_expression": "ALWAYS provide this. This is how a native {lang_name} speaker would NATURALLY rephrase this — more colloquial, idiomatic, or restructured compared to the direct translation above. Format: 'native sentence | FULL PRONUNCIATION | EXPLANATION IN {source_lang_short}'. Example for Chinese: '這咖啡也太好喝了吧 | zhè kāfēi yě tài hǎo hē le ba | Uses 也太...了吧 (yě tài...le ba), a common exclamation pattern meaning \"this is way too [good]\"'. When mentioning {lang_name} words in the explanation, always add pronunciation and meaning in parentheses. Only null if the direct translation is already exactly how a native would say it."
 }}"""
 
     # Inject speaker identity
