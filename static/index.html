@@ -437,7 +437,31 @@
             flex-shrink: 0;
         }
 
-        .history-panel-clear button {
+        .history-panel-export {
+            display: flex;
+            gap: 0.45rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .history-panel-export .toggle-pill {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-glow);
+            padding: 0.45rem 0.6rem;
+            font-size: 0.74rem;
+        }
+
+        .history-panel-export .toggle-pill:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .history-panel-clear #history-clear-btn {
             width: 100%;
             background: transparent;
             color: var(--text-dim);
@@ -450,7 +474,7 @@
             font-family: inherit;
         }
 
-        .history-panel-clear button:hover {
+        .history-panel-clear #history-clear-btn:hover {
             border-color: #f87171;
             color: #f87171;
         }
@@ -1863,6 +1887,10 @@
             <div class="history-panel-empty">No sentences yet. Start learning!</div>
         </div>
         <div class="history-panel-clear">
+            <div class="history-panel-export">
+                <button id="history-export-anki-btn" type="button" class="toggle-pill">📥 Anki</button>
+                <button id="history-copy-all-btn" type="button" class="toggle-pill">📋 Copy All</button>
+            </div>
             <button id="history-clear-btn">Clear All History</button>
         </div>
     </div>
@@ -1965,6 +1993,8 @@
         const historyPanelListEl = document.getElementById('history-panel-list');
         const historyOverlayEl = document.getElementById('history-overlay');
         const historyClearBtn = document.getElementById('history-clear-btn');
+        const historyExportAnkiBtn = document.getElementById('history-export-anki-btn');
+        const historyCopyAllBtn = document.getElementById('history-copy-all-btn');
         const historyPanelCloseBtn = document.getElementById('history-panel-close');
         const quizToggleBtn = document.getElementById('quiz-toggle');
         const quizAreaEl = document.getElementById('quiz-area');
@@ -2287,6 +2317,113 @@
             updateHistoryBadge();
         }
 
+        function getLanguageNamesMap() {
+            const langNames = {};
+            langSelect.querySelectorAll('option').forEach(o => { langNames[o.value] = o.textContent; });
+            return langNames;
+        }
+
+        function buildHistoryCopyText() {
+            const langNames = getLanguageNamesMap();
+            return richHistory.map((entry, idx) => {
+                const langCode = entry.lang || '';
+                const langName = langNames[langCode] || langCode || 'Unknown';
+                const langLine = langCode ? `${langName} (${langCode})` : langName;
+                const timeLine = entry.ts ? new Date(entry.ts).toLocaleString() : '';
+                const lines = [
+                    `${idx + 1}. ${entry.translation || ''}`,
+                    `Original: ${entry.sentence || ''}`,
+                    `Pronunciation: ${entry.pronunciation || '—'}`,
+                    `Language: ${langLine}`
+                ];
+                if (timeLine) lines.push(`Saved: ${timeLine}`);
+                return lines.join('\n');
+            }).join('\n\n');
+        }
+
+        function buildHistoryAnkiPayload() {
+            return richHistory.map(entry => ({
+                sentence: entry.sentence || '',
+                translation: entry.translation || '',
+                pronunciation: entry.pronunciation || '',
+                target: entry.lang || '',
+                timestamp: entry.ts ? new Date(entry.ts).toISOString() : ''
+            }));
+        }
+
+        async function exportHistoryAsAnki() {
+            if (!ensurePassword()) return;
+            if (richHistory.length === 0) {
+                alert('No history to export yet.');
+                return;
+            }
+
+            const originalLabel = historyExportAnkiBtn.textContent;
+            historyExportAnkiBtn.disabled = true;
+            historyExportAnkiBtn.textContent = 'Exporting...';
+
+            try {
+                const resp = await fetch('/api/export-anki', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-App-Password': appPassword
+                    },
+                    body: JSON.stringify(buildHistoryAnkiPayload())
+                });
+
+                if (resp.status === 401) {
+                    localStorage.removeItem(PASSWORD_STORAGE_KEY);
+                    appPassword = '';
+                    openPasswordModal('Session expired. Enter password again.');
+                    return;
+                }
+                if (!resp.ok) throw new Error('API error');
+
+                const blob = await resp.blob();
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'sentsei-flashcards.txt';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                historyExportAnkiBtn.textContent = 'Done';
+            } catch (err) {
+                console.error(err);
+                alert('Could not export Anki file.');
+                historyExportAnkiBtn.textContent = 'Failed';
+            } finally {
+                setTimeout(() => {
+                    historyExportAnkiBtn.textContent = originalLabel;
+                    historyExportAnkiBtn.disabled = false;
+                }, 1000);
+            }
+        }
+
+        async function copyAllHistoryToClipboard() {
+            if (richHistory.length === 0) {
+                alert('No history to copy yet.');
+                return;
+            }
+
+            const originalLabel = historyCopyAllBtn.textContent;
+            historyCopyAllBtn.disabled = true;
+            try {
+                const copied = await copyTextToClipboard(buildHistoryCopyText());
+                historyCopyAllBtn.textContent = copied ? 'Copied' : 'Failed';
+            } catch (err) {
+                console.error(err);
+                historyCopyAllBtn.textContent = 'Failed';
+            } finally {
+                setTimeout(() => {
+                    historyCopyAllBtn.textContent = originalLabel;
+                    historyCopyAllBtn.disabled = false;
+                }, 1000);
+            }
+        }
+
         function toggleHistoryPanel() {
             historyPanelOpen = !historyPanelOpen;
             historyPanelEl.classList.toggle('open', historyPanelOpen);
@@ -2310,8 +2447,7 @@
                 historyPanelListEl.innerHTML = '<div class="history-panel-empty">No sentences yet. Start learning!</div>';
                 return;
             }
-            const langNames = {};
-            langSelect.querySelectorAll('option').forEach(o => { langNames[o.value] = o.textContent; });
+            const langNames = getLanguageNamesMap();
 
             historyPanelListEl.innerHTML = richHistory.map((entry, idx) => {
                 const flag = LANG_FLAGS[entry.lang] || '🌐';
@@ -2344,6 +2480,8 @@
         historyToggleBtn.addEventListener('click', toggleHistoryPanel);
         historyOverlayEl.addEventListener('click', closeHistoryPanel);
         historyPanelCloseBtn.addEventListener('click', closeHistoryPanel);
+        historyExportAnkiBtn.addEventListener('click', exportHistoryAsAnki);
+        historyCopyAllBtn.addEventListener('click', copyAllHistoryToClipboard);
         historyClearBtn.addEventListener('click', () => {
             if (confirm('Clear all history?')) {
                 richHistory = [];

@@ -7,7 +7,7 @@ import time
 from typing import Optional, List
 from pathlib import Path
 from collections import OrderedDict, defaultdict
-from fastapi import FastAPI, HTTPException, Header, Request
+from fastapi import FastAPI, HTTPException, Header, Request, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import httpx
@@ -323,6 +323,28 @@ class SentenceRequest(BaseModel):
     input_language: Optional[str] = "auto"
     speaker_gender: Optional[str] = None
     speaker_formality: Optional[str] = None
+
+
+class AnkiExportEntry(BaseModel):
+    sentence: str
+    translation: str
+    pronunciation: Optional[str] = None
+    target: Optional[str] = None
+    lang: Optional[str] = None
+    timestamp: Optional[str] = None
+
+
+def _sanitize_tsv_cell(value: Optional[str]) -> str:
+    """Normalize tabs/newlines so each card remains a single TSV row."""
+    text = (value or "")
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    text = text.replace("\t", " ").replace("\n", " ")
+    return text.strip()
+
+
+def _anki_language_label(code: str) -> str:
+    name = SUPPORTED_LANGUAGES.get(code, code)
+    return f"{name} ({code})" if name != code else code
 
 @app.post("/api/learn")
 async def learn_sentence(
@@ -716,6 +738,40 @@ Rules:
 @app.get("/api/languages")
 async def get_languages():
     return SUPPORTED_LANGUAGES
+
+
+@app.post("/api/export-anki")
+async def export_anki(
+    entries: List[AnkiExportEntry],
+    x_app_password: Optional[str] = Header(default=None),
+):
+    if x_app_password != APP_PASSWORD:
+        raise HTTPException(401, "Unauthorized")
+
+    rows: List[str] = []
+    for entry in entries:
+        front = _sanitize_tsv_cell(entry.sentence)
+        if not front:
+            continue
+
+        translation = _sanitize_tsv_cell(entry.translation)
+        pronunciation = _sanitize_tsv_cell(entry.pronunciation)
+        lang_code = (entry.target or entry.lang or "").strip()
+
+        back_parts: List[str] = []
+        if translation:
+            back_parts.append(translation)
+        if pronunciation:
+            back_parts.append(f"Pronunciation: {pronunciation}")
+        if lang_code:
+            back_parts.append(f"Language: {_anki_language_label(lang_code)}")
+
+        back = _sanitize_tsv_cell("<br>".join(back_parts))
+        rows.append(f"{front}\t{back}")
+
+    content = "\n".join(rows)
+    headers = {"Content-Disposition": 'attachment; filename="sentsei-flashcards.txt"'}
+    return Response(content=content, media_type="text/tab-separated-values", headers=headers)
 
 @app.get("/api/surprise")
 async def get_surprise_sentence(lang: str):
