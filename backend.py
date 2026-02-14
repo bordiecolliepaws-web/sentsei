@@ -126,6 +126,8 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
 
     if lang_code == "zh":
         system_msg = f"You are a Taiwanese Chinese (繁體中文/台灣用法) language teacher. You translate into Traditional Chinese as spoken in Taiwan. NEVER use mainland Chinese phrasing or simplified characters. Think like a native Taiwanese speaker. Always respond with valid JSON only.\n{taiwan_chinese_rules}"
+    elif input_is_chinese and lang_code == "en":
+        system_msg = f"You are an English language teacher helping Chinese speakers learn English. The user writes in Chinese and you translate into ENGLISH. The 'translation' field MUST be in English. The 'pronunciation' field should be English pronunciation guide. The 'word' fields in breakdown MUST be English words. All 'meaning', 'grammar_notes', 'note', and 'cultural_note' fields must be in 繁體中文 (Traditional Chinese, Taiwan usage). The 'native_expression' field should show how a native English speaker would naturally say it in English, with 繁體中文 explanation. Always respond with valid JSON only.\n{taiwan_chinese_rules}"
     elif input_is_chinese:
         system_msg = f"You are a {lang_name} language teacher. You ONLY output {lang_name} translations. You NEVER translate into Chinese unless the target language is Chinese. When the target is Korean, you write in 한국어. When Japanese, you write in 日本語. All Chinese explanations must use Traditional Chinese (繁體中文) with Taiwan usage (台灣用法). Always respond with valid JSON only.\n{taiwan_chinese_rules}"
     else:
