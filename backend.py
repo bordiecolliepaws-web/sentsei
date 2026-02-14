@@ -477,7 +477,7 @@ Respond with ONLY valid JSON (no markdown, no code fences) in this exact structu
     speaker_block = f"""
 SPEAKER IDENTITY:
 - Gender: {gender} — adjust pronouns, gendered words accordingly. For Japanese: use 僕/俺 for male, あたし for female, 私 for neutral. For Hebrew: adjust verb conjugation, adjectives, pronouns. For Spanish/Italian: adjust adjective agreement.
-- Formality: {formality} — use appropriate register. For Korean: casual=반말, polite=존댓말, formal=격식체. For Japanese: casual=タメ口, polite=です/ます, formal=敬語.
+- Formality: {formality} — use appropriate register. For Korean: casual=반말, polite=존댓말, formal=격식체. For Japanese: casual=タメ口, polite=です/ます, formal=敬語. For Chinese: casual=street/口語 (e.g. 老闆買單, 我要吃拉麵), polite=standard (e.g. 請問可以結帳嗎), formal=written/公文. IMPORTANT: If casual, translate like how a young Taiwanese person would actually say it in daily life — short, direct, colloquial. Do NOT use 請問/可以...嗎 patterns for casual speech.
 The "formality" field in the response MUST be "{formality}".
 """
     prompt = prompt + "\n" + speaker_block
@@ -506,7 +506,10 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
     explanation_lang_instruction = f"CRITICAL: ALL explanations (meaning, grammar_notes, note, cultural_note) MUST be written in {source_lang_short}. Do NOT write explanations in any other language."
 
     if lang_code == "zh":
-        system_msg = f"You are a Taiwanese Chinese (繁體中文/台灣用法) language teacher. You translate into Traditional Chinese as spoken in Taiwan. NEVER use mainland Chinese phrasing or simplified characters. Think like a native Taiwanese speaker. {explanation_lang_instruction} Always respond with valid JSON only.\n{taiwan_chinese_rules}"
+        casual_hint = ""
+        if formality == "casual":
+            casual_hint = " For CASUAL register: translate like a young Taiwanese person talking to friends or at a local shop. Use 口語/street Taiwanese Mandarin. Examples: 'Can I get the bill?' → '老闆，買單！' or '結帳！', NOT '請問可以開帳單嗎'. 'I want to eat ramen' → '我想吃拉麵' NOT '我想要品嚐拉麵'. Keep it short, direct, natural."
+        system_msg = f"You are a Taiwanese Chinese (繁體中文/台灣用法) language teacher. You translate into Traditional Chinese as spoken in Taiwan. NEVER use mainland Chinese phrasing or simplified characters. Think like a native Taiwanese speaker.{casual_hint} {explanation_lang_instruction} Always respond with valid JSON only.\n{taiwan_chinese_rules}"
     elif input_is_chinese and lang_code == "en":
         system_msg = f"You are an English language teacher helping Chinese speakers learn English. The user writes in Chinese and you translate into ENGLISH. The 'translation' field MUST be in English. The 'pronunciation' field should be English pronunciation guide. The 'word' fields in breakdown MUST be English words. {explanation_lang_instruction} The 'native_expression' field should show how a native English speaker would naturally say it in English, with 繁體中文 explanation. Always respond with valid JSON only.\n{taiwan_chinese_rules}"
     elif input_is_chinese:

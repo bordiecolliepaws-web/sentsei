@@ -59,24 +59,7 @@
             -webkit-text-fill-color: transparent;
         }
 
-        .stats-btn {
-            background: var(--surface2);
-            color: var(--accent);
-            border: 1px solid var(--accent);
-            border-radius: 99px;
-            padding: 0.3rem 0.62rem;
-            font-size: 0.74rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-            white-space: nowrap;
-        }
-
-        .stats-btn:hover {
-            background: var(--accent-glow);
-            color: var(--text);
-        }
+        .stats-btn { display: none; }
 
         header p {
             color: var(--text-dim);
@@ -319,41 +302,8 @@
         }
 
         /* History Panel */
-        .history-toggle-btn {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 25;
-            background: var(--surface);
-            color: var(--text-dim);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 0.5rem 0.75rem;
-            font-size: 0.82rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-family: inherit;
-        }
-
-        .history-toggle-btn:hover {
-            border-color: var(--accent);
-            color: var(--text);
-        }
-
-        .history-toggle-btn .badge {
-            background: var(--accent);
-            color: white;
-            font-size: 0.65rem;
-            font-weight: 700;
-            border-radius: 99px;
-            padding: 0.1rem 0.4rem;
-            min-width: 1.1rem;
-            text-align: center;
-        }
+        .history-toggle-btn { display: none !important; }
+        .history-toggle-btn .badge { display: none; }
 
         .history-panel {
             position: fixed;
@@ -522,48 +472,133 @@
             pointer-events: auto;
         }
 
-        /* Stories + Quiz actions */
-        .header-left-actions {
+        /* Stories + Quiz actions (legacy classes kept for JS refs) */
+        .header-left-actions { display: none; }
+        .stories-toggle-btn,
+        .quiz-toggle-btn { display: none; }
+        .stories-toggle-btn .badge { display: none; }
+
+        /* Hamburger menu button */
+        .hamburger-btn {
             position: fixed;
             top: 1rem;
-            left: 1rem;
-            z-index: 25;
-            display: flex;
-            align-items: center;
-            gap: 0.45rem;
-        }
-
-        .stories-toggle-btn,
-        .quiz-toggle-btn {
+            right: 1rem;
+            z-index: 60;
             background: var(--surface);
             color: var(--text-dim);
             border: 1px solid var(--border);
             border-radius: 10px;
-            padding: 0.5rem 0.75rem;
-            font-size: 0.82rem;
-            font-weight: 500;
+            width: 42px;
+            height: 42px;
+            font-size: 1.3rem;
             cursor: pointer;
             transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 0.4rem;
+            justify-content: center;
             font-family: inherit;
-            white-space: nowrap;
         }
-
-        .stories-toggle-btn:hover,
-        .quiz-toggle-btn:hover {
+        .hamburger-btn:hover {
             border-color: var(--accent);
             color: var(--text);
         }
-
-        .quiz-toggle-btn.active {
-            border-color: var(--accent);
-            color: var(--accent);
-            background: var(--accent-glow);
+        .hamburger-btn .hamburger-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--accent);
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 700;
+            border-radius: 99px;
+            padding: 0.05rem 0.35rem;
+            min-width: 1rem;
+            text-align: center;
+            line-height: 1.3;
         }
 
-        .stories-toggle-btn .badge {
+        /* Side menu overlay + panel */
+        .side-menu-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(6, 6, 10, 0.55);
+            z-index: 69;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .side-menu-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .side-menu {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            z-index: 70;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+        }
+        .side-menu.open {
+            transform: translateX(0);
+        }
+        .side-menu-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 1.2rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .side-menu-header h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+        .side-menu-close {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            line-height: 1;
+        }
+        .side-menu-close:hover { color: var(--text); }
+        .side-menu-items {
+            flex: 1;
+            padding: 0.5rem 0;
+        }
+        .side-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 1rem 1.4rem;
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: var(--text);
+            cursor: pointer;
+            transition: background 0.15s;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+        }
+        .side-menu-item:hover {
+            background: var(--surface2);
+        }
+        .side-menu-item .menu-icon {
+            font-size: 1.25rem;
+            width: 1.6rem;
+            text-align: center;
+        }
+        .side-menu-item .menu-badge {
             background: var(--accent);
             color: white;
             font-size: 0.65rem;
@@ -572,6 +607,11 @@
             padding: 0.1rem 0.4rem;
             min-width: 1.1rem;
             text-align: center;
+            margin-left: auto;
+        }
+        .side-menu-item.active {
+            color: var(--accent);
+            background: var(--accent-glow);
         }
 
         .stories-overlay {
@@ -1008,28 +1048,6 @@
 
         /* Mobile: bottom drawer instead of side panel */
         @media (max-width: 600px) {
-            .history-toggle-btn {
-                top: auto;
-                bottom: 1rem;
-                right: 1rem;
-                border-radius: 99px;
-                padding: 0.6rem 0.8rem;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-            }
-
-            .header-left-actions {
-                top: auto;
-                bottom: 1rem;
-                left: 1rem;
-                gap: 0.42rem;
-            }
-
-            .stories-toggle-btn,
-            .quiz-toggle-btn {
-                border-radius: 99px;
-                padding: 0.6rem 0.8rem;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-            }
 
             .quiz-header {
                 flex-direction: column;
@@ -2071,6 +2089,34 @@
             📖 Stories <span id="stories-badge" class="badge">0</span>
         </button>
         <button id="quiz-toggle" class="quiz-toggle-btn" aria-label="Toggle quiz mode">🧠 Quiz</button>
+    </div>
+
+    <!-- Hamburger Menu -->
+    <button id="hamburger-btn" class="hamburger-btn" aria-label="Open menu">
+        ☰
+        <span id="hamburger-badge" class="hamburger-badge" style="display:none">0</span>
+    </button>
+    <div id="side-menu-overlay" class="side-menu-overlay"></div>
+    <div id="side-menu" class="side-menu">
+        <div class="side-menu-header">
+            <h3>Menu</h3>
+            <button id="side-menu-close" class="side-menu-close" aria-label="Close menu">✕</button>
+        </div>
+        <div class="side-menu-items">
+            <button class="side-menu-item" id="menu-history">
+                <span class="menu-icon">📜</span> History
+                <span id="menu-history-badge" class="menu-badge" style="display:none">0</span>
+            </button>
+            <button class="side-menu-item" id="menu-quiz">
+                <span class="menu-icon">🧠</span> Quiz
+            </button>
+            <button class="side-menu-item" id="menu-stories">
+                <span class="menu-icon">📖</span> Stories
+            </button>
+            <button class="side-menu-item" id="menu-stats">
+                <span class="menu-icon">📊</span> Stats
+            </button>
+        </div>
     </div>
 
     <!-- Stories Panel -->
@@ -3997,6 +4043,57 @@
         loadLanguages = async function() {
             await origLoadLanguages();
             await loadStories();
+        };
+
+        // === Hamburger Side Menu ===
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const hamburgerBadge = document.getElementById('hamburger-badge');
+        const sideMenuEl = document.getElementById('side-menu');
+        const sideMenuOverlay = document.getElementById('side-menu-overlay');
+        const sideMenuClose = document.getElementById('side-menu-close');
+        const menuHistoryBadge = document.getElementById('menu-history-badge');
+
+        function openSideMenu() {
+            sideMenuEl.classList.add('open');
+            sideMenuOverlay.classList.add('open');
+            // Update quiz active state
+            document.getElementById('menu-quiz').classList.toggle('active', quizActive);
+        }
+        function closeSideMenu() {
+            sideMenuEl.classList.remove('open');
+            sideMenuOverlay.classList.remove('open');
+        }
+
+        hamburgerBtn.addEventListener('click', openSideMenu);
+        sideMenuOverlay.addEventListener('click', closeSideMenu);
+        sideMenuClose.addEventListener('click', closeSideMenu);
+
+        document.getElementById('menu-history').addEventListener('click', () => {
+            closeSideMenu();
+            toggleHistoryPanel();
+        });
+        document.getElementById('menu-quiz').addEventListener('click', () => {
+            closeSideMenu();
+            toggleQuizMode();
+        });
+        document.getElementById('menu-stories').addEventListener('click', () => {
+            closeSideMenu();
+            toggleStoriesPanel();
+        });
+        document.getElementById('menu-stats').addEventListener('click', () => {
+            closeSideMenu();
+            openStatsModal();
+        });
+
+        // Patch updateHistoryBadge to also update hamburger + menu badges
+        const origUpdateHistoryBadge = updateHistoryBadge;
+        updateHistoryBadge = function() {
+            origUpdateHistoryBadge();
+            const count = richHistory.length;
+            menuHistoryBadge.textContent = count;
+            menuHistoryBadge.style.display = count > 0 ? '' : 'none';
+            hamburgerBadge.textContent = count;
+            hamburgerBadge.style.display = count > 0 ? '' : 'none';
         };
     </script>
 
