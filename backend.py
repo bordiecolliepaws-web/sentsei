@@ -11,6 +11,7 @@ app = FastAPI()
 APP_PASSWORD = "sentsei2026"
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_MODEL = "qwen2.5:7b"
+TAIDE_MODEL = "jcai/llama3-taide-lx-8b-chat-alpha1:Q4_K_M"
 
 SUPPORTED_LANGUAGES = {
     "he": "Hebrew",
@@ -45,7 +46,7 @@ async def learn_sentence(
     # Build script examples for the target language
     script_examples = {
         "ko": "Korean script (한국어). Example: 커피 한 잔 주문하고 싶어요",
-        "ja": "Japanese script (日本語). Example: コーヒーを一杯注文したいです",
+        "ja": "Japanese script (日本語). Example: コーヒーを一杯注文したいです. IMPORTANT: For Japanese, always note gender implications of pronouns (e.g. 私/watashi vs 僕/boku vs 俺/ore) and formality levels in your notes.",
         "he": "Hebrew script (עברית). Example: אני רוצה להזמין כוס קפה",
         "el": "Greek script (Ελληνικά). Example: Θέλω να παραγγείλω έναν καφέ",
         "zh": "Traditional Chinese (繁體中文). Example: 我想點一杯咖啡",
@@ -95,13 +96,24 @@ Respond with ONLY valid JSON (no markdown, no code fences) in this exact structu
   "native_expression": "How a native {lang_name} speaker would naturally express this same idea (may differ significantly from direct translation). Include pronunciation and a brief explanation of why a native would say it this way. null if the translation is already how a native would say it."
 }}"""
 
-    system_msg = f"You are a {lang_name} language teacher. You ONLY output {lang_name} translations. You NEVER translate into Chinese unless the target language is Chinese. When the target is Korean, you write in 한국어. When Japanese, you write in 日本語. Always respond with valid JSON only."
+    # Detect if input looks Chinese (contains CJK unified ideographs)
+    input_is_chinese = any('\u4e00' <= c <= '\u9fff' for c in req.sentence)
+
+    # Use TAIDE for Chinese target or Chinese input (better Taiwan usage)
+    # Use qwen2.5 for all other languages
+    use_taide = (lang_code == "zh") or input_is_chinese
+    model = TAIDE_MODEL if use_taide else OLLAMA_MODEL
+
+    if use_taide:
+        system_msg = f"你是一位台灣的{lang_name}語言教師。你只使用繁體中文（台灣用法）。絕對不要使用簡體中文或中國大陸用語。使用台灣人日常說話的方式。例如：用「跟我說」而不是「給我講」，用「好棒」而不是「真棒」，用「沒問題」而不是「沒事兒」。回覆必須是有效的JSON格式。"
+    else:
+        system_msg = f"You are a {lang_name} language teacher. You ONLY output {lang_name} translations. You NEVER translate into Chinese unless the target language is Chinese. When the target is Korean, you write in 한국어. When Japanese, you write in 日本語. Always respond with valid JSON only."
 
     async with httpx.AsyncClient(timeout=120) as client:
         resp = await client.post(
             f"{OLLAMA_URL}/api/chat",
             json={
-                "model": OLLAMA_MODEL,
+                "model": model,
                 "messages": [
                     {"role": "system", "content": system_msg},
                     {"role": "user", "content": prompt},
