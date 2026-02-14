@@ -7,6 +7,32 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import httpx
 
+# Deterministic pronunciation libraries
+import pykakasi
+from pypinyin import pinyin, Style as PinyinStyle
+from korean_romanizer.romanizer import Romanizer
+
+_kakasi = pykakasi.kakasi()
+
+
+def deterministic_pronunciation(text: str, lang_code: str) -> Optional[str]:
+    """Generate deterministic pronunciation for supported languages."""
+    if lang_code == "ja":
+        result = _kakasi.convert(text)
+        return " ".join(item["hepburn"] for item in result if item["hepburn"].strip())
+    elif lang_code == "zh":
+        result = pinyin(text, style=PinyinStyle.TONE)
+        return " ".join(p[0] for p in result)
+    elif lang_code == "ko":
+        r = Romanizer(text)
+        return r.romanize()
+    return None
+
+
+def deterministic_word_pronunciation(word: str, lang_code: str) -> Optional[str]:
+    """Generate deterministic pronunciation for a single word."""
+    return deterministic_pronunciation(word, lang_code)
+
 app = FastAPI()
 
 APP_PASSWORD = "sentsei2026"
@@ -165,6 +191,39 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
                 raise HTTPException(502, f"Failed to parse LLM response: {text[:300]}")
         else:
             raise HTTPException(502, f"Failed to parse LLM response: {text[:300]}")
+
+    # Post-process: override LLM pronunciation with deterministic libraries
+    translation_text = result.get("translation", "")
+    det_pron = deterministic_pronunciation(translation_text, lang_code)
+    if det_pron:
+        result["pronunciation"] = det_pron
+
+    # Override per-word pronunciation in breakdown
+    breakdown = result.get("breakdown", [])
+    for item in breakdown:
+        word = item.get("word", "")
+        word_pron = deterministic_word_pronunciation(word, lang_code)
+        if word_pron:
+            item["pronunciation"] = word_pron
+
+    # Post-process: Japanese gender/pronoun warnings
+    if lang_code == "ja" and translation_text:
+        gender_markers = {
+            "私": ("watashi", "neutral/formal, used by all genders"),
+            "僕": ("boku", "masculine, casual — used by boys/men"),
+            "俺": ("ore", "masculine, very casual/rough — used by men"),
+            "あたし": ("atashi", "feminine, casual — used by women/girls"),
+            "わたくし": ("watakushi", "very formal, gender-neutral"),
+        }
+        detected = []
+        for marker, (reading, desc) in gender_markers.items():
+            if marker in translation_text:
+                detected.append(f"⚠️ '{marker}' ({reading}): {desc}")
+        if detected:
+            gender_note = " | ".join(detected)
+            existing_notes = result.get("grammar_notes", []) or []
+            existing_notes.insert(0, f"Gender/formality note: {gender_note}")
+            result["grammar_notes"] = existing_notes
 
     # Post-process: null out native_expression if it's just repeating the translation
     native = result.get("native_expression")

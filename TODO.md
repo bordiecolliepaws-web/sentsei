@@ -2,16 +2,16 @@
 _Items for cron iterations to work through, in priority order._
 
 ## P0 — Critical Quality Issues
-- [ ] **Pronunciation: use deterministic libraries, not LLM**
-  - Japanese: pykakasi or cutlet (MeCab-based romaji)
-  - Korean: korean-romanizer or hangul-romanize
+- [x] **Pronunciation: use deterministic libraries, not LLM** ✅ 2026-02-14
+  - Japanese: pykakasi (Hepburn romaji)
+  - Korean: korean-romanizer (Revised Romanization)
   - Chinese: pypinyin (with tone marks)
   - Hebrew: transliteration lib TBD
   - Greek: transliterate lib TBD
-  - Install via uv, post-process LLM output server-side
-- [ ] **Japanese gender/pronoun warnings**
-  - When 私/僕/俺/あたし appear in breakdown, inject explicit gender/formality note
-  - Backend: add post-processing step for Japanese results
+  - Post-processing overrides LLM pronunciation server-side
+- [x] **Japanese gender/pronoun warnings** ✅ 2026-02-14
+  - Detects 私/僕/俺/あたし/わたくし in translation, injects gender/formality note into grammar_notes
+  - Backend post-processing step
 
 ## P1 — UX / Product Features
 - [ ] **Mobile-first layout**
@@ -31,9 +31,14 @@ _Items for cron iterations to work through, in priority order._
 - [ ] **Clickable word chips**
   - Click a word → expand panel with example sentences, conjugations, related words
   - Design the interaction: inline expand? modal? slide-out?
-- [ ] **Speaker/identity toggles (gender, age, formality)**
-  - Toggle: ♀ / ♂ / Neutral for pronoun selection
-  - Japanese especially: 私/僕/俺/あたし selection affects whole sentence
+- [ ] **Speaker/identity toggles (gender, age, formality)** ⭐
+  - Toggle: ♀ / ♂ / Neutral — affects ALL languages, not just Japanese
+  - Japanese: 私/僕/俺/あたし, verb endings
+  - Korean: 나/저, speech levels (반말/존댓말)
+  - Hebrew: almost everything is gendered (verbs, adjectives, pronouns)
+  - Spanish/Italian: gendered adjectives, noun agreements
+  - Greek: gendered articles, adjectives, participles
+  - Formality: Casual / Polite / Formal (separate from gender)
   - Pass identity context to LLM prompt so translation reflects speaker
   - Show toggle bar above or beside the input
 - [ ] **Persistent sentence history (sidebar/drawer)**
@@ -41,10 +46,14 @@ _Items for cron iterations to work through, in priority order._
   - Promote to visible side panel (desktop) or bottom drawer (mobile)
   - Show target language + translation preview
   - Survives refresh (already does via localStorage)
-- [ ] **Random/auto-suggest input sentences**
-  - "Surprise me" / "I don't know what to say" button
-  - Curated per target language + difficulty
-  - Maybe: "Daily sentence" feature
+- [ ] **"Surprise me" + Story Mode 📖**
+  - **Surprise me**: random curated sentence per target language + difficulty
+  - **Story Mode**: continuous sentence-by-sentence playthrough drawn from famous modern literature, TV series, movies, anime
+    - Curated sentence sets per language (Japanese → anime/drama, Korean → K-drama, Hebrew → modern novels, etc.)
+    - "Next →" button to advance through the story/script
+    - Show source attribution (title, episode, author)
+    - Progress tracking per story
+    - Could be a whole second tab/mode alongside free-type
 
 ## P2 — Design / Branding
 - [ ] **New name** (Jimmy doesn't like "Sentsei")
