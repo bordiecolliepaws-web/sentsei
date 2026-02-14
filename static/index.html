@@ -3226,8 +3226,11 @@
             }
         });
 
+        const TARGET_LANG_KEY = 'sent-say_target_lang';
+
         function selectLangPill(code) {
             langSelect.value = code;
+            localStorage.setItem(TARGET_LANG_KEY, code);
             langPillsEl.querySelectorAll('.lang-pill').forEach(p => {
                 p.classList.toggle('active', p.dataset.lang === code);
             });
@@ -3253,8 +3256,9 @@
                 pill.addEventListener('click', () => selectLangPill(code));
                 langPillsEl.appendChild(pill);
             }
-            // Default to Korean
-            const defaultLang = Object.prototype.hasOwnProperty.call(langs, 'zh') ? 'zh' : Object.keys(langs)[0];
+            // Default to Chinese, or restore saved preference
+            const savedLang = localStorage.getItem(TARGET_LANG_KEY);
+            const defaultLang = (savedLang && Object.prototype.hasOwnProperty.call(langs, savedLang)) ? savedLang : (Object.prototype.hasOwnProperty.call(langs, 'zh') ? 'zh' : Object.keys(langs)[0]);
             if (defaultLang) selectLangPill(defaultLang);
             languagesLoaded = true;
             renderHistoryPanel();
