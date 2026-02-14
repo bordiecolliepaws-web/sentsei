@@ -842,8 +842,17 @@ async def get_surprise_sentence(lang: str, input_lang: str = "en"):
     }
 
 
-@app.get("/api/quiz")
+class QuizHistoryItem(BaseModel):
+    sentence: str
+    translation: str
+    pronunciation: Optional[str] = None
+
+class QuizFromHistoryRequest(BaseModel):
+    history: List[QuizHistoryItem]
+
+@app.api_route("/api/quiz", methods=["GET", "POST"])
 async def get_quiz(
+    request: Request,
     lang: str,
     gender: str = "neutral",
     formality: str = "polite",
@@ -855,13 +864,46 @@ async def get_quiz(
     if lang not in SUPPORTED_LANGUAGES:
         raise HTTPException(400, "Unsupported language")
 
+    lang_name = SUPPORTED_LANGUAGES[lang]
+
+    # Try to use user's history for quiz
+    history_items = []
+    if request.method == "POST":
+        try:
+            body = await request.json()
+            history_items = body.get("history", [])
+        except Exception:
+            pass
+
+    if history_items:
+        picked = random.choice(history_items)
+        sentence = picked["translation"]
+        source_sentence = picked["sentence"]
+        pronunciation = picked.get("pronunciation", "")
+        quiz_id = _new_quiz_id(lang, sentence)
+        _cleanup_quiz_answers()
+        _quiz_answers[quiz_id] = {
+            "answer_en": source_sentence,
+            "answer_zh": source_sentence,
+            "sentence": sentence,
+            "created_at": time.time(),
+        }
+        return {
+            "quiz_id": quiz_id,
+            "sentence": sentence,
+            "pronunciation": pronunciation,
+            "source": "Your history",
+            "hint": source_sentence[:3] + "..." if len(source_sentence) > 3 else source_sentence,
+            "language": lang,
+        }
+
+    # Fallback to curated sentences
     sentence_pool = CURATED_SENTENCES.get(lang, [])
     if not sentence_pool:
         raise HTTPException(404, "No curated sentences found for this language")
 
     picked = random.choice(sentence_pool)
     sentence = picked["sentence"]
-    lang_name = SUPPORTED_LANGUAGES[lang]
 
     prompt = f"""Translate this {lang_name} sentence into both English and Traditional Chinese (Taiwan usage).
 

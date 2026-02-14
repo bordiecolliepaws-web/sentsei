@@ -2623,13 +2623,24 @@
             quizNextBtn.disabled = true;
 
             try {
+                // Build quiz from user's own history when available
+                const histSentences = richHistory
+                    .filter(e => e.lang === langSelect.value && e.result && e.result.translation)
+                    .map(e => ({ sentence: e.sentence, translation: e.result.translation, pronunciation: e.result.pronunciation }));
+
                 const params = new URLSearchParams({
                     lang: langSelect.value,
                     gender: selectedGender,
                     formality: selectedFormality
                 });
+                const quizBody = histSentences.length > 0 ? JSON.stringify({ history: histSentences }) : null;
                 const resp = await fetch(`/api/quiz?${params.toString()}`, {
-                    headers: { 'X-App-Password': appPassword }
+                    method: quizBody ? 'POST' : 'GET',
+                    headers: {
+                        'X-App-Password': appPassword,
+                        ...(quizBody ? { 'Content-Type': 'application/json' } : {})
+                    },
+                    ...(quizBody ? { body: quizBody } : {})
                 });
 
                 if (resp.status === 401) {
