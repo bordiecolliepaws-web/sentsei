@@ -100,7 +100,7 @@ Respond with ONLY valid JSON (no markdown, no code fences) in this exact structu
   "cultural_note": "optional cultural context or usage tip (in the detected source language), null if none",
   "formality": "casual|polite|formal — what register this translation uses",
   "alternative": "an alternative way to say this (different formality or phrasing), or null",
-  "native_expression": "How a native {lang_name} speaker would naturally express this same idea (may differ significantly from direct translation). Include pronunciation and a brief explanation of why a native would say it this way. null if the translation is already how a native would say it."
+  "native_expression": "How a native {lang_name} speaker would NATURALLY say this — MUST be a DIFFERENT sentence from the translation, not a rewording or repetition. Show a genuinely different way a native would express the same idea (different structure, idiom, or colloquial phrasing). Include pronunciation and a brief explanation. MUST be null if you cannot think of a meaningfully different expression."
 }}"""
 
     # Always use qwen2.5 for structured JSON (TAIDE can't reliably produce JSON)
@@ -165,6 +165,16 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
                 raise HTTPException(502, f"Failed to parse LLM response: {text[:300]}")
         else:
             raise HTTPException(502, f"Failed to parse LLM response: {text[:300]}")
+
+    # Post-process: null out native_expression if it's just repeating the translation
+    native = result.get("native_expression")
+    translation = result.get("translation", "")
+    if native and translation:
+        # Strip pronunciation/explanation suffixes to compare core sentence
+        native_core = native.split("(")[0].strip().rstrip("。.!！")
+        trans_core = translation.strip().rstrip("。.!！")
+        if native_core == trans_core or native_core in trans_core or trans_core in native_core:
+            result["native_expression"] = None
 
     return result
 

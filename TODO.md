@@ -28,6 +28,14 @@ _Items for cron iterations to work through, in priority order._
   - Formality: Casual / Polite / Formal
   - Scenario context (restaurant, office, etc.)
   - Pass these to the LLM prompt
+- [ ] **Clickable word chips**
+  - Click a word → expand panel with example sentences, conjugations, related words
+  - Design the interaction: inline expand? modal? slide-out?
+- [ ] **Speaker/identity toggles (gender, age, formality)**
+  - Toggle: ♀ / ♂ / Neutral for pronoun selection
+  - Japanese especially: 私/僕/俺/あたし selection affects whole sentence
+  - Pass identity context to LLM prompt so translation reflects speaker
+  - Show toggle bar above or beside the input
 - [ ] **Persistent sentence history (sidebar/drawer)**
   - Already in localStorage
   - Promote to visible side panel (desktop) or bottom drawer (mobile)
