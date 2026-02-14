@@ -14,11 +14,13 @@ _Items for cron iterations to work through, in priority order._
   - Backend post-processing step
 
 ## P1 — UX / Product Features
-- [ ] **Mobile-first layout**
-  - Test and fix narrow viewport behavior
-  - Input + language picker not crushed
-  - Results scroll nicely
-  - Consider bottom sheet for history instead of sidebar
+- [x] **Mobile-first layout** ✅ 2026-02-14
+  - Sticky input area with backdrop blur on mobile
+  - 2-column word chip grid (1-col on tiny phones)
+  - Compact header, hidden "Press Enter" hint on mobile
+  - Copy button on own line (not crowding translation)
+  - Safe area insets for notched phones
+  - Tested at 375px and 360px widths
 - [ ] **Better language selector UI (not dropdown)**
   - Pill toggles / flag chips instead of `<select>`
   - Works on both mobile and desktop
