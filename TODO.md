@@ -30,9 +30,11 @@ _Items for cron iterations to work through, in priority order._
   - Formality: Casual / Polite / Formal toggle pills
   - Persisted to localStorage
   - Passed to LLM prompt with language-specific guidance (ja pronouns, ko speech levels, he conjugation, es/it agreement)
-- [ ] **Clickable word chips** ← NEXT
-  - Click a word → expand panel with example sentences, conjugations, related words
-  - Design the interaction: inline expand? modal? slide-out?
+- [x] **Clickable word chips** ✅ 2026-02-14
+  - Click a word → inline expand panel with examples, conjugations, related words
+  - /api/word-detail endpoint fetches from LLM on demand
+  - Collapse by clicking again; only one expanded at a time
+  - Expanded chip spans full width for readability
 - [x] **Speaker/identity toggles (gender, age, formality)** ⭐ ✅ 2026-02-14
   - Combined with Speaker toggles above — same implementation
 - [ ] **Persistent sentence history (sidebar/drawer)**
