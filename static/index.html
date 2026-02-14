@@ -510,12 +510,102 @@
 
         .hidden { display: none; }
 
+        /* Mobile-first improvements */
         @media (max-width: 600px) {
-            .container { padding: 1.5rem 1rem; }
-            .result-translation { font-size: 1.3rem; }
-            .sentence-input { flex-direction: column; }
-            .sentence-input button { padding: 0.75rem; }
-            .password-form { flex-direction: column; }
+            body {
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+
+            .container {
+                padding: 1rem 0.75rem;
+            }
+
+            header {
+                margin-bottom: 1.25rem;
+            }
+
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            header p {
+                font-size: 0.85rem;
+                margin-top: 0.25rem;
+            }
+
+            .input-area {
+                padding: 1rem;
+                margin-bottom: 1rem;
+                position: sticky;
+                top: 0;
+                z-index: 10;
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                background: rgba(20, 20, 31, 0.92);
+            }
+
+            .language-select {
+                margin-bottom: 0.65rem;
+            }
+
+            .sentence-input {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .sentence-input button {
+                padding: 0.75rem;
+                font-size: 0.95rem;
+            }
+
+            .sentence-input textarea {
+                font-size: 1rem;
+            }
+
+            .result-translation {
+                font-size: 1.3rem;
+            }
+
+            .result-head {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .copy-btn {
+                align-self: flex-start;
+            }
+
+            .word-chips {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.5rem;
+            }
+
+            .word-chip {
+                min-width: unset;
+            }
+
+            .result-main,
+            .breakdown-section,
+            .notes-section {
+                padding: 1rem;
+            }
+
+            .password-form {
+                flex-direction: column;
+            }
+
+            .input-hint {
+                display: none; /* redundant on mobile — button is full-width and obvious */
+            }
+        }
+
+        /* Small phones */
+        @media (max-width: 360px) {
+            .container { padding: 0.75rem 0.5rem; }
+            .word-chips { grid-template-columns: 1fr; }
+            header h1 { font-size: 1.3rem; }
         }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
