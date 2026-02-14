@@ -837,6 +837,31 @@
             height: 14px;
         }
 
+        .speak-btn {
+            background: var(--surface2);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.35rem 0.55rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.76rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .speak-btn:hover {
+            color: var(--text);
+            border-color: var(--accent);
+        }
+
+        .speak-btn.speaking {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
         .result-translation {
             font-size: 1.6rem;
             font-weight: 600;
@@ -1824,6 +1849,48 @@
             loadingTipEl.textContent = `${langName} tip: ${randomTip}`;
         }
 
+        // === TTS / Speech ===
+        const LANG_SPEECH_MAP = {
+            ko: 'ko-KR', ja: 'ja-JP', zh: 'zh-TW', en: 'en-US',
+            he: 'he-IL', el: 'el-GR', it: 'it-IT', es: 'es-ES',
+            fr: 'fr-FR', de: 'de-DE', pt: 'pt-BR', ar: 'ar-SA',
+            th: 'th-TH', vi: 'vi-VN', hi: 'hi-IN', ru: 'ru-RU'
+        };
+
+        function speakTranslation(text, langCode, btn) {
+            if (!window.speechSynthesis) return;
+            // Stop any current speech
+            speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = LANG_SPEECH_MAP[langCode] || langCode;
+            utterance.rate = 0.85;
+            // Try to find a matching voice
+            const voices = speechSynthesis.getVoices();
+            const match = voices.find(v => v.lang === utterance.lang) ||
+                          voices.find(v => v.lang.startsWith(langCode));
+            if (match) utterance.voice = match;
+            if (btn) {
+                btn.classList.add('speaking');
+                const label = btn.querySelector('.speak-label');
+                if (label) label.textContent = '▶ Playing';
+                utterance.onend = () => {
+                    btn.classList.remove('speaking');
+                    if (label) label.textContent = 'Listen';
+                };
+                utterance.onerror = () => {
+                    btn.classList.remove('speaking');
+                    if (label) label.textContent = 'Listen';
+                };
+            }
+            speechSynthesis.speak(utterance);
+        }
+
+        // Pre-load voices
+        if (window.speechSynthesis) {
+            speechSynthesis.getVoices();
+            speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+        }
+
         async function copyTextToClipboard(text) {
             if (navigator.clipboard && window.isSecureContext) {
                 await navigator.clipboard.writeText(text);
@@ -2167,6 +2234,14 @@
                 <div class="result-main">
                     <div class="result-head">
                         <div class="result-translation">${data.translation}</div>
+                        <button type="button" class="speak-btn" aria-label="Listen to pronunciation" data-lang="${langSelect.value}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                            </svg>
+                            <span class="speak-label">Listen</span>
+                        </button>
                         <button type="button" class="copy-btn" aria-label="Copy translation">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                 <rect x="9" y="9" width="13" height="13" rx="2"></rect>
@@ -2198,6 +2273,14 @@
                 const wordData = data.breakdown[idx];
                 chip.addEventListener('click', () => handleWordChipClick(chip, wordData, data, reqCtx));
             });
+
+            // Speak button
+            const speakBtn = card.querySelector('.speak-btn');
+            if (speakBtn) {
+                speakBtn.addEventListener('click', () => {
+                    speakTranslation(data.translation, speakBtn.dataset.lang, speakBtn);
+                });
+            }
 
             const copyBtn = card.querySelector('.copy-btn');
             const copyLabelEl = card.querySelector('.copy-label');

@@ -73,7 +73,7 @@ _Items for cron iterations to work through, in priority order._
 
 ## P3 — Infrastructure & Polish (from reflection)
 - [ ] **Audio pronunciation (TTS)** — browser SpeechSynthesis or server-side TTS
-- [ ] **Loading UX** — better feedback for slow model responses (10-20s), timeout/retry
+- [x] **Loading UX** ✅ 2026-02-14 — elapsed timer, progressive messages ("Translating..." → "Analyzing grammar..." → "Almost there..."), 45s timeout with retry button, cancel after 8s
 - [ ] **Multi-sentence input** — split paragraphs into individual sentences
 - [ ] **Reverse mode / Quiz** — see target language, type the English/Chinese
 - [ ] **Save/export** — Anki flashcard export, PDF, screenshot-friendly format
