@@ -453,7 +453,7 @@ Respond with ONLY valid JSON (no markdown, no code fences) in this exact structu
   "cultural_note": "optional cultural context or usage tip (in the detected source language), null if none",
   "formality": "casual|polite|formal — what register this translation uses",
   "alternative": "an alternative way to say this (different formality or phrasing), or null",
-  "native_expression": "ALWAYS provide this unless the translation is already perfectly natural. Show how a native {lang_name} speaker would actually say this in daily life — use colloquial phrasing, idioms, or slang. Must be a DIFFERENT sentence from the translation (different structure or wording). Format: 'native sentence (pronunciation) — explanation of why natives say it this way in {source_lang_short}'. Only null if the translation is already exactly how a native would say it."
+  "native_expression": "ALWAYS provide this unless the translation is already perfectly natural. Show how a native {lang_name} speaker would actually say this in daily life — use colloquial phrasing, idioms, or slang. Must be a DIFFERENT sentence from the translation (different structure or wording). Format: 'native sentence (pronunciation) — EXPLANATION IN {source_lang_short}'. THE EXPLANATION AFTER THE DASH MUST BE IN {source_lang_short}, NOT in {lang_name}. Only null if the translation is already exactly how a native would say it."
 }}"""
 
     # Inject speaker identity
