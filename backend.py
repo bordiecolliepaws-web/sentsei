@@ -56,20 +56,23 @@ async def learn_sentence(
     }
     script_hint = script_examples.get(lang_code, f"{lang_name} script")
 
+    # Detect source language
+    source_lang = "Traditional Chinese (繁體中文, 台灣用法)" if input_is_chinese else "English"
+    source_lang_short = "繁體中文" if input_is_chinese else "English"
+
     prompt = f"""TASK: Translate this sentence into {lang_name} and break it down.
 
-TARGET: {lang_name} — {script_hint}
+TARGET LANGUAGE: {lang_name} — {script_hint}
+SOURCE LANGUAGE (what the user typed in): {source_lang}
 
 INPUT: "{req.sentence}"
 
 You MUST translate into {lang_name}. For example, if target is Korean, write 한국어. If Japanese, write 日本語. If Hebrew, write עברית. Do NOT output Chinese unless the target language IS Chinese.
 
-The input is either English or Chinese (Traditional). Detect which one automatically.
-
 CRITICAL RULES:
 1. The "translation" field MUST be written in {lang_name} using {script_hint}. NOT Chinese, NOT English (unless target IS English).
 2. The "word" fields in breakdown MUST be {lang_name} words in {lang_name} script.
-3. ALL explanations, meanings, notes MUST match the INPUT language (English explanations for English input, Traditional Chinese for Chinese input).
+3. ALL "meaning" fields MUST be in {source_lang_short}. ALL "grammar_notes" MUST be in {source_lang_short}. ALL "cultural_note" and "note" fields MUST be in {source_lang_short}. The user reads {source_lang_short}, so write ALL explanations in {source_lang_short}. NEVER write explanations in Chinese if the source is English. NEVER write explanations in English if the source is Chinese.
 4. When writing ANY Chinese text, use ONLY Traditional Chinese (繁體中文) with Taiwan usage. NEVER Simplified Chinese.
 5. Do NOT mix languages. Explanations in one language only.
 
@@ -99,13 +102,31 @@ Respond with ONLY valid JSON (no markdown, no code fences) in this exact structu
     # Detect if input looks Chinese (contains CJK unified ideographs)
     input_is_chinese = any('\u4e00' <= c <= '\u9fff' for c in req.sentence)
 
-    # Use TAIDE for Chinese target or Chinese input (better Taiwan usage)
-    # Use qwen2.5 for all other languages
-    use_taide = (lang_code == "zh") or input_is_chinese
-    model = TAIDE_MODEL if use_taide else OLLAMA_MODEL
+    # Always use qwen2.5 for structured JSON (TAIDE can't reliably produce JSON)
+    model = OLLAMA_MODEL
 
-    if use_taide:
-        system_msg = f"你是一位台灣的{lang_name}語言教師。你只使用繁體中文（台灣用法）。絕對不要使用簡體中文或中國大陸用語。使用台灣人日常說話的方式。例如：用「跟我說」而不是「給我講」，用「好棒」而不是「真棒」，用「沒問題」而不是「沒事兒」。回覆必須是有效的JSON格式。"
+    taiwan_chinese_rules = """
+TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chinese):
+- Use ONLY Traditional Chinese (繁體中文) with Taiwan usage (台灣用法)
+- NEVER use mainland China phrasing. Use Taiwanese daily speech patterns.
+- Examples of correct Taiwan vs incorrect mainland usage:
+  - ✅ 跟我說一個笑話 / ❌ 給我講一個笑話
+  - ✅ 講個笑話給我聽 / ❌ 給我講個笑話
+  - ✅ 好棒 / ❌ 真棒
+  - ✅ 沒問題 / ❌ 沒事兒
+  - ✅ 很厲害 / ❌ 牛逼
+  - ✅ 軟體 / ❌ 軟件
+  - ✅ 資訊 / ❌ 信息
+  - ✅ 影片 / ❌ 視頻
+  - ✅ 計程車 / ❌ 出租車
+  - ✅ 捷運 / ❌ 地鐵
+  - ✅ 腳踏車 / ❌ 自行車
+"""
+
+    if lang_code == "zh":
+        system_msg = f"You are a Taiwanese Chinese (繁體中文/台灣用法) language teacher. You translate into Traditional Chinese as spoken in Taiwan. NEVER use mainland Chinese phrasing or simplified characters. Think like a native Taiwanese speaker. Always respond with valid JSON only.\n{taiwan_chinese_rules}"
+    elif input_is_chinese:
+        system_msg = f"You are a {lang_name} language teacher. You ONLY output {lang_name} translations. You NEVER translate into Chinese unless the target language is Chinese. When the target is Korean, you write in 한국어. When Japanese, you write in 日本語. All Chinese explanations must use Traditional Chinese (繁體中文) with Taiwan usage (台灣用法). Always respond with valid JSON only.\n{taiwan_chinese_rules}"
     else:
         system_msg = f"You are a {lang_name} language teacher. You ONLY output {lang_name} translations. You NEVER translate into Chinese unless the target language is Chinese. When the target is Korean, you write in 한국어. When Japanese, you write in 日本語. Always respond with valid JSON only."
 
@@ -119,7 +140,7 @@ Respond with ONLY valid JSON (no markdown, no code fences) in this exact structu
                     {"role": "user", "content": prompt},
                 ],
                 "stream": False,
-                "options": {"temperature": 0.3},
+                "options": {"temperature": 0.3, "num_predict": 2048},
             },
         )
 
