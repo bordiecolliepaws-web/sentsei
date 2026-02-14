@@ -886,7 +886,7 @@
             card.innerHTML = `
                 <div class="result-main">
                     <div class="result-head">
-                        <div class="result-source">"${original}"</div>
+                        <div class="result-translation">${data.translation}</div>
                         <button type="button" class="copy-btn" aria-label="Copy translation">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                 <rect x="9" y="9" width="13" height="13" rx="2"></rect>
@@ -895,8 +895,8 @@
                             <span class="copy-label">Copy</span>
                         </button>
                     </div>
-                    <div class="result-translation">${data.translation}</div>
                     <div class="result-pronunciation">${data.pronunciation}</div>
+                    <div class="result-source">"${original}"</div>
                     <div class="result-literal">${data.literal}</div>
                     <div class="result-formality">${data.formality}</div>
                 </div>
