@@ -1,5 +1,6 @@
 """Sentsei — Sentence-based language learning app."""
 import json
+from typing import Optional
 from pathlib import Path
 from fastapi import FastAPI, HTTPException, Header
 from fastapi.staticfiles import StaticFiles
@@ -31,7 +32,7 @@ class SentenceRequest(BaseModel):
 @app.post("/api/learn")
 async def learn_sentence(
     req: SentenceRequest,
-    x_app_password: str | None = Header(default=None),
+    x_app_password: Optional[str] = Header(default=None),
 ):
     if x_app_password != APP_PASSWORD:
         raise HTTPException(401, "Unauthorized")
@@ -82,12 +83,12 @@ CRITICAL RULES:
 Respond with ONLY valid JSON (no markdown, no code fences) in this exact structure:
 {{
   "translation": "the full sentence in {lang_name} script (e.g. for Korean use 한글, for Japanese use 日本語, etc.)",
-  "pronunciation": "romanized pronunciation guide (e.g. pinyin, romaji, romanization)",
+  "pronunciation": "romanized pronunciation guide using standard systems: Japanese=Hepburn romaji (e.g. oshiete kudasai, NOT OLLOW-te), Chinese=pinyin with tones, Korean=Revised Romanization, Hebrew=standard transliteration, Greek=standard transliteration",
   "literal": "word-by-word literal translation back to the detected source language",
   "breakdown": [
     {{
       "word": "each word/particle written in {lang_name} script",
-      "pronunciation": "romanized pronunciation",
+      "pronunciation": "romanized pronunciation (Japanese: Hepburn romaji like 'kudasai', NOT made-up spellings)",
       "meaning": "meaning in the detected source language",
       "difficulty": "easy|medium|hard",
       "note": "brief grammar/usage note if helpful, otherwise null"

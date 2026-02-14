@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sentsei — Learn by Saying</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50%25' y='56%25' dominant-baseline='middle' text-anchor='middle' font-size='74'%3E%E5%AD%A6%3C/text%3E%3C/svg%3E">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50%25' y='56%25' dominant-baseline='middle' text-anchor='middle' font-size='74'%3E%E5%AD%B8%3C/text%3E%3C/svg%3E">
     <style>
         :root {
             --bg: #0a0a0f;
@@ -753,9 +753,14 @@
             this.style.height = this.scrollHeight + 'px';
         });
 
-        // Enter to submit
+        // IME composition tracking (注音, etc.)
+        let isComposing = false;
+        sentenceInput.addEventListener('compositionstart', () => { isComposing = true; });
+        sentenceInput.addEventListener('compositionend', () => { isComposing = false; });
+
+        // Enter to submit (skip during IME composition)
         sentenceInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
                 e.preventDefault();
                 learn();
             }
