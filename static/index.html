@@ -269,6 +269,216 @@
             transform: translateY(-1px);
         }
 
+        /* History Panel */
+        .history-toggle-btn {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 25;
+            background: var(--surface);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: inherit;
+        }
+
+        .history-toggle-btn:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        .history-toggle-btn .badge {
+            background: var(--accent);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            border-radius: 99px;
+            padding: 0.1rem 0.4rem;
+            min-width: 1.1rem;
+            text-align: center;
+        }
+
+        .history-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 320px;
+            height: 100vh;
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            z-index: 20;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .history-panel.open {
+            transform: translateX(0);
+        }
+
+        .history-panel-header {
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .history-panel-header h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .history-panel-close {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 0.2rem;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .history-panel-close:hover {
+            color: var(--text);
+        }
+
+        .history-panel-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem 0;
+        }
+
+        .history-panel-empty {
+            padding: 2rem 1rem;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .history-panel-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: background 0.15s;
+            border-bottom: 1px solid rgba(42, 42, 62, 0.5);
+        }
+
+        .history-panel-item:hover {
+            background: var(--surface2);
+        }
+
+        .history-panel-item .hp-sentence {
+            font-size: 0.85rem;
+            color: var(--text);
+            margin-bottom: 0.3rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-panel-item .hp-translation {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.15rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-panel-item .hp-meta {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .history-panel-item .hp-lang {
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .history-panel-clear {
+            padding: 0.75rem 1rem;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .history-panel-clear button {
+            width: 100%;
+            background: transparent;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.5rem;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .history-panel-clear button:hover {
+            border-color: #f87171;
+            color: #f87171;
+        }
+
+        .history-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(6, 6, 10, 0.5);
+            z-index: 19;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .history-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Mobile: bottom drawer instead of side panel */
+        @media (max-width: 600px) {
+            .history-toggle-btn {
+                top: auto;
+                bottom: 1rem;
+                right: 1rem;
+                border-radius: 99px;
+                padding: 0.6rem 0.8rem;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            }
+
+            .history-panel {
+                top: auto;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                height: 60vh;
+                max-height: 60vh;
+                border-left: none;
+                border-top: 1px solid var(--border);
+                border-radius: 16px 16px 0 0;
+                transform: translateY(100%);
+            }
+
+            .history-panel.open {
+                transform: translateY(0);
+            }
+        }
+
         /* Result Card */
         .result-card {
             background: var(--surface);
@@ -835,6 +1045,24 @@
         <div id="results"></div>
     </div>
 
+    <!-- History Panel -->
+    <button id="history-toggle" class="history-toggle-btn hidden" aria-label="Toggle history">
+        📜 <span id="history-badge" class="badge">0</span>
+    </button>
+    <div id="history-overlay" class="history-overlay"></div>
+    <div id="history-panel" class="history-panel">
+        <div class="history-panel-header">
+            <h3>History</h3>
+            <button id="history-panel-close" class="history-panel-close" aria-label="Close history">✕</button>
+        </div>
+        <div id="history-panel-list" class="history-panel-list">
+            <div class="history-panel-empty">No sentences yet. Start learning!</div>
+        </div>
+        <div class="history-panel-clear">
+            <button id="history-clear-btn">Clear All History</button>
+        </div>
+    </div>
+
     <div id="password-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="password-modal-title">
         <div class="modal">
             <h2 id="password-modal-title">Unlock Sentsei</h2>
@@ -892,7 +1120,15 @@
         const APP_PASSWORD = 'sentsei2026';
         const PASSWORD_STORAGE_KEY = 'sentsei_app_password';
         const SENTENCE_HISTORY_KEY = 'sentsei_sentence_history';
-        const HISTORY_LIMIT = 10;
+        const RICH_HISTORY_KEY = 'sentsei_rich_history';
+        const HISTORY_LIMIT = 50;
+        const historyToggleBtn = document.getElementById('history-toggle');
+        const historyBadgeEl = document.getElementById('history-badge');
+        const historyPanelEl = document.getElementById('history-panel');
+        const historyPanelListEl = document.getElementById('history-panel-list');
+        const historyOverlayEl = document.getElementById('history-overlay');
+        const historyClearBtn = document.getElementById('history-clear-btn');
+        const historyPanelCloseBtn = document.getElementById('history-panel-close');
         const LANGUAGE_TIPS = {
             ko: [
                 'Korean changes formality based on who you are talking to.',
@@ -932,7 +1168,110 @@
         };
         let appPassword = localStorage.getItem(PASSWORD_STORAGE_KEY) || '';
         let sentenceHistory = loadSentenceHistory();
+        let richHistory = loadRichHistory();
         let languagesLoaded = false;
+        let historyPanelOpen = false;
+
+        function loadRichHistory() {
+            try {
+                const raw = localStorage.getItem(RICH_HISTORY_KEY) || '[]';
+                const parsed = JSON.parse(raw);
+                if (!Array.isArray(parsed)) return [];
+                return parsed.slice(0, HISTORY_LIMIT);
+            } catch { return []; }
+        }
+
+        function saveRichHistory() {
+            localStorage.setItem(RICH_HISTORY_KEY, JSON.stringify(richHistory));
+        }
+
+        function addToRichHistory(sentence, translation, targetLang, pronunciation) {
+            const entry = {
+                sentence,
+                translation,
+                lang: targetLang,
+                pronunciation: pronunciation || '',
+                ts: Date.now()
+            };
+            // Remove duplicate
+            richHistory = richHistory.filter(e => !(e.sentence === sentence && e.lang === targetLang));
+            richHistory.unshift(entry);
+            richHistory = richHistory.slice(0, HISTORY_LIMIT);
+            saveRichHistory();
+            renderHistoryPanel();
+            updateHistoryBadge();
+        }
+
+        function toggleHistoryPanel() {
+            historyPanelOpen = !historyPanelOpen;
+            historyPanelEl.classList.toggle('open', historyPanelOpen);
+            historyOverlayEl.classList.toggle('open', historyPanelOpen);
+        }
+
+        function closeHistoryPanel() {
+            historyPanelOpen = false;
+            historyPanelEl.classList.remove('open');
+            historyOverlayEl.classList.remove('open');
+        }
+
+        function updateHistoryBadge() {
+            const count = richHistory.length;
+            historyBadgeEl.textContent = count;
+            historyToggleBtn.classList.toggle('hidden', count === 0);
+        }
+
+        function renderHistoryPanel() {
+            if (richHistory.length === 0) {
+                historyPanelListEl.innerHTML = '<div class="history-panel-empty">No sentences yet. Start learning!</div>';
+                return;
+            }
+            const langNames = {};
+            langSelect.querySelectorAll('option').forEach(o => { langNames[o.value] = o.textContent; });
+
+            historyPanelListEl.innerHTML = richHistory.map((entry, idx) => {
+                const flag = LANG_FLAGS[entry.lang] || '🌐';
+                const langName = langNames[entry.lang] || entry.lang;
+                const time = new Date(entry.ts);
+                const timeStr = time.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + time.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+                return `<div class="history-panel-item" data-idx="${idx}">
+                    <div class="hp-translation">${entry.translation}</div>
+                    <div class="hp-sentence">${entry.sentence}</div>
+                    <div class="hp-meta"><span class="hp-lang">${flag} ${langName}</span><span>${timeStr}</span></div>
+                </div>`;
+            }).join('');
+
+            historyPanelListEl.querySelectorAll('.history-panel-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const idx = parseInt(item.dataset.idx);
+                    const entry = richHistory[idx];
+                    if (entry) {
+                        sentenceInput.value = entry.sentence;
+                        sentenceInput.style.height = 'auto';
+                        sentenceInput.style.height = sentenceInput.scrollHeight + 'px';
+                        if (entry.lang) selectLangPill(entry.lang);
+                        closeHistoryPanel();
+                        sentenceInput.focus();
+                    }
+                });
+            });
+        }
+
+        historyToggleBtn.addEventListener('click', toggleHistoryPanel);
+        historyOverlayEl.addEventListener('click', closeHistoryPanel);
+        historyPanelCloseBtn.addEventListener('click', closeHistoryPanel);
+        historyClearBtn.addEventListener('click', () => {
+            if (confirm('Clear all history?')) {
+                richHistory = [];
+                sentenceHistory = [];
+                saveRichHistory();
+                localStorage.setItem(SENTENCE_HISTORY_KEY, '[]');
+                renderHistoryPanel();
+                renderSentenceHistory();
+                updateHistoryBadge();
+            }
+        });
+
+        updateHistoryBadge();
 
         function lockApp() {
             sentenceInput.disabled = true;
@@ -1108,6 +1447,7 @@
             const defaultLang = Object.prototype.hasOwnProperty.call(langs, 'ko') ? 'ko' : Object.keys(langs)[0];
             if (defaultLang) selectLangPill(defaultLang);
             languagesLoaded = true;
+            renderHistoryPanel();
         }
 
         passwordFormEl.addEventListener('submit', async function(e) {
@@ -1177,6 +1517,7 @@
                 const reqCtx = { target_language: langSelect.value, sentence: sentence };
                 renderResult(data, sentence, reqCtx);
                 saveSentenceToHistory(sentence);
+                addToRichHistory(sentence, data.translation, langSelect.value, data.pronunciation);
                 sentenceInput.value = '';
                 sentenceInput.style.height = 'auto';
             } catch (err) {
@@ -1324,7 +1665,7 @@
             // Clickable word chips
             card.querySelectorAll('.word-chip').forEach((chip, idx) => {
                 const wordData = data.breakdown[idx];
-                chip.addEventListener('click', () => handleWordChipClick(chip, wordData, data, req));
+                chip.addEventListener('click', () => handleWordChipClick(chip, wordData, data, reqCtx));
             });
 
             const copyBtn = card.querySelector('.copy-btn');
