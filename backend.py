@@ -790,6 +790,7 @@ Rules:
         else:
             return {"examples": [], "conjugations": [], "related": []}
 
+    result = ensure_traditional_chinese(result)
     return result
 
 @app.get("/api/languages")
