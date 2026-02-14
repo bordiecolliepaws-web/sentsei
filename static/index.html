@@ -1370,11 +1370,103 @@
             .word-chips { grid-template-columns: 1fr; }
             header h1 { font-size: 1.3rem; }
         }
+
+        /* Onboarding overlay */
+        .onboarding-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .onboarding-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem 1.5rem;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+        }
+        .onboarding-card h2 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+        }
+        .onboarding-card p {
+            color: var(--text-dim);
+            margin-bottom: 1.2rem;
+            line-height: 1.5;
+        }
+        .onboarding-suggestions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1.2rem;
+        }
+        .onboarding-suggestion {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.7rem 1rem;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: border-color 0.2s, background 0.2s;
+            text-align: left;
+        }
+        .onboarding-suggestion:hover {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+        .onboarding-suggestion .lang-hint {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 0.2rem;
+        }
+        .onboarding-skip {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 0.85rem;
+            text-decoration: underline;
+        }
+        .onboarding-skip:hover { color: var(--text); }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Onboarding overlay for first-time users -->
+    <div id="onboarding-overlay" class="onboarding-overlay hidden">
+        <div class="onboarding-card">
+            <h2>⚡ Welcome to Sentsei</h2>
+            <p>Type any sentence and learn how to say it in another language — with pronunciation, grammar notes, and word-by-word breakdown.</p>
+            <p style="color: var(--text); font-weight: 500;">Try one of these to start:</p>
+            <div class="onboarding-suggestions">
+                <button class="onboarding-suggestion" data-sentence="I want to eat ramen for dinner" data-lang="ja">
+                    "I want to eat ramen for dinner"
+                    <div class="lang-hint">→ 🇯🇵 Japanese</div>
+                </button>
+                <button class="onboarding-suggestion" data-sentence="Where is the nearest subway station?" data-lang="ko">
+                    "Where is the nearest subway station?"
+                    <div class="lang-hint">→ 🇰🇷 Korean</div>
+                </button>
+                <button class="onboarding-suggestion" data-sentence="This coffee tastes amazing" data-lang="zh">
+                    "This coffee tastes amazing"
+                    <div class="lang-hint">→ 🇹🇼 Chinese</div>
+                </button>
+            </div>
+            <button class="onboarding-skip" id="onboarding-skip">Skip — I'll type my own</button>
+        </div>
+    </div>
+
     <div class="container">
         <header>
             <h1>Sentsei</h1>
@@ -1915,6 +2007,61 @@
             document.body.removeChild(fallbackArea);
             return copied;
         }
+
+        // --- Onboarding ---
+        const ONBOARDED_KEY = 'sentsei_onboarded';
+        const onboardingOverlay = document.getElementById('onboarding-overlay');
+
+        function showOnboarding() {
+            if (localStorage.getItem(ONBOARDED_KEY)) return;
+            if (richHistory.length > 0 || sentenceHistory.length > 0) {
+                localStorage.setItem(ONBOARDED_KEY, '1');
+                return;
+            }
+            onboardingOverlay.classList.remove('hidden');
+        }
+
+        function dismissOnboarding() {
+            onboardingOverlay.classList.add('hidden');
+            localStorage.setItem(ONBOARDED_KEY, '1');
+        }
+
+        document.querySelectorAll('.onboarding-suggestion').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const sentence = btn.dataset.sentence;
+                const lang = btn.dataset.lang;
+                dismissOnboarding();
+                // Wait for languages to load, then select + fill + submit
+                const tryFill = () => {
+                    if (languagesLoaded) {
+                        if (lang) selectLangPill(lang);
+                        sentenceInput.value = sentence;
+                        sentenceInput.style.height = 'auto';
+                        sentenceInput.style.height = sentenceInput.scrollHeight + 'px';
+                        learn();
+                    } else {
+                        setTimeout(tryFill, 200);
+                    }
+                };
+                tryFill();
+            });
+        });
+
+        document.getElementById('onboarding-skip').addEventListener('click', () => {
+            dismissOnboarding();
+            sentenceInput.focus();
+        });
+
+        // Show onboarding after password check passes
+        if (appPassword === APP_PASSWORD) {
+            showOnboarding();
+        }
+        // Also hook into password submit success
+        const _origCloseModal = closePasswordModal;
+        closePasswordModal = function() {
+            _origCloseModal();
+            setTimeout(showOnboarding, 300);
+        };
 
         // Auto-resize textarea
         sentenceInput.addEventListener('input', function() {
