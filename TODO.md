@@ -84,9 +84,9 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Progress tracking** — sentences learned, languages used, streaks ✅ (2026-02-14)
 
 ## P4 — Future Polish
-- [ ] **Watchdog cron conflicts with test suite** — watchdog `pkill -f "uvicorn backend"` kills server during test runs; needs PID-file approach or lock file
+- [x] **Watchdog cron conflicts with test suite** ✅ 2026-02-15 — lock file `/tmp/sentsei-test.lock` created by test suite, watchdog skips restart when lock is < 5 min old; PID file for cleaner process management
 - [ ] **Grammar notes sometimes empty after English source filter** — LLM returns Chinese-only notes, post-processing drops them, leaving no notes; consider retry/reprompt in English
-- [ ] **Rule 18 test flaky** — Japanese ramen translation sometimes times out, causing Rule 18 tests to be silently skipped; add retry logic to test suite
+- [x] **Rule 18 test flaky** ✅ 2026-02-15 — added retry on timeout
 
 ## Cron Test Matrix
 Each iteration should run these checks:

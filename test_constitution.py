@@ -2,11 +2,18 @@
 Tests every rule in CONSTITUTION.md against the live app.
 Run: python3 test_constitution.py
 """
+import atexit
 import json
+import os
 import subprocess
 import sys
 import time
 import requests
+
+# Lock file to prevent watchdog from restarting server during tests
+LOCKFILE = "/tmp/sentsei-test.lock"
+open(LOCKFILE, 'w').close()
+atexit.register(lambda: os.unlink(LOCKFILE) if os.path.exists(LOCKFILE) else None)
 
 BASE = "http://localhost:8847"
 PASSWORD = "sentsei2026"
@@ -160,6 +167,9 @@ if r.ok:
 # Rule 18: Translation not echoing input
 print("\n[Rule 18: No Echo-back]")
 d = api_learn("I want to eat ramen", "ja", "en")
+if not d:  # Retry once on timeout
+    time.sleep(3)
+    d = api_learn("I want to eat ramen", "ja", "en")
 if d:
     trans = d.get("translation", "")
     test("Japanese translation is not English", trans != "I want to eat ramen", f"Got: {trans}")
