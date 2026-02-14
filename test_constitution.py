@@ -34,6 +34,19 @@ def api_learn(sentence, target, input_lang="auto"):
 
 print("\n🔍 Sent-Say Constitution Test Suite\n" + "="*50)
 
+# Rule -1: JavaScript syntax check
+print("\n[JS Syntax]")
+js_check = subprocess.run(
+    ['node', '-e', '''
+const fs = require('fs');
+const html = fs.readFileSync('static/index.html', 'utf8');
+const match = html.match(/<script>([\\s\\S]*?)<\\/script>/);
+if (match) { try { new Function(match[1]); console.log('OK'); } catch(e) { console.log('ERROR:' + e.message); } }
+'''],
+    capture_output=True, text=True, cwd='/home/opclaw/.openclaw/workspace-sora/sentsei'
+)
+test("JavaScript has no syntax errors", js_check.stdout.strip() == 'OK', js_check.stdout.strip())
+
 # Rule 0: Server is up
 print("\n[Server Health]")
 try:
