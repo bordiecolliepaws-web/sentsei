@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sentsei — Learn by Saying</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50%25' y='56%25' dominant-baseline='middle' text-anchor='middle' font-size='74'%3E%E5%AD%A6%3C/text%3E%3C/svg%3E">
     <style>
         :root {
             --bg: #0a0a0f;
@@ -147,6 +148,51 @@
             transform: none;
         }
 
+        .input-hint {
+            margin-top: 0.65rem;
+            font-size: 0.78rem;
+            color: var(--text-dim);
+        }
+
+        .sentence-history-wrap {
+            margin-top: 1rem;
+        }
+
+        .sentence-history-title {
+            font-size: 0.76rem;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .sentence-history {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+        }
+
+        .history-chip {
+            max-width: 100%;
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 0.38rem 0.68rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: border-color 0.2s, transform 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-chip:hover {
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
         /* Result Card */
         .result-card {
             background: var(--surface);
@@ -164,6 +210,49 @@
         .result-main {
             padding: 1.5rem;
             border-bottom: 1px solid var(--border);
+        }
+
+        .result-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-source {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .copy-btn {
+            background: var(--surface2);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.35rem 0.55rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.76rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .copy-btn:hover {
+            color: var(--text);
+            border-color: var(--accent);
+        }
+
+        .copy-btn.copied {
+            color: var(--easy);
+            border-color: var(--easy);
+        }
+
+        .copy-btn svg {
+            width: 14px;
+            height: 14px;
         }
 
         .result-translation {
@@ -323,11 +412,100 @@
             margin: 0 auto 1rem;
         }
 
+        .loading-message {
+            margin-bottom: 0.45rem;
+        }
+
+        .loading-tip {
+            font-size: 0.85rem;
+            color: var(--text);
+            opacity: 0.92;
+        }
+
         @keyframes spin { to { transform: rotate(360deg); } }
 
         /* History */
         .history-divider {
             margin: 1.5rem 0;
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(6, 6, 10, 0.72);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 30;
+            backdrop-filter: blur(2px);
+        }
+
+        .modal {
+            width: 100%;
+            max-width: 380px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            box-shadow: 0 18px 44px rgba(0, 0, 0, 0.45);
+        }
+
+        .modal h2 {
+            font-size: 1.05rem;
+            margin-bottom: 0.45rem;
+        }
+
+        .modal p {
+            color: var(--text-dim);
+            font-size: 0.88rem;
+            margin-bottom: 0.9rem;
+            line-height: 1.45;
+        }
+
+        .password-form {
+            display: flex;
+            gap: 0.55rem;
+        }
+
+        .password-form input {
+            flex: 1;
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.62rem 0.72rem;
+            outline: none;
+        }
+
+        .password-form input:focus {
+            border-color: var(--accent);
+        }
+
+        .password-form button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.6rem 0.95rem;
+            font-size: 0.86rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: filter 0.2s;
+        }
+
+        .password-form button:hover {
+            filter: brightness(1.1);
+        }
+
+        .password-error {
+            color: #fda4af;
+            margin-top: 0.65rem;
+            font-size: 0.8rem;
+        }
+
+        body.modal-open {
+            overflow: hidden;
         }
 
         .hidden { display: none; }
@@ -337,6 +515,7 @@
             .result-translation { font-size: 1.3rem; }
             .sentence-input { flex-direction: column; }
             .sentence-input button { padding: 0.75rem; }
+            .password-form { flex-direction: column; }
         }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -351,21 +530,39 @@
 
         <div class="input-area">
             <div class="language-select">
-                <label for="lang">I want to learn</label>
+                <label for="lang">Target language</label>
                 <select id="lang"></select>
             </div>
             <div class="sentence-input">
-                <textarea id="sentence" placeholder="Type any sentence you want to say..." rows="1"></textarea>
+                <textarea id="sentence" placeholder="Type a sentence in English or Chinese..." rows="1"></textarea>
                 <button id="learn-btn" onclick="learn()">Learn</button>
+            </div>
+            <div class="input-hint">Press Enter to learn</div>
+            <div id="sentence-history-wrap" class="sentence-history-wrap hidden">
+                <div class="sentence-history-title">Recent Sentences</div>
+                <div id="sentence-history" class="sentence-history"></div>
             </div>
         </div>
 
         <div id="loading" class="loading hidden">
             <div class="spinner"></div>
-            <p>Breaking it down...</p>
+            <p class="loading-message">Breaking it down...</p>
+            <p id="loading-tip" class="loading-tip"></p>
         </div>
 
         <div id="results"></div>
+    </div>
+
+    <div id="password-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="password-modal-title">
+        <div class="modal">
+            <h2 id="password-modal-title">Unlock Sentsei</h2>
+            <p>Enter the app password to start learning.</p>
+            <form id="password-form" class="password-form">
+                <input id="password-input" type="password" placeholder="Password" autocomplete="current-password" required>
+                <button type="submit">Unlock</button>
+            </form>
+            <div id="password-error" class="password-error hidden">Incorrect password. Try again.</div>
+        </div>
     </div>
 
     <script>
@@ -373,7 +570,182 @@
         const sentenceInput = document.getElementById('sentence');
         const learnBtn = document.getElementById('learn-btn');
         const loadingEl = document.getElementById('loading');
+        const loadingTipEl = document.getElementById('loading-tip');
         const resultsEl = document.getElementById('results');
+        const sentenceHistoryWrapEl = document.getElementById('sentence-history-wrap');
+        const sentenceHistoryEl = document.getElementById('sentence-history');
+        const passwordModalEl = document.getElementById('password-modal');
+        const passwordFormEl = document.getElementById('password-form');
+        const passwordInputEl = document.getElementById('password-input');
+        const passwordErrorEl = document.getElementById('password-error');
+        const APP_PASSWORD = 'sentsei2026';
+        const PASSWORD_STORAGE_KEY = 'sentsei_app_password';
+        const SENTENCE_HISTORY_KEY = 'sentsei_sentence_history';
+        const HISTORY_LIMIT = 10;
+        const LANGUAGE_TIPS = {
+            ko: [
+                'Korean changes formality based on who you are talking to.',
+                'Sentence endings in Korean carry a lot of the tone.',
+                'Particles like eun/neun and i/ga show topic and subject.'
+            ],
+            ja: [
+                'In Japanese, context often lets you omit the subject.',
+                'Sentence endings like ne and yo add nuance to intent.',
+                'Polite and casual Japanese can sound very different.'
+            ],
+            zh: [
+                'Chinese word order is often similar to English, but measure words matter.',
+                'Aspect particles such as le and guo change meaning quickly.',
+                'Tone changes can completely change a word.'
+            ],
+            es: [
+                'Spanish verb endings encode person, number, and tense.',
+                'Gender agreement applies to many nouns and adjectives.',
+                'Formal and informal "you" forms change conjugation.'
+            ],
+            fr: [
+                'French articles are essential and must match noun gender.',
+                'Liaison can change how words connect in speech.',
+                'Reflexive verbs are very common in everyday French.'
+            ],
+            de: [
+                'German noun gender affects articles and adjective endings.',
+                'Verb position changes in subordinate clauses.',
+                'Cases signal each word role in the sentence.'
+            ],
+            default: [
+                'Try short, natural phrases first, then expand complexity.',
+                'Notice patterns in sentence endings to learn faster.',
+                'Repetition with tiny changes helps grammar stick.'
+            ]
+        };
+        let appPassword = localStorage.getItem(PASSWORD_STORAGE_KEY) || '';
+        let sentenceHistory = loadSentenceHistory();
+        let languagesLoaded = false;
+
+        function lockApp() {
+            sentenceInput.disabled = true;
+            langSelect.disabled = true;
+            learnBtn.disabled = true;
+        }
+
+        function unlockApp() {
+            sentenceInput.disabled = false;
+            langSelect.disabled = false;
+            learnBtn.disabled = false;
+        }
+
+        function showPasswordError(message) {
+            passwordErrorEl.textContent = message;
+            passwordErrorEl.classList.remove('hidden');
+        }
+
+        function hidePasswordError() {
+            passwordErrorEl.classList.add('hidden');
+        }
+
+        function openPasswordModal(message = '') {
+            lockApp();
+            passwordModalEl.classList.remove('hidden');
+            document.body.classList.add('modal-open');
+            passwordInputEl.value = '';
+            if (message) {
+                showPasswordError(message);
+            } else {
+                hidePasswordError();
+            }
+            requestAnimationFrame(() => passwordInputEl.focus());
+        }
+
+        function closePasswordModal() {
+            passwordModalEl.classList.add('hidden');
+            document.body.classList.remove('modal-open');
+            hidePasswordError();
+        }
+
+        function ensurePassword() {
+            if (appPassword === APP_PASSWORD) return true;
+            openPasswordModal();
+            return false;
+        }
+
+        function loadSentenceHistory() {
+            try {
+                const raw = localStorage.getItem(SENTENCE_HISTORY_KEY) || '[]';
+                const parsed = JSON.parse(raw);
+                if (!Array.isArray(parsed)) return [];
+                return parsed
+                    .filter(item => typeof item === 'string' && item.trim())
+                    .slice(0, HISTORY_LIMIT);
+            } catch {
+                return [];
+            }
+        }
+
+        function renderSentenceHistory() {
+            sentenceHistoryEl.innerHTML = '';
+            if (sentenceHistory.length === 0) {
+                sentenceHistoryWrapEl.classList.add('hidden');
+                return;
+            }
+
+            sentenceHistoryWrapEl.classList.remove('hidden');
+            sentenceHistory.forEach((sentence) => {
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = 'history-chip';
+                chip.textContent = sentence;
+                chip.title = sentence;
+                chip.addEventListener('click', () => {
+                    sentenceInput.value = sentence;
+                    sentenceInput.style.height = 'auto';
+                    sentenceInput.style.height = sentenceInput.scrollHeight + 'px';
+                    sentenceInput.focus();
+                });
+                sentenceHistoryEl.appendChild(chip);
+            });
+        }
+
+        function saveSentenceToHistory(sentence) {
+            const cleanSentence = sentence.trim();
+            if (!cleanSentence) return;
+            sentenceHistory = [cleanSentence, ...sentenceHistory.filter(item => item !== cleanSentence)].slice(0, HISTORY_LIMIT);
+            localStorage.setItem(SENTENCE_HISTORY_KEY, JSON.stringify(sentenceHistory));
+            renderSentenceHistory();
+        }
+
+        function setRandomLoadingTip() {
+            const selectedLang = langSelect.value;
+            const langName = langSelect.options[langSelect.selectedIndex]?.textContent || 'this language';
+            const tips = LANGUAGE_TIPS[selectedLang] || LANGUAGE_TIPS.default;
+            const randomTip = tips[Math.floor(Math.random() * tips.length)];
+            loadingTipEl.textContent = `${langName} tip: ${randomTip}`;
+        }
+
+        async function copyTextToClipboard(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(text);
+                return true;
+            }
+
+            const fallbackArea = document.createElement('textarea');
+            fallbackArea.value = text;
+            fallbackArea.setAttribute('readonly', '');
+            fallbackArea.style.position = 'fixed';
+            fallbackArea.style.opacity = '0';
+            document.body.appendChild(fallbackArea);
+            fallbackArea.select();
+
+            let copied = false;
+            try {
+                copied = document.execCommand('copy');
+            } catch {
+                copied = false;
+            }
+
+            document.body.removeChild(fallbackArea);
+            return copied;
+        }
 
         // Auto-resize textarea
         sentenceInput.addEventListener('input', function() {
@@ -389,47 +761,101 @@
             }
         });
 
-        // Load languages
-        fetch('/api/languages')
-            .then(r => r.json())
-            .then(langs => {
-                for (const [code, name] of Object.entries(langs)) {
-                    const opt = document.createElement('option');
-                    opt.value = code;
-                    opt.textContent = name;
-                    langSelect.appendChild(opt);
-                }
-                // Default to Korean
+        async function loadLanguages() {
+            if (languagesLoaded) return;
+            const langs = await fetch('/api/languages').then(r => r.json());
+            for (const [code, name] of Object.entries(langs)) {
+                const opt = document.createElement('option');
+                opt.value = code;
+                opt.textContent = name;
+                langSelect.appendChild(opt);
+            }
+            // Default to Korean
+            if (Object.prototype.hasOwnProperty.call(langs, 'ko')) {
                 langSelect.value = 'ko';
+            } else if (langSelect.options.length > 0) {
+                langSelect.selectedIndex = 0;
+            }
+            languagesLoaded = true;
+        }
+
+        passwordFormEl.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const entered = passwordInputEl.value.trim();
+            if (entered !== APP_PASSWORD) {
+                showPasswordError('Incorrect password. Try again.');
+                passwordInputEl.select();
+                return;
+            }
+
+            appPassword = APP_PASSWORD;
+            localStorage.setItem(PASSWORD_STORAGE_KEY, APP_PASSWORD);
+            closePasswordModal();
+            unlockApp();
+
+            try {
+                await loadLanguages();
+            } catch (err) {
+                console.error(err);
+                alert('Failed to load languages.');
+            }
+        });
+
+        renderSentenceHistory();
+        if (ensurePassword()) {
+            unlockApp();
+            loadLanguages().catch(err => {
+                console.error(err);
+                alert('Failed to load languages.');
             });
+        }
 
         async function learn() {
+            if (!ensurePassword()) return;
+
             const sentence = sentenceInput.value.trim();
             if (!sentence) return;
 
             learnBtn.disabled = true;
+            setRandomLoadingTip();
             loadingEl.classList.remove('hidden');
 
             try {
                 const resp = await fetch('/api/learn', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-App-Password': appPassword
+                    },
                     body: JSON.stringify({
                         sentence: sentence,
                         target_language: langSelect.value
                     })
                 });
 
+                if (resp.status === 401) {
+                    localStorage.removeItem(PASSWORD_STORAGE_KEY);
+                    appPassword = '';
+                    openPasswordModal('Session expired. Enter password again.');
+                    throw new Error('Unauthorized');
+                }
                 if (!resp.ok) throw new Error('API error');
                 const data = await resp.json();
                 renderResult(data, sentence);
+                saveSentenceToHistory(sentence);
                 sentenceInput.value = '';
                 sentenceInput.style.height = 'auto';
             } catch (err) {
                 console.error(err);
-                alert('Something went wrong. Try again.');
+                if (err.message !== 'Unauthorized') {
+                    alert('Something went wrong. Try again.');
+                }
             } finally {
-                learnBtn.disabled = false;
+                if (appPassword === APP_PASSWORD) {
+                    learnBtn.disabled = false;
+                } else {
+                    lockApp();
+                }
                 loadingEl.classList.add('hidden');
             }
         }
@@ -454,7 +880,16 @@
 
             card.innerHTML = `
                 <div class="result-main">
-                    <div style="font-size:0.8rem;color:var(--text-dim);margin-bottom:0.5rem;">"${original}"</div>
+                    <div class="result-head">
+                        <div class="result-source">"${original}"</div>
+                        <button type="button" class="copy-btn" aria-label="Copy translation">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            <span class="copy-label">Copy</span>
+                        </button>
+                    </div>
                     <div class="result-translation">${data.translation}</div>
                     <div class="result-pronunciation">${data.pronunciation}</div>
                     <div class="result-literal">${data.literal}</div>
@@ -472,6 +907,20 @@
                 </div>
             `;
 
+            const copyBtn = card.querySelector('.copy-btn');
+            const copyLabelEl = card.querySelector('.copy-label');
+            copyBtn.addEventListener('click', async () => {
+                const copied = await copyTextToClipboard(data.translation);
+                copyLabelEl.textContent = copied ? 'Copied' : 'Failed';
+                if (copied) {
+                    copyBtn.classList.add('copied');
+                }
+                setTimeout(() => {
+                    copyLabelEl.textContent = 'Copy';
+                    copyBtn.classList.remove('copied');
+                }, 1200);
+            });
+
             // Prepend new result
             if (resultsEl.children.length > 0) {
                 const divider = document.createElement('div');
@@ -479,6 +928,10 @@
                 resultsEl.insertBefore(divider, resultsEl.firstChild);
             }
             resultsEl.insertBefore(card, resultsEl.firstChild);
+
+            requestAnimationFrame(() => {
+                card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
         }
     </script>
 </body>
