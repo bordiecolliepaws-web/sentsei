@@ -627,8 +627,21 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
         for note in notes:
             if not _mostly_cjk(note):
                 cleaned_notes.append(note)
-            # else: drop notes that are mostly Chinese when source is English
+            else:
+                # Try to salvage English content from the note
+                import re as _re_notes
+                salvaged = _re_notes.sub(r'[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]+', '', note).strip()
+                # Clean up leftover punctuation/parens
+                salvaged = _re_notes.sub(r'\s+', ' ', salvaged).strip(' ()-:,.')
+                if len(salvaged) > 15:  # Only keep if there's enough English content
+                    cleaned_notes.append(salvaged)
         result["grammar_notes"] = cleaned_notes
+
+        # If all grammar notes were dropped, generate a minimal fallback
+        if not cleaned_notes and notes:
+            target = result.get("translation", "")
+            if target:
+                result["grammar_notes"] = [f"Note: The original grammar notes were in the target language. Review the breakdown for word-by-word details."]
 
         for item in result.get("breakdown", []):
             meaning = item.get("meaning", "")

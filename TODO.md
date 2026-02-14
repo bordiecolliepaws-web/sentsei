@@ -85,7 +85,7 @@ _Items for cron iterations to work through, in priority order._
 
 ## P4 — Future Polish
 - [x] **Watchdog cron conflicts with test suite** ✅ 2026-02-15 — lock file `/tmp/sentsei-test.lock` created by test suite, watchdog skips restart when lock is < 5 min old; PID file for cleaner process management
-- [ ] **Grammar notes sometimes empty after English source filter** — LLM returns Chinese-only notes, post-processing drops them, leaving no notes; consider retry/reprompt in English
+- [x] **Grammar notes sometimes empty after English source filter** ✅ 2026-02-15 — salvages English content from CJK-heavy notes instead of dropping; adds fallback note when all notes are stripped
 - [x] **Rule 18 test flaky** ✅ 2026-02-15 — added retry on timeout
 
 ## Cron Test Matrix
