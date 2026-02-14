@@ -1095,12 +1095,61 @@
 
         .loading-message {
             margin-bottom: 0.45rem;
+            transition: opacity 0.3s;
         }
 
         .loading-tip {
             font-size: 0.85rem;
             color: var(--text);
             opacity: 0.92;
+        }
+
+        .loading-elapsed {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .loading-cancel {
+            margin-top: 0.75rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 0.35rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .loading-cancel:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        /* Error state */
+        .error-banner {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(220, 80, 60, 0.08);
+            border: 1px solid rgba(220, 80, 60, 0.25);
+            border-radius: 14px;
+            margin-bottom: 1rem;
+        }
+        .error-banner p {
+            color: #dc503c;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+        .error-banner button {
+            background: var(--accent);
+            color: #111;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -1345,8 +1394,14 @@
 
         <div id="loading" class="loading hidden">
             <div class="spinner"></div>
-            <p class="loading-message">Breaking it down...</p>
+            <p id="loading-message" class="loading-message">Breaking it down...</p>
             <p id="loading-tip" class="loading-tip"></p>
+            <p id="loading-elapsed" class="loading-elapsed"></p>
+            <button id="loading-cancel" class="loading-cancel" style="display:none">Cancel</button>
+        </div>
+        <div id="error-banner" class="error-banner" style="display:none">
+            <p id="error-message">Something went wrong.</p>
+            <button id="retry-btn">Try again</button>
         </div>
 
         <div id="results"></div>
@@ -1878,15 +1933,86 @@
             });
         }
 
+        const loadingMessageEl = document.getElementById('loading-message');
+        const loadingElapsedEl = document.getElementById('loading-elapsed');
+        const loadingCancelBtn = document.getElementById('loading-cancel');
+        const errorBannerEl = document.getElementById('error-banner');
+        const errorMessageEl = document.getElementById('error-message');
+        const retryBtnEl = document.getElementById('retry-btn');
+        let currentAbortController = null;
+        let loadingTimer = null;
+        let lastLearnSentence = '';
+
+        const LOADING_PHASES = [
+            { at: 0, msg: 'Translating...' },
+            { at: 3, msg: 'Analyzing grammar...' },
+            { at: 7, msg: 'Building word breakdown...' },
+            { at: 12, msg: 'Adding pronunciation...' },
+            { at: 18, msg: 'Almost there...' },
+            { at: 25, msg: 'Still working — complex sentence!' },
+            { at: 35, msg: 'Hang tight, wrapping up...' },
+        ];
+
+        function startLoadingTimer() {
+            const start = Date.now();
+            loadingCancelBtn.style.display = 'none';
+            loadingElapsedEl.textContent = '';
+            loadingTimer = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - start) / 1000);
+                loadingElapsedEl.textContent = elapsed + 's';
+                // Progressive messages
+                for (let i = LOADING_PHASES.length - 1; i >= 0; i--) {
+                    if (elapsed >= LOADING_PHASES[i].at) {
+                        loadingMessageEl.textContent = LOADING_PHASES[i].msg;
+                        break;
+                    }
+                }
+                // Show cancel after 8s
+                if (elapsed >= 8) loadingCancelBtn.style.display = 'inline-block';
+            }, 1000);
+        }
+
+        function stopLoadingTimer() {
+            if (loadingTimer) { clearInterval(loadingTimer); loadingTimer = null; }
+        }
+
+        function showError(msg) {
+            errorMessageEl.textContent = msg;
+            errorBannerEl.style.display = 'block';
+        }
+
+        function hideError() { errorBannerEl.style.display = 'none'; }
+
+        loadingCancelBtn.addEventListener('click', () => {
+            if (currentAbortController) currentAbortController.abort();
+        });
+
+        retryBtnEl.addEventListener('click', () => {
+            hideError();
+            if (lastLearnSentence) {
+                sentenceInput.value = lastLearnSentence;
+                learn();
+            }
+        });
+
+        const LEARN_TIMEOUT_MS = 45000;
+
         async function learn() {
             if (!ensurePassword()) return;
 
             const sentence = sentenceInput.value.trim();
             if (!sentence) return;
+            lastLearnSentence = sentence;
+            hideError();
 
             learnBtn.disabled = true;
             setRandomLoadingTip();
+            loadingMessageEl.textContent = 'Translating...';
             loadingEl.classList.remove('hidden');
+            startLoadingTimer();
+
+            currentAbortController = new AbortController();
+            const timeoutId = setTimeout(() => currentAbortController.abort(), LEARN_TIMEOUT_MS);
 
             try {
                 const resp = await fetch('/api/learn', {
@@ -1900,8 +2026,11 @@
                         target_language: langSelect.value,
                         speaker_gender: selectedGender,
                         speaker_formality: selectedFormality
-                    })
+                    }),
+                    signal: currentAbortController.signal
                 });
+
+                clearTimeout(timeoutId);
 
                 if (resp.status === 401) {
                     localStorage.removeItem(PASSWORD_STORAGE_KEY);
@@ -1918,11 +2047,16 @@
                 sentenceInput.value = '';
                 sentenceInput.style.height = 'auto';
             } catch (err) {
+                clearTimeout(timeoutId);
                 console.error(err);
-                if (err.message !== 'Unauthorized') {
-                    alert('Something went wrong. Try again.');
+                if (err.name === 'AbortError') {
+                    showError('Request timed out — the model might be busy. Tap retry.');
+                } else if (err.message !== 'Unauthorized') {
+                    showError('Something went wrong. Tap retry to try again.');
                 }
             } finally {
+                stopLoadingTimer();
+                currentAbortController = null;
                 if (appPassword === APP_PASSWORD) {
                     learnBtn.disabled = false;
                 } else {
