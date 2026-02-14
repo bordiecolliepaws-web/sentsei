@@ -79,7 +79,7 @@ _Items for cron iterations to work through, in priority order._
 - [ ] **Save/export** — Anki flashcard export, PDF, screenshot-friendly format
 - [x] **Caching** ✅ 2026-02-14 — in-memory LRU cache (500 entries, 24h TTL), keyed by sentence+target+gender+formality
 - [ ] **Rate limiting** — prevent API hammering once past password
-- [ ] **Onboarding** — first-time "try this" example for new users
+- [x] **Onboarding** ✅ 2026-02-14 — first-visit overlay with 3 suggested sentences (ja/ko/zh), click to auto-fill + learn, skip option, localStorage flag
 - [ ] **Comparison mode** — one sentence → all languages side by side
 - [ ] **Progress tracking** — sentences learned, languages used, streaks
 
