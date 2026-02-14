@@ -453,7 +453,7 @@ Respond with ONLY valid JSON (no markdown, no code fences) in this exact structu
   "cultural_note": "optional cultural context or usage tip (in the detected source language), null if none",
   "formality": "casual|polite|formal — what register this translation uses",
   "alternative": "an alternative way to say this (different formality or phrasing), or null",
-  "native_expression": "How a native {lang_name} speaker would NATURALLY say this — MUST be a DIFFERENT sentence from the translation, not a rewording or repetition. Show a genuinely different way a native would express the same idea (different structure, idiom, or colloquial phrasing). Include pronunciation and a brief explanation. MUST be null if you cannot think of a meaningfully different expression."
+  "native_expression": "ALWAYS provide this unless the translation is already perfectly natural. Show how a native {lang_name} speaker would actually say this in daily life — use colloquial phrasing, idioms, or slang. Must be a DIFFERENT sentence from the translation (different structure or wording). Format: 'native sentence (pronunciation) — explanation of why natives say it this way in {source_lang_short}'. Only null if the translation is already exactly how a native would say it."
 }}"""
 
     # Inject speaker identity
@@ -583,7 +583,7 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
         # Strip pronunciation/explanation suffixes to compare core sentence
         native_core = native.split("(")[0].strip().rstrip("。.!！")
         trans_core = translation.strip().rstrip("。.!！")
-        if native_core == trans_core or native_core in trans_core or trans_core in native_core:
+        if native_core == trans_core:
             result["native_expression"] = None
 
     # Ensure all Chinese text is Traditional Chinese (Taiwan)
