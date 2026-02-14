@@ -388,12 +388,111 @@
             border-radius: 8px;
             padding: 0.6rem 0.8rem;
             min-width: 80px;
-            cursor: default;
-            transition: border-color 0.2s;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            position: relative;
         }
 
         .word-chip:hover {
             border-color: var(--accent);
+        }
+
+        .word-chip.expanded {
+            border-color: var(--accent);
+            background: rgba(124, 106, 255, 0.08);
+            grid-column: 1 / -1;
+        }
+
+        .word-detail {
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--border);
+            animation: fadeIn 0.2s ease;
+        }
+
+        .word-detail-loading {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            padding: 0.3rem 0;
+        }
+
+        .word-detail-section {
+            margin-bottom: 0.5rem;
+        }
+
+        .word-detail-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .word-detail-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-dim);
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .word-detail-examples {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .word-detail-examples li {
+            font-size: 0.8rem;
+            line-height: 1.4;
+            color: var(--text);
+        }
+
+        .word-detail-examples .example-pron {
+            font-size: 0.72rem;
+            color: var(--accent);
+        }
+
+        .word-detail-examples .example-meaning {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+        }
+
+        .word-detail-conjugations {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+        }
+
+        .conjugation-tag {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.72rem;
+            color: var(--text);
+        }
+
+        .conjugation-tag .conj-label {
+            color: var(--text-dim);
+            font-size: 0.65rem;
+        }
+
+        .word-detail-related {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+        }
+
+        .related-word-tag {
+            background: var(--accent-glow);
+            border-radius: 6px;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.72rem;
+            color: var(--accent);
+            cursor: pointer;
+        }
+
+        .related-word-tag:hover {
+            background: rgba(124, 106, 255, 0.25);
         }
 
         .word-chip .word-target {
@@ -1075,7 +1174,8 @@
                 }
                 if (!resp.ok) throw new Error('API error');
                 const data = await resp.json();
-                renderResult(data, sentence);
+                const reqCtx = { target_language: langSelect.value, sentence: sentence };
+                renderResult(data, sentence, reqCtx);
                 saveSentenceToHistory(sentence);
                 sentenceInput.value = '';
                 sentenceInput.style.height = 'auto';
@@ -1094,7 +1194,86 @@
             }
         }
 
-        function renderResult(data, original) {
+        async function handleWordChipClick(chip, wordData, fullData, reqCtx) {
+            // Toggle: if already expanded, collapse
+            if (chip.classList.contains('expanded')) {
+                chip.classList.remove('expanded');
+                const detail = chip.querySelector('.word-detail');
+                if (detail) detail.remove();
+                return;
+            }
+
+            // Collapse any other expanded chips in the same card
+            const parent = chip.closest('.word-chips');
+            parent.querySelectorAll('.word-chip.expanded').forEach(other => {
+                other.classList.remove('expanded');
+                const d = other.querySelector('.word-detail');
+                if (d) d.remove();
+            });
+
+            chip.classList.add('expanded');
+
+            // Show loading
+            const detailDiv = document.createElement('div');
+            detailDiv.className = 'word-detail';
+            detailDiv.innerHTML = '<div class="word-detail-loading">Loading details...</div>';
+            chip.appendChild(detailDiv);
+
+            try {
+                const resp = await fetch('/api/word-detail', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-App-Password': appPassword
+                    },
+                    body: JSON.stringify({
+                        word: wordData.word,
+                        meaning: wordData.meaning,
+                        target_language: reqCtx.target_language,
+                        sentence_context: fullData.translation
+                    })
+                });
+
+                if (!resp.ok) throw new Error('API error');
+                const detail = await resp.json();
+
+                let html = '';
+
+                // Example sentences
+                if (detail.examples && detail.examples.length) {
+                    html += '<div class="word-detail-section"><div class="word-detail-label">Examples</div><ul class="word-detail-examples">';
+                    detail.examples.forEach(ex => {
+                        html += `<li>${ex.sentence}<br><span class="example-pron">${ex.pronunciation || ''}</span> <span class="example-meaning">${ex.meaning}</span></li>`;
+                    });
+                    html += '</ul></div>';
+                }
+
+                // Conjugations
+                if (detail.conjugations && detail.conjugations.length) {
+                    html += '<div class="word-detail-section"><div class="word-detail-label">Forms</div><div class="word-detail-conjugations">';
+                    detail.conjugations.forEach(c => {
+                        html += `<span class="conjugation-tag">${c.form} <span class="conj-label">${c.label}</span></span>`;
+                    });
+                    html += '</div></div>';
+                }
+
+                // Related words
+                if (detail.related && detail.related.length) {
+                    html += '<div class="word-detail-section"><div class="word-detail-label">Related</div><div class="word-detail-related">';
+                    detail.related.forEach(r => {
+                        html += `<span class="related-word-tag" title="${r.meaning}">${r.word} — ${r.meaning}</span>`;
+                    });
+                    html += '</div></div>';
+                }
+
+                detailDiv.innerHTML = html || '<div class="word-detail-loading">No additional details available.</div>';
+            } catch (err) {
+                console.error(err);
+                detailDiv.innerHTML = '<div class="word-detail-loading">Failed to load details.</div>';
+            }
+        }
+
+        function renderResult(data, original, reqCtx) {
             const card = document.createElement('div');
             card.className = 'result-card';
 
@@ -1141,6 +1320,12 @@
                     ${data.native_expression ? `<div class="cultural-note">🗣️ Native expression: ${data.native_expression}</div>` : ''}
                 </div>
             `;
+
+            // Clickable word chips
+            card.querySelectorAll('.word-chip').forEach((chip, idx) => {
+                const wordData = data.breakdown[idx];
+                chip.addEventListener('click', () => handleWordChipClick(chip, wordData, data, req));
+            });
 
             const copyBtn = card.querySelector('.copy-btn');
             const copyLabelEl = card.querySelector('.copy-label');

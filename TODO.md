@@ -25,24 +25,16 @@ _Items for cron iterations to work through, in priority order._
   - Pill toggles with flag emojis instead of `<select>`
   - Horizontal scrollable row, works on mobile and desktop
   - Active pill highlighted with accent color
-- [ ] **Speaker toggles**
-  - Gender: ♀ / ♂ / Neutral (language-dependent)
-  - Formality: Casual / Polite / Formal
-  - Scenario context (restaurant, office, etc.)
-  - Pass these to the LLM prompt
-- [ ] **Clickable word chips**
+- [x] **Speaker toggles** ✅ 2026-02-14
+  - Gender: ♀ / ♂ / Neutral toggle pills
+  - Formality: Casual / Polite / Formal toggle pills
+  - Persisted to localStorage
+  - Passed to LLM prompt with language-specific guidance (ja pronouns, ko speech levels, he conjugation, es/it agreement)
+- [ ] **Clickable word chips** ← NEXT
   - Click a word → expand panel with example sentences, conjugations, related words
   - Design the interaction: inline expand? modal? slide-out?
-- [ ] **Speaker/identity toggles (gender, age, formality)** ⭐
-  - Toggle: ♀ / ♂ / Neutral — affects ALL languages, not just Japanese
-  - Japanese: 私/僕/俺/あたし, verb endings
-  - Korean: 나/저, speech levels (반말/존댓말)
-  - Hebrew: almost everything is gendered (verbs, adjectives, pronouns)
-  - Spanish/Italian: gendered adjectives, noun agreements
-  - Greek: gendered articles, adjectives, participles
-  - Formality: Casual / Polite / Formal (separate from gender)
-  - Pass identity context to LLM prompt so translation reflects speaker
-  - Show toggle bar above or beside the input
+- [x] **Speaker/identity toggles (gender, age, formality)** ⭐ ✅ 2026-02-14
+  - Combined with Speaker toggles above — same implementation
 - [ ] **Persistent sentence history (sidebar/drawer)**
   - Already in localStorage
   - Promote to visible side panel (desktop) or bottom drawer (mobile)
