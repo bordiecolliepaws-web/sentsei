@@ -21,10 +21,10 @@ _Items for cron iterations to work through, in priority order._
   - Copy button on own line (not crowding translation)
   - Safe area insets for notched phones
   - Tested at 375px and 360px widths
-- [ ] **Better language selector UI (not dropdown)**
-  - Pill toggles / flag chips instead of `<select>`
-  - Works on both mobile and desktop
-  - Consider: horizontal scrollable row of language pills
+- [x] **Better language selector UI (not dropdown)** ✅ 2026-02-14
+  - Pill toggles with flag emojis instead of `<select>`
+  - Horizontal scrollable row, works on mobile and desktop
+  - Active pill highlighted with accent color
 - [ ] **Speaker toggles**
   - Gender: ♀ / ♂ / Neutral (language-dependent)
   - Formality: Casual / Polite / Formal

@@ -54,6 +54,8 @@ SUPPORTED_LANGUAGES = {
 class SentenceRequest(BaseModel):
     sentence: str
     target_language: str
+    speaker_gender: Optional[str] = None
+    speaker_formality: Optional[str] = None
 
 @app.post("/api/learn")
 async def learn_sentence(
@@ -128,6 +130,17 @@ Respond with ONLY valid JSON (no markdown, no code fences) in this exact structu
   "alternative": "an alternative way to say this (different formality or phrasing), or null",
   "native_expression": "How a native {lang_name} speaker would NATURALLY say this — MUST be a DIFFERENT sentence from the translation, not a rewording or repetition. Show a genuinely different way a native would express the same idea (different structure, idiom, or colloquial phrasing). Include pronunciation and a brief explanation. MUST be null if you cannot think of a meaningfully different expression."
 }}"""
+
+    # Inject speaker identity if provided
+    gender = req.speaker_gender or "neutral"
+    formality = req.speaker_formality or "polite"
+    speaker_block = f"""
+SPEAKER IDENTITY:
+- Gender: {gender} — adjust pronouns, gendered words accordingly. For Japanese: use 僕/俺 for male, あたし for female, 私 for neutral. For Hebrew: adjust verb conjugation, adjectives, pronouns. For Spanish/Italian: adjust adjective agreement.
+- Formality: {formality} — use appropriate register. For Korean: casual=반말, polite=존댓말, formal=격식체. For Japanese: casual=タメ口, polite=です/ます, formal=敬語.
+The "formality" field in the response MUST be "{formality}".
+"""
+    prompt = prompt + "\n" + speaker_block
 
     # Always use qwen2.5 for structured JSON (TAIDE can't reliably produce JSON)
     model = OLLAMA_MODEL

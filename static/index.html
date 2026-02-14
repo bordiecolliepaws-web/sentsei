@@ -126,6 +126,52 @@
             line-height: 1;
         }
 
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.65rem;
+        }
+
+        .toggle-row label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-weight: 600;
+            min-width: 72px;
+            flex-shrink: 0;
+        }
+
+        .toggle-pills {
+            display: flex;
+            gap: 0.3rem;
+        }
+
+        .toggle-pill {
+            background: transparent;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 0.25rem 0.6rem;
+            font-size: 0.72rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            font-family: inherit;
+        }
+
+        .toggle-pill:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        .toggle-pill.active {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
         .sentence-input {
             display: flex;
             gap: 0.75rem;
@@ -654,6 +700,22 @@
                 <div id="lang-pills" class="lang-pills"></div>
                 <select id="lang" style="display:none"></select>
             </div>
+            <div class="toggle-row">
+                <label>Speaking as</label>
+                <div class="toggle-pills" id="gender-pills">
+                    <button type="button" class="toggle-pill" data-value="female">♀ Female</button>
+                    <button type="button" class="toggle-pill" data-value="male">♂ Male</button>
+                    <button type="button" class="toggle-pill active" data-value="neutral">⚪ Neutral</button>
+                </div>
+            </div>
+            <div class="toggle-row">
+                <label>Formality</label>
+                <div class="toggle-pills" id="formality-pills">
+                    <button type="button" class="toggle-pill" data-value="casual">Casual</button>
+                    <button type="button" class="toggle-pill active" data-value="polite">Polite</button>
+                    <button type="button" class="toggle-pill" data-value="formal">Formal</button>
+                </div>
+            </div>
             <div class="sentence-input">
                 <textarea id="sentence" placeholder="Type a sentence in English or Chinese..." rows="1"></textarea>
                 <button id="learn-btn" onclick="learn()">Learn</button>
@@ -706,6 +768,28 @@
         const passwordFormEl = document.getElementById('password-form');
         const passwordInputEl = document.getElementById('password-input');
         const passwordErrorEl = document.getElementById('password-error');
+        const genderPillsEl = document.getElementById('gender-pills');
+        const formalityPillsEl = document.getElementById('formality-pills');
+        const GENDER_KEY = 'sentsei_speaker_gender';
+        const FORMALITY_KEY = 'sentsei_speaker_formality';
+        let selectedGender = localStorage.getItem(GENDER_KEY) || 'neutral';
+        let selectedFormality = localStorage.getItem(FORMALITY_KEY) || 'polite';
+
+        function initToggle(container, current, storageKey, setter) {
+            container.querySelectorAll('.toggle-pill').forEach(p => {
+                p.classList.toggle('active', p.dataset.value === current);
+                p.addEventListener('click', () => {
+                    container.querySelectorAll('.toggle-pill').forEach(q => q.classList.remove('active'));
+                    p.classList.add('active');
+                    localStorage.setItem(storageKey, p.dataset.value);
+                    setter(p.dataset.value);
+                });
+            });
+        }
+
+        initToggle(genderPillsEl, selectedGender, GENDER_KEY, v => selectedGender = v);
+        initToggle(formalityPillsEl, selectedFormality, FORMALITY_KEY, v => selectedFormality = v);
+
         const APP_PASSWORD = 'sentsei2026';
         const PASSWORD_STORAGE_KEY = 'sentsei_app_password';
         const SENTENCE_HISTORY_KEY = 'sentsei_sentence_history';
@@ -977,7 +1061,9 @@
                     },
                     body: JSON.stringify({
                         sentence: sentence,
-                        target_language: langSelect.value
+                        target_language: langSelect.value,
+                        speaker_gender: selectedGender,
+                        speaker_formality: selectedFormality
                     })
                 });
 
