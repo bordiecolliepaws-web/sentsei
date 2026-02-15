@@ -94,9 +94,10 @@ _Items for cron iterations to work through, in priority order._
 
 ## P3.6 — Code Health & Reliability (from 2026-02-16 reflection)
 - [ ] **Split monolith index.html (4333 lines)** — extract JS into `app.js`, CSS into `style.css`. Easier to maintain, debug, and cache separately.
-- [ ] **Move hardcoded secrets to env vars** — `APP_PASSWORD = "sentsei2026"` is in source. Use `os.environ.get("SENTSEI_PASSWORD")` with fallback.
-- [ ] **Fix empty surprise bank on startup** — `/api/surprise-bank-status` returns `{"banks":{}}`. Pre-compute task may be failing silently. Add logging, verify Ollama connectivity at startup.
-- [ ] **Add /api/health endpoint** — return app status, Ollama reachability, cache stats, surprise bank status. Useful for watchdog and monitoring.
+- [x] **Move hardcoded secrets to env vars** ✅ 2026-02-16 — (done with health endpoint commit)
+- [x] **Fix empty surprise bank on startup** ✅ 2026-02-16 — Re-enabled background fill with Ollama connectivity check. Fills only when bank is low/empty, yields to user requests. Persists to disk (surprise_bank.json) after fill/refill.
+- [x] **Add /api/health endpoint** ✅ 2026-02-16 — Returns Ollama reachability, cache stats (entries/max/TTL), surprise bank status (total/languages/filling).
+- [x] **Move hardcoded secrets to env vars** ✅ 2026-02-16 — `APP_PASSWORD` now reads from `SENTSEI_PASSWORD` env var with fallback to default.
 - [ ] **Persistent translation cache** — current in-memory LRU is lost on restart. Consider SQLite or simple JSON file for cache persistence across restarts.
 - [ ] **Admin view for feedback** — feedback goes to a JSONL file with no way to read it. Add a simple `/api/feedback-list` (admin-only) or a basic admin page.
 
