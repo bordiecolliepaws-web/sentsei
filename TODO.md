@@ -83,6 +83,10 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Comparison mode** ✅ 2026-02-14 — one sentence → all languages side by side
 - [x] **Progress tracking** — sentences learned, languages used, streaks ✅ (2026-02-14)
 
+## P3.5 — Performance Features
+- [x] **Pre-computed Surprise Me** ✅ 2026-02-16 — Background task pre-generates translations for surprise sentences across all languages on startup. Serves instantly from in-memory bank. Auto-refills when bank gets low. Falls back to live LLM if empty. `/api/surprise-bank-status` for monitoring.
+- [x] **Speculative Typing (Learn as you type)** ✅ 2026-02-16 — After 1.5s typing pause, fires LLM request in background. If result is ready when Learn is pressed, renders instantly. Cancels pending request on further typing. Shows subtle "Preparing translation..." pulse indicator. IME-aware (pauses during 注音 composition).
+
 ## P4 — Future Polish
 - [x] **Watchdog cron conflicts with test suite** ✅ 2026-02-15 — lock file `/tmp/sentsei-test.lock` created by test suite, watchdog skips restart when lock is < 5 min old; PID file for cleaner process management
 - [x] **Grammar notes sometimes empty after English source filter** ✅ 2026-02-15 — salvages English content from CJK-heavy notes instead of dropping; adds fallback note when all notes are stripped
