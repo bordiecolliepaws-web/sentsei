@@ -2092,28 +2092,28 @@
     </div>
 
     <!-- Hamburger Menu -->
-    <button id="hamburger-btn" class="hamburger-btn" aria-label="Open menu">
+    <button id="hamburger-btn" class="hamburger-btn" aria-label="Open menu" onclick="document.getElementById('side-menu').classList.add('open'); document.getElementById('side-menu-overlay').classList.add('open');">
         ☰
         <span id="hamburger-badge" class="hamburger-badge" style="display:none">0</span>
     </button>
-    <div id="side-menu-overlay" class="side-menu-overlay"></div>
+    <div id="side-menu-overlay" class="side-menu-overlay" onclick="this.classList.remove('open'); document.getElementById('side-menu').classList.remove('open');"></div>
     <div id="side-menu" class="side-menu">
         <div class="side-menu-header">
             <h3>Menu</h3>
-            <button id="side-menu-close" class="side-menu-close" aria-label="Close menu">✕</button>
+            <button id="side-menu-close" class="side-menu-close" aria-label="Close menu" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open');">✕</button>
         </div>
         <div class="side-menu-items">
-            <button class="side-menu-item" id="menu-history">
+            <button class="side-menu-item" id="menu-history" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open'); toggleHistoryPanel();">
                 <span class="menu-icon">📜</span> History
                 <span id="menu-history-badge" class="menu-badge" style="display:none">0</span>
             </button>
-            <button class="side-menu-item" id="menu-quiz">
+            <button class="side-menu-item" id="menu-quiz" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open'); toggleQuizMode();">
                 <span class="menu-icon">🧠</span> Quiz
             </button>
-            <button class="side-menu-item" id="menu-stories">
+            <button class="side-menu-item" id="menu-stories" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open'); toggleStoriesPanel();">
                 <span class="menu-icon">📖</span> Stories
             </button>
-            <button class="side-menu-item" id="menu-stats">
+            <button class="side-menu-item" id="menu-stats" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open'); openStatsModal();">
                 <span class="menu-icon">📊</span> Stats
             </button>
         </div>
