@@ -630,6 +630,70 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
         if word_pron:
             item["pronunciation"] = word_pron
 
+    # Re-segment Chinese breakdowns if they're character-by-character
+    if lang_code == "zh" and breakdown and translation_text:
+        avg_word_len = sum(len(item.get("word", "")) for item in breakdown) / max(len(breakdown), 1)
+        if avg_word_len <= 1.2 and len(breakdown) > 3:
+            # Model split character-by-character — re-segment with jieba
+            import jieba
+            words = list(jieba.cut(translation_text.replace("，", "").replace("。", "").replace("！", "").replace("？", "")))
+            words = [w.strip() for w in words if w.strip()]
+            new_breakdown = []
+            for w in words:
+                pron = deterministic_word_pronunciation(w, lang_code) or ""
+                new_breakdown.append({
+                    "word": w,
+                    "pronunciation": pron,
+                    "meaning": "",  # Will be filled by model on next pass or left for user
+                    "difficulty": "medium",
+                    "note": None
+                })
+            # Build a simple word→meaning dictionary from common Chinese words
+            # and try to match from original breakdown
+            orig_meanings = {}
+            for item in breakdown:
+                orig_word = item.get("word", "")
+                orig_meaning = item.get("meaning", "")
+                if orig_word and orig_meaning:
+                    orig_meanings[orig_word] = orig_meaning
+            # Common Chinese word meanings as fallback
+            common_zh_meanings = {
+                "海上": "on the sea/ocean", "日落": "sunset", "真的": "really, truly",
+                "很": "very", "美": "beautiful", "美麗": "beautiful", "極了": "extremely",
+                "的": "(possessive/linking particle)", "了": "(completion particle)",
+                "是": "is/am/are", "真是": "truly is", "美極了": "extremely beautiful",
+                "不": "not", "我": "I/me", "你": "you", "他": "he/him", "她": "she/her",
+                "們": "(plural)", "我們": "we/us", "要": "want/need", "可以": "can",
+                "在": "at/in", "這": "this", "那": "that", "什麼": "what",
+                "好": "good", "吃": "eat", "喝": "drink", "去": "go", "來": "come",
+                "看": "look/see", "想": "think/want", "說": "say/speak",
+                "也": "also", "都": "all/both", "就": "then/just", "還": "still/also",
+                "太": "too (much)", "更": "more/even more", "最": "most",
+                "好": "good/very", "好吃": "delicious", "好看": "good-looking",
+                "好美": "so beautiful", "好棒": "so great", "好喝": "tasty (drink)",
+                "真": "really/truly", "超": "super", "蠻": "quite/rather",
+                "嗎": "(question particle)", "吧": "(suggestion particle)",
+                "呢": "(particle)", "啊": "(exclamation particle)",
+                "沒": "not/haven't", "沒有": "don't have/haven't",
+                "因為": "because", "所以": "so/therefore", "但是": "but",
+                "如果": "if", "雖然": "although", "而且": "moreover",
+                "已經": "already", "還是": "or/still", "應該": "should",
+                "可能": "maybe/possibly", "一定": "definitely", "當然": "of course",
+            }
+            for item in new_breakdown:
+                w = item["word"]
+                if w in orig_meanings and orig_meanings[w].strip() not in ("", ","):
+                    item["meaning"] = orig_meanings[w]
+                elif w in common_zh_meanings:
+                    item["meaning"] = common_zh_meanings[w]
+                else:
+                    # Last resort: concatenate known char meanings
+                    chars = [orig_meanings.get(c, common_zh_meanings.get(c, "")) for c in w]
+                    combined = " + ".join(c for c in chars if c)
+                    item["meaning"] = combined if combined else w
+            breakdown = new_breakdown
+            result["breakdown"] = breakdown
+
     # Filter out hallucinated breakdown words not in the translation
     if breakdown and translation_text:
         clean_translation = translation_text.replace(" ", "").replace("，", "").replace(",", "").replace("。", "").replace(".", "").replace("！", "").replace("!", "").replace("？", "").replace("?", "")
