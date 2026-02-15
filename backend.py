@@ -9,6 +9,7 @@ from typing import Optional, List
 from pathlib import Path
 from collections import OrderedDict, defaultdict
 from fastapi import FastAPI, HTTPException, Header, Request, Response
+from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import httpx
@@ -626,32 +627,8 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
                 result["translation"] = fixed
                 translation_text = fixed
 
-    # Two-pass: TAIDE taiwanification for Chinese translations
-    if lang_code == "zh" and translation_text:
-        try:
-            taide_prompt = f"""請把以下中文改成道地的台灣繁體中文（台灣口語用法）。只需要回傳修改後的句子，不要加任何解釋。如果已經是台灣用法就原樣回傳。
-{casual_hint}
-
-原文：{translation_text}
-台灣用法："""
-            taide_resp = requests.post(
-                f"{OLLAMA_URL}/api/chat",
-                json={"model": TAIDE_MODEL, "messages": [{"role": "user", "content": taide_prompt}], "stream": False, "options": {"temperature": 0.3, "num_predict": 200}},
-                timeout=30
-            )
-            if taide_resp.ok:
-                taide_text = taide_resp.json().get("message", {}).get("content", "").strip()
-                # Only use if it's pure Chinese (no English, no JSON, reasonable length)
-                if taide_text and len(taide_text) < len(translation_text) * 3 and not taide_text.startswith("{"):
-                    import re as _re
-                    if not _re.search(r'[a-zA-Z]{3,}', taide_text):
-                        # Clean up: remove quotes, trailing punctuation artifacts
-                        taide_text = taide_text.strip('"\'').strip()
-                        if taide_text:
-                            result["translation"] = taide_text
-                            translation_text = taide_text
-        except Exception:
-            pass  # Fall back to qwen output
+    # TAIDE taiwanification pass removed — adds 15-20s latency for marginal quality gain
+    # The main qwen prompt already includes Taiwan Chinese rules
 
     # Post-process: override LLM pronunciation with deterministic libraries
     det_pron = deterministic_pronunciation(translation_text, lang_code)
@@ -845,6 +822,78 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
         _get_user_event().set()
 
     return result
+
+
+@app.post("/api/learn-stream")
+async def learn_sentence_stream(
+    request: Request,
+    req: SentenceRequest,
+    x_app_password: Optional[str] = Header(default=None),
+):
+    """SSE streaming version of /api/learn. Sends progress events then the final result."""
+    if x_app_password != APP_PASSWORD:
+        raise HTTPException(401, "Unauthorized")
+
+    # Rate limiting
+    client_ip = request.client.host if request.client else "unknown"
+    _rate_limit_cleanup()
+    if not _rate_limit_check(client_ip):
+        raise HTTPException(429, "Too many requests. Please wait a minute.")
+
+    if not req.sentence or not req.sentence.strip():
+        raise HTTPException(400, "Sentence cannot be empty")
+
+    # Check cache — if cached, return immediately (no need to stream)
+    gender = req.speaker_gender or "neutral"
+    formality = req.speaker_formality or "polite"
+    ck = _cache_key(req.sentence, req.target_language, gender, formality)
+    cached = cache_get(ck)
+    if cached:
+        async def _cached_stream():
+            yield f"data: {json.dumps({'type': 'result', 'data': cached}, ensure_ascii=False)}\n\n"
+        return StreamingResponse(_cached_stream(), media_type="text/event-stream")
+
+    async def _generate():
+        try:
+            # Signal bank-filling tasks to pause
+            global _user_request_count
+            _user_request_count += 1
+            _get_user_event().clear()
+
+            # Send immediate "started" event
+            yield f"data: {json.dumps({'type': 'progress', 'tokens': 0, 'status': 'generating'})}\n\n"
+
+            # Call learn_sentence internally (it handles all the logic)
+            # We use a background task approach: start the actual learn call
+            # and send progress pings while waiting
+            import asyncio
+            learn_task = asyncio.create_task(
+                learn_sentence(request, req, x_app_password)
+            )
+
+            tokens_est = 0
+            while not learn_task.done():
+                await asyncio.sleep(1.5)
+                tokens_est += 30  # rough estimate
+                if not learn_task.done():
+                    yield f"data: {json.dumps({'type': 'progress', 'tokens': tokens_est, 'status': 'generating'})}\n\n"
+
+            result = learn_task.result()
+            # Handle both dict and Response objects
+            if hasattr(result, 'body'):
+                result = json.loads(result.body)
+
+            yield f"data: {json.dumps({'type': 'result', 'data': result}, ensure_ascii=False)}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+        finally:
+            _user_request_count -= 1
+            if _user_request_count <= 0:
+                _user_request_count = 0
+                _get_user_event().set()
+
+    return StreamingResponse(_generate(), media_type="text/event-stream",
+                            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
 # --- Multi-sentence splitter ---
