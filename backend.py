@@ -160,6 +160,26 @@ OLLAMA_URL = "http://localhost:11434"
 OLLAMA_MODEL = "qwen2.5:7b"
 TAIDE_MODEL = "jcai/llama3-taide-lx-8b-chat-alpha1:Q4_K_M"
 
+# Load CC-CEDICT dictionary
+_cedict_data = {}
+_cedict_path = Path(__file__).parent / "cedict_dict.json"
+if _cedict_path.exists():
+    _cedict_data = json.loads(_cedict_path.read_text())
+
+_particle_overrides = {
+    "的": "(possessive/descriptive particle)", "了": "(completion/change particle)",
+    "是": "is; am; are", "在": "at; in; (progressive particle)", "把": "(object-marking particle)",
+    "被": "(passive particle)", "得": "(complement particle)", "地": "(adverbial particle)",
+    "著": "(continuous aspect particle)", "過": "(experiential particle)",
+    "會": "will; can", "能": "can; able to", "要": "want; need; will",
+}
+
+def _cedict_lookup(word: str) -> Optional[str]:
+    """Look up a word in CC-CEDICT dictionary, with particle overrides."""
+    if word in _particle_overrides:
+        return _particle_overrides[word]
+    return _cedict_data.get(word)
+
 SUPPORTED_LANGUAGES = {
     "he": "Hebrew",
     "ja": "Japanese",
@@ -648,47 +668,15 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
                     "difficulty": "medium",
                     "note": None
                 })
-            # Build a simple word→meaning dictionary from common Chinese words
-            # and try to match from original breakdown
-            orig_meanings = {}
-            for item in breakdown:
-                orig_word = item.get("word", "")
-                orig_meaning = item.get("meaning", "")
-                if orig_word and orig_meaning:
-                    orig_meanings[orig_word] = orig_meaning
-            # Common Chinese word meanings as fallback
-            common_zh_meanings = {
-                "海上": "on the sea/ocean", "日落": "sunset", "真的": "really, truly",
-                "很": "very", "美": "beautiful", "美麗": "beautiful", "極了": "extremely",
-                "的": "(possessive/linking particle)", "了": "(completion particle)",
-                "是": "is/am/are", "真是": "truly is", "美極了": "extremely beautiful",
-                "不": "not", "我": "I/me", "你": "you", "他": "he/him", "她": "she/her",
-                "們": "(plural)", "我們": "we/us", "要": "want/need", "可以": "can",
-                "在": "at/in", "這": "this", "那": "that", "什麼": "what",
-                "好": "good", "吃": "eat", "喝": "drink", "去": "go", "來": "come",
-                "看": "look/see", "想": "think/want", "說": "say/speak",
-                "也": "also", "都": "all/both", "就": "then/just", "還": "still/also",
-                "太": "too (much)", "更": "more/even more", "最": "most",
-                "好": "good/very", "好吃": "delicious", "好看": "good-looking",
-                "好美": "so beautiful", "好棒": "so great", "好喝": "tasty (drink)",
-                "真": "really/truly", "超": "super", "蠻": "quite/rather",
-                "嗎": "(question particle)", "吧": "(suggestion particle)",
-                "呢": "(particle)", "啊": "(exclamation particle)",
-                "沒": "not/haven't", "沒有": "don't have/haven't",
-                "因為": "because", "所以": "so/therefore", "但是": "but",
-                "如果": "if", "雖然": "although", "而且": "moreover",
-                "已經": "already", "還是": "or/still", "應該": "should",
-                "可能": "maybe/possibly", "一定": "definitely", "當然": "of course",
-            }
+            # Look up meanings from CC-CEDICT (120k+ entries)
             for item in new_breakdown:
                 w = item["word"]
-                if w in orig_meanings and orig_meanings[w].strip() not in ("", ","):
-                    item["meaning"] = orig_meanings[w]
-                elif w in common_zh_meanings:
-                    item["meaning"] = common_zh_meanings[w]
+                meaning = _cedict_lookup(w)
+                if meaning:
+                    item["meaning"] = meaning
                 else:
-                    # Last resort: concatenate known char meanings
-                    chars = [orig_meanings.get(c, common_zh_meanings.get(c, "")) for c in w]
+                    # Try constituent characters
+                    chars = [_cedict_lookup(c) or "" for c in w]
                     combined = " + ".join(c for c in chars if c)
                     item["meaning"] = combined if combined else w
             breakdown = new_breakdown
