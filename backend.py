@@ -734,11 +734,29 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
         if len(parts) >= 3:
             native_sentence = parts[0].strip()
             native_explanation = parts[2].strip()
+            # Fix explanation language: if input is English but explanation is Chinese, translate it
+            if not input_is_chinese and native_explanation:
+                cjk_count = sum(1 for c in native_explanation if '\u4e00' <= c <= '\u9fff')
+                if cjk_count > len(native_explanation) * 0.3:
+                    # Explanation is mostly Chinese — ask qwen to translate
+                    try:
+                        fix_resp = requests.post(
+                            f"{OLLAMA_URL}/api/chat",
+                            json={"model": OLLAMA_MODEL, "messages": [
+                                {"role": "user", "content": f"Translate this Chinese explanation to English. Only output the English translation:\n{native_explanation}"}
+                            ], "stream": False, "options": {"temperature": 0.1, "num_predict": 100}},
+                            timeout=15
+                        )
+                        if fix_resp.ok:
+                            fixed_expl = fix_resp.json().get("message", {}).get("content", "").strip()
+                            if fixed_expl and len(fixed_expl) < 200:
+                                native_explanation = fixed_expl
+                    except Exception:
+                        pass
             # Generate correct pronunciation using deterministic lib
             native_pron = deterministic_pronunciation(native_sentence, lang_code)
             if native_pron:
                 result["native_expression"] = f"{native_sentence} | {native_pron} | {native_explanation}"
-            # Also fix any target-language words in explanation that need pronunciation
     elif native and translation:
         native_core = native.split("(")[0].strip().rstrip("。.!！")
         trans_core = translation.strip().rstrip("。.!！")
