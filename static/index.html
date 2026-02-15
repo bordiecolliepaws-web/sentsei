@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sent-Say — Learn by Saying</title>
+    <title>SentSay — Learn by Saying</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50%25' y='56%25' dominant-baseline='middle' text-anchor='middle' font-size='74'%3E%E5%AD%B8%3C/text%3E%3C/svg%3E">
     <style>
         :root {
@@ -1504,6 +1504,7 @@
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes specPulse { 0%,100% { opacity:0.3; transform:scale(0.8); } 50% { opacity:1; transform:scale(1.2); } }
 
         /* History */
         .history-divider {
@@ -1971,7 +1972,7 @@
     <!-- Onboarding overlay for first-time users -->
     <div id="onboarding-overlay" class="onboarding-overlay hidden">
         <div class="onboarding-card">
-            <h2>⚡ Welcome to Sent-Say</h2>
+            <h2>⚡ Welcome to SentSay</h2>
             <p>Type any sentence and learn how to say it in another language — with pronunciation, grammar notes, and word-by-word breakdown.</p>
             <p style="color: var(--text); font-weight: 500;">Try one of these to start:</p>
             <div class="onboarding-suggestions">
@@ -1995,7 +1996,7 @@
     <div class="container">
         <header>
             <div class="header-title-row">
-                <h1>Sent-Say</h1>
+                <h1>SentSay</h1>
                 <button id="stats-toggle" class="stats-btn" type="button" aria-label="Show learning stats">📊 Stats</button>
             </div>
             <p>Say what's on your mind. Learn it in any language.</p>
@@ -2171,7 +2172,7 @@
 
     <div id="password-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="password-modal-title">
         <div class="modal">
-            <h2 id="password-modal-title">Unlock Sent-Say</h2>
+            <h2 id="password-modal-title">Unlock SentSay</h2>
             <p>Enter the app password to start learning.</p>
             <form id="password-form" class="password-form">
                 <input id="password-input" type="password" placeholder="Password" autocomplete="current-password" required>
@@ -2933,7 +2934,7 @@
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = 'sent-say-flashcards.txt';
+                link.download = 'sentsay-flashcards.txt';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -2977,6 +2978,13 @@
             historyPanelOpen = !historyPanelOpen;
             historyPanelEl.classList.toggle('open', historyPanelOpen);
             historyOverlayEl.classList.toggle('open', historyPanelOpen);
+        }
+
+        function openHistoryPanel() {
+            historyPanelOpen = true;
+            historyPanelEl.classList.add('open');
+            historyOverlayEl.classList.add('open');
+            renderHistoryPanel();
         }
 
         function closeHistoryPanel() {
@@ -3133,6 +3141,8 @@
             }
         }
 
+        const RECENT_DISPLAY_LIMIT = 4;
+
         function renderSentenceHistory() {
             sentenceHistoryEl.innerHTML = '';
             if (sentenceHistory.length === 0) {
@@ -3141,7 +3151,8 @@
             }
 
             sentenceHistoryWrapEl.classList.remove('hidden');
-            sentenceHistory.forEach((sentence) => {
+            const displayItems = sentenceHistory.slice(0, RECENT_DISPLAY_LIMIT);
+            displayItems.forEach((sentence) => {
                 const chip = document.createElement('button');
                 chip.type = 'button';
                 chip.className = 'history-chip';
@@ -3155,6 +3166,17 @@
                 });
                 sentenceHistoryEl.appendChild(chip);
             });
+            if (sentenceHistory.length > RECENT_DISPLAY_LIMIT) {
+                const moreBtn = document.createElement('button');
+                moreBtn.type = 'button';
+                moreBtn.className = 'history-chip';
+                moreBtn.style.cssText = 'background:rgba(99,102,241,0.25);color:#a5b4fc;font-weight:600;';
+                moreBtn.textContent = `View all (${sentenceHistory.length}) →`;
+                moreBtn.addEventListener('click', () => {
+                    openHistoryPanel();
+                });
+                sentenceHistoryEl.appendChild(moreBtn);
+            }
         }
 
         function saveSentenceToHistory(sentence) {
@@ -3305,15 +3327,97 @@
             setTimeout(showOnboarding, 300);
         };
 
-        // Auto-resize textarea
+        // === Speculative Typing (Learn as you type) ===
+        let speculativeTimer = null;
+        let speculativeController = null;
+        let speculativeCache = {};
+        let speculativePending = false;
+
+        function getSpeculativeKey() {
+            const sentence = sentenceInput.value.trim();
+            if (!sentence || sentence.length < 3) return null;
+            return `${sentence}|${langSelect.value}|${selectedInputLang}|${selectedGender}|${selectedFormality}`;
+        }
+
+        function showSpeculativeIndicator() {
+            let indicator = document.getElementById('speculative-indicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.id = 'speculative-indicator';
+                indicator.style.cssText = 'font-size:0.72rem;color:var(--accent);margin-top:0.4rem;opacity:0.8;display:flex;align-items:center;gap:0.35rem;';
+                indicator.innerHTML = '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);animation:specPulse 1.2s ease-in-out infinite;"></span> Preparing translation...';
+                const inputArea = document.querySelector('.sentence-input');
+                inputArea.parentNode.insertBefore(indicator, inputArea.nextSibling);
+            }
+            indicator.style.display = 'flex';
+        }
+
+        function hideSpeculativeIndicator() {
+            const indicator = document.getElementById('speculative-indicator');
+            if (indicator) indicator.style.display = 'none';
+        }
+
+        function cancelSpeculative() {
+            if (speculativeTimer) { clearTimeout(speculativeTimer); speculativeTimer = null; }
+            if (speculativeController) { speculativeController.abort(); speculativeController = null; }
+            speculativePending = false;
+            hideSpeculativeIndicator();
+        }
+
+        async function startSpeculative() {
+            const key = getSpeculativeKey();
+            if (!key || appPassword !== APP_PASSWORD) return;
+            if (speculativeCache[key]) return;
+
+            speculativePending = true;
+            speculativeController = new AbortController();
+            showSpeculativeIndicator();
+
+            const sentence = sentenceInput.value.trim();
+            try {
+                const resp = await fetch('/api/learn', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-App-Password': appPassword },
+                    body: JSON.stringify({
+                        sentence,
+                        target_language: langSelect.value,
+                        input_language: selectedInputLang,
+                        speaker_gender: selectedGender,
+                        speaker_formality: selectedFormality,
+                    }),
+                    signal: speculativeController.signal,
+                });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    speculativeCache[key] = { data, sentence };
+                    // Show ready indicator briefly
+                    const indicator = document.getElementById('speculative-indicator');
+                    if (indicator && sentenceInput.value.trim() === sentence) {
+                        indicator.innerHTML = '<span style="color:var(--easy);">✓</span> Ready — press Learn';
+                        setTimeout(() => hideSpeculativeIndicator(), 3000);
+                    }
+                }
+            } catch (e) {
+                // aborted or error — ignore
+            } finally {
+                speculativePending = false;
+                if (!speculativeCache[getSpeculativeKey()]) hideSpeculativeIndicator();
+            }
+        }
+
+        // Hook speculative into input events
         sentenceInput.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = this.scrollHeight + 'px';
+            cancelSpeculative();
+            if (this.value.trim().length >= 3) {
+                speculativeTimer = setTimeout(() => startSpeculative(), 1500);
+            }
         });
 
         // IME composition tracking (注音, etc.)
         let isComposing = false;
-        sentenceInput.addEventListener('compositionstart', () => { isComposing = true; });
+        sentenceInput.addEventListener('compositionstart', () => { isComposing = true; cancelSpeculative(); });
         sentenceInput.addEventListener('compositionend', () => { isComposing = false; });
 
         // Enter to submit (skip during IME composition)
@@ -3517,6 +3621,23 @@
             lastLearnSentence = sentence;
             lastActionType = 'learn';
             hideError();
+
+            // Check speculative cache first
+            const specKey = getSpeculativeKey();
+            if (specKey && speculativeCache[specKey]) {
+                const cached = speculativeCache[specKey];
+                delete speculativeCache[specKey];
+                cancelSpeculative();
+                const reqCtx = { target_language: langSelect.value, input_language: selectedInputLang, sentence: cached.sentence };
+                renderResult(cached.data, cached.sentence, reqCtx);
+                saveSentenceToHistory(cached.sentence);
+                addToRichHistory(cached.sentence, cached.data.translation, langSelect.value, cached.data.pronunciation);
+                recordLearnProgress(langSelect.value, 1);
+                sentenceInput.value = '';
+                sentenceInput.style.height = 'auto';
+                return;
+            }
+            cancelSpeculative();
 
             learnBtn.disabled = true;
             if (compareBtn) compareBtn.disabled = true;
@@ -3900,7 +4021,21 @@
                 sentenceInput.value = data.sentence;
                 sentenceInput.style.height = 'auto';
                 sentenceInput.style.height = sentenceInput.scrollHeight + 'px';
-                await learn();
+
+                if (data.precomputed && data.result) {
+                    // Instant! Use pre-computed result directly
+                    cancelSpeculative();
+                    const reqCtx = { target_language: lang, input_language: inputLang, sentence: data.sentence };
+                    renderResult(data.result, data.sentence, reqCtx);
+                    saveSentenceToHistory(data.sentence);
+                    addToRichHistory(data.sentence, data.result.translation, lang, data.result.pronunciation);
+                    recordLearnProgress(lang, 1);
+                    sentenceInput.value = '';
+                    sentenceInput.style.height = 'auto';
+                } else {
+                    // Fallback: compute live
+                    await learn();
+                }
             } catch (err) {
                 console.error(err);
                 alert('Could not fetch a surprise sentence.');

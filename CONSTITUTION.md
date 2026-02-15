@@ -1,4 +1,4 @@
-# Sent-Say Constitution
+# SentSay Constitution
 _Every design decision Jimmy has made. Test against this._
 
 ## Language Rules

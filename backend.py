@@ -1,9 +1,10 @@
-"""Sent-Say — Sentence-based language learning app."""
+"""SentSay — Sentence-based language learning app."""
 import json
 import re as _re
 import random
 import hashlib
 import time
+import asyncio
 from typing import Optional, List
 from pathlib import Path
 from collections import OrderedDict, defaultdict
@@ -157,7 +158,7 @@ def _rate_limit_cleanup():
 
 APP_PASSWORD = "sentsei2026"
 OLLAMA_URL = "http://localhost:11434"
-OLLAMA_MODEL = "qwen2.5:7b"
+OLLAMA_MODEL = "qwen2.5:14b"
 TAIDE_MODEL = "jcai/llama3-taide-lx-8b-chat-alpha1:Q4_K_M"
 
 # Load CC-CEDICT dictionary + jieba custom words
@@ -1068,11 +1069,118 @@ SURPRISE_SENTENCES_ZH = [
     {"sentence": "如果我早點知道的話，我就會早點來", "difficulty": "hard", "category": "文法"},
 ]
 
+# --- Pre-computed Surprise Bank ---
+_surprise_bank: dict = defaultdict(list)  # "lang_inputlang" -> list of {sentence, difficulty, category, result}
+_surprise_bank_filling = False
+
+
+async def _precompute_one(sentence: str, lang: str, input_lang: str):
+    """Pre-compute a learn result by calling our own API."""
+    try:
+        async with httpx.AsyncClient(timeout=180) as client:
+            resp = await client.post(
+                "http://127.0.0.1:8847/api/learn",
+                json={
+                    "sentence": sentence,
+                    "target_language": lang,
+                    "input_language": input_lang,
+                    "speaker_gender": "neutral",
+                    "speaker_formality": "polite",
+                },
+                headers={"X-App-Password": APP_PASSWORD},
+            )
+            if resp.status_code == 200:
+                return resp.json()
+    except Exception as e:
+        print(f"[surprise-bank] precompute error: {e}")
+    return None
+
+
+SURPRISE_BANK_TARGET = 6  # per lang per input_lang
+
+
+async def _fill_surprise_bank_task():
+    global _surprise_bank_filling
+    await asyncio.sleep(10)  # wait for server startup
+    _surprise_bank_filling = True
+    print("[surprise-bank] Starting pre-computation...")
+    count = 0
+    for lang in SUPPORTED_LANGUAGES:
+        for input_lang, pool in [("en", SURPRISE_SENTENCES_EN), ("zh", SURPRISE_SENTENCES_ZH)]:
+            if lang == "en" and input_lang == "en":
+                continue
+            if lang == "zh" and input_lang == "zh":
+                continue
+            bank_key = f"{lang}_{input_lang}"
+            samples = random.sample(pool, min(SURPRISE_BANK_TARGET, len(pool)))
+            for s in samples:
+                if len(_surprise_bank[bank_key]) >= SURPRISE_BANK_TARGET:
+                    break
+                result = await _precompute_one(s["sentence"], lang, input_lang)
+                if result:
+                    _surprise_bank[bank_key].append({
+                        "sentence": s["sentence"],
+                        "difficulty": s.get("difficulty", "medium"),
+                        "category": s.get("category", "general"),
+                        "result": result,
+                    })
+                    count += 1
+                await asyncio.sleep(0.5)
+    _surprise_bank_filling = False
+    print(f"[surprise-bank] Pre-computed {count} sentences across {len(_surprise_bank)} banks")
+
+
+async def _refill_surprise_bank_task():
+    """Periodically refill low banks."""
+    while True:
+        await asyncio.sleep(600)
+        for lang in SUPPORTED_LANGUAGES:
+            for input_lang, pool in [("en", SURPRISE_SENTENCES_EN), ("zh", SURPRISE_SENTENCES_ZH)]:
+                if lang == "en" and input_lang == "en":
+                    continue
+                if lang == "zh" and input_lang == "zh":
+                    continue
+                bank_key = f"{lang}_{input_lang}"
+                if len(_surprise_bank[bank_key]) < 2:
+                    samples = random.sample(pool, min(4, len(pool)))
+                    for s in samples:
+                        result = await _precompute_one(s["sentence"], lang, input_lang)
+                        if result:
+                            _surprise_bank[bank_key].append({
+                                "sentence": s["sentence"],
+                                "difficulty": s.get("difficulty", "medium"),
+                                "category": s.get("category", "general"),
+                                "result": result,
+                            })
+                        await asyncio.sleep(1)
+
+
+@app.on_event("startup")
+async def _startup_surprise():
+    asyncio.create_task(_fill_surprise_bank_task())
+    asyncio.create_task(_refill_surprise_bank_task())
+
+
 @app.get("/api/surprise")
 async def get_surprise_sentence(lang: str, input_lang: str = "en"):
     if lang not in SUPPORTED_LANGUAGES:
         raise HTTPException(400, "Unsupported language")
 
+    # Try pre-computed bank first
+    bank_key = f"{lang}_{input_lang}"
+    if _surprise_bank[bank_key]:
+        idx = random.randrange(len(_surprise_bank[bank_key]))
+        entry = _surprise_bank[bank_key].pop(idx)
+        return {
+            "language": lang,
+            "sentence": entry["sentence"],
+            "difficulty": entry["difficulty"],
+            "category": entry["category"],
+            "precomputed": True,
+            "result": entry["result"],
+        }
+
+    # Fallback to random sentence without pre-computation
     pool = SURPRISE_SENTENCES_ZH if input_lang == "zh" else SURPRISE_SENTENCES_EN
     picked = random.choice(pool)
     return {
@@ -1081,6 +1189,15 @@ async def get_surprise_sentence(lang: str, input_lang: str = "en"):
         "difficulty": picked["difficulty"],
         "category": picked["category"],
     }
+
+
+@app.get("/api/surprise-bank-status")
+async def surprise_bank_status():
+    """Check the status of the pre-computed surprise bank."""
+    status = {}
+    for key, items in _surprise_bank.items():
+        status[key] = len(items)
+    return {"filling": _surprise_bank_filling, "banks": status}
 
 
 class QuizHistoryItem(BaseModel):
