@@ -726,42 +726,36 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
             existing_notes.insert(0, f"Gender/formality note: {gender_note}")
             result["grammar_notes"] = existing_notes
 
-    # Post-process: fix native_expression pronunciation and check for duplicates
+    # Post-process: fix native_expression — deterministic pronunciation + enforce explanation language
     native = result.get("native_expression")
     translation = result.get("translation", "")
-    if native and "|" in native:
-        parts = native.split("|", 2)
-        if len(parts) >= 3:
+    if native:
+        # Extract parts
+        if "|" in native:
+            parts = native.split("|", 2)
             native_sentence = parts[0].strip()
-            native_explanation = parts[2].strip()
-            # Fix explanation language: if input is English but explanation is Chinese, translate it
-            if not input_is_chinese and native_explanation:
-                cjk_count = sum(1 for c in native_explanation if '\u4e00' <= c <= '\u9fff')
-                if cjk_count > len(native_explanation) * 0.3:
-                    # Explanation is mostly Chinese — ask qwen to translate
-                    try:
-                        fix_resp = requests.post(
-                            f"{OLLAMA_URL}/api/chat",
-                            json={"model": OLLAMA_MODEL, "messages": [
-                                {"role": "user", "content": f"Translate this Chinese explanation to English. Only output the English translation:\n{native_explanation}"}
-                            ], "stream": False, "options": {"temperature": 0.1, "num_predict": 100}},
-                            timeout=15
-                        )
-                        if fix_resp.ok:
-                            fixed_expl = fix_resp.json().get("message", {}).get("content", "").strip()
-                            if fixed_expl and len(fixed_expl) < 200:
-                                native_explanation = fixed_expl
-                    except Exception:
-                        pass
-            # Generate correct pronunciation using deterministic lib
-            native_pron = deterministic_pronunciation(native_sentence, lang_code)
-            if native_pron:
-                result["native_expression"] = f"{native_sentence} | {native_pron} | {native_explanation}"
-    elif native and translation:
-        native_core = native.split("(")[0].strip().rstrip("。.!！")
-        trans_core = translation.strip().rstrip("。.!！")
-        if native_core == trans_core:
+            native_explanation = parts[2].strip() if len(parts) >= 3 else ""
+        else:
+            native_sentence = native.strip()
+            native_explanation = ""
+
+        # Check for duplicate
+        if native_sentence.replace("。", "").replace("！", "").replace("？", "").strip() == translation.replace("。", "").replace("！", "").replace("？", "").strip():
             result["native_expression"] = None
+        elif native_sentence:
+            # Generate correct pronunciation deterministically
+            native_pron = deterministic_pronunciation(native_sentence, lang_code) or ""
+
+            # Enforce explanation language: strip if wrong language
+            if native_explanation:
+                cjk_count = sum(1 for c in native_explanation if '\u4e00' <= c <= '\u9fff')
+                cjk_ratio = cjk_count / max(len(native_explanation), 1)
+                if not input_is_chinese and cjk_ratio > 0.3:
+                    native_explanation = ""  # Wrong language, drop it
+                elif input_is_chinese and cjk_ratio < 0.1 and len(native_explanation) > 10:
+                    native_explanation = ""  # Wrong language, drop it
+
+            result["native_expression"] = f"{native_sentence} | {native_pron} | {native_explanation}".rstrip(" |")
 
     # Dataset-based Taiwanese native phrases (keyword matching)
     if lang_code == "zh":
