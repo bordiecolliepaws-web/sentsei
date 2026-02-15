@@ -509,7 +509,7 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
         casual_hint = ""
         if formality == "casual":
             casual_hint = " For CASUAL register: translate like a young Taiwanese person talking to friends or at a local shop. Use 口語/street Taiwanese Mandarin. Examples: 'Can I get the bill?' → '老闆，買單！' or '結帳！', NOT '請問可以開帳單嗎'. 'I want to eat ramen' → '我想吃拉麵' NOT '我想要品嚐拉麵'. Keep it short, direct, natural."
-        system_msg = f"You are a Taiwanese Chinese (繁體中文/台灣用法) language teacher. You translate into Traditional Chinese as spoken in Taiwan. NEVER use mainland Chinese phrasing or simplified characters. Think like a native Taiwanese speaker.{casual_hint} {explanation_lang_instruction} Always respond with valid JSON only.\n{taiwan_chinese_rules}"
+        system_msg = f"You are a Taiwanese Chinese (繁體中文/台灣用法) language teacher. You translate into Traditional Chinese as spoken in Taiwan. NEVER use mainland Chinese phrasing or simplified characters. Think like a native Taiwanese speaker.{casual_hint} CRITICAL: The translation MUST be fully in Chinese. Do NOT leave any English words untranslated (e.g. 'menu' must become '菜單', 'bill' must become '帳單', 'coffee' must become '咖啡'). Every single word must be in Chinese characters. {explanation_lang_instruction} Always respond with valid JSON only.\n{taiwan_chinese_rules}"
     elif input_is_chinese and lang_code == "en":
         system_msg = f"You are an English language teacher helping Chinese speakers learn English. The user writes in Chinese and you translate into ENGLISH. The 'translation' field MUST be in English. The 'pronunciation' field should be English pronunciation guide. The 'word' fields in breakdown MUST be English words. {explanation_lang_instruction} The 'native_expression' field should show how a native English speaker would naturally say it in English, with 繁體中文 explanation. Always respond with valid JSON only.\n{taiwan_chinese_rules}"
     elif input_is_chinese:
@@ -563,6 +563,28 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
                 result["_warning"] = "Translation may be echoing input. Model struggled with this input."
         elif cjk_ratio > 0.5 and lang_code not in ("ja", "zh"):
             result["_warning"] = "Translation may be in the wrong language."
+
+    # Post-process: detect English words leaking into Chinese translations
+    if lang_code == "zh" and translation_text:
+        import re
+        english_words = re.findall(r'[a-zA-Z]{2,}', translation_text)
+        if english_words:
+            # Common English-to-Chinese replacements
+            en_to_zh = {
+                'menu': '菜單', 'bill': '帳單', 'coffee': '咖啡', 'beer': '啤酒',
+                'ok': '好', 'sorry': '抱歉', 'thanks': '謝謝', 'thank': '謝',
+                'taxi': '計程車', 'bus': '公車', 'hotel': '旅館', 'wifi': '無線網路',
+                'email': '電子郵件', 'phone': '手機', 'app': '應用程式',
+                'restaurant': '餐廳', 'bar': '酒吧', 'shop': '商店',
+            }
+            fixed = translation_text
+            for word in english_words:
+                replacement = en_to_zh.get(word.lower())
+                if replacement:
+                    fixed = fixed.replace(word, replacement)
+            if fixed != translation_text:
+                result["translation"] = fixed
+                translation_text = fixed
 
     # Post-process: override LLM pronunciation with deterministic libraries
     det_pron = deterministic_pronunciation(translation_text, lang_code)
