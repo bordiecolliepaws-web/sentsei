@@ -1,0 +1,26 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>404 Not Found</title>
+<style type="text/css">
+ h1, h2 {font-family:正黑體,"微軟正黑體"; }
+ a { text-decoration:none; color:#ffffff; font-family:"微軟正黑體"; }
+</style>
+</head>
+
+<body>
+<div style="text-align:center; margin-top:3em; color:#333;">
+  <h2 style="font-size:3em;">GET /DOWNLOAD/TECH_REPORT/臺灣華語文能力基準詞語表_111-11-14.XLSX</h2>
+  
+  <h1 style="font-size:3em;">404 Not Found</h1>
+  <p>抱歉！未找您要的到頁面。</p>
+</div>
+
+</body>
+</html>

@@ -160,11 +160,21 @@ OLLAMA_URL = "http://localhost:11434"
 OLLAMA_MODEL = "qwen2.5:7b"
 TAIDE_MODEL = "jcai/llama3-taide-lx-8b-chat-alpha1:Q4_K_M"
 
-# Load CC-CEDICT dictionary
+# Load CC-CEDICT dictionary + jieba custom words
 _cedict_data = {}
 _cedict_path = Path(__file__).parent / "cedict_dict.json"
 if _cedict_path.exists():
     _cedict_data = json.loads(_cedict_path.read_text())
+
+# Load CC-CEDICT words into jieba for better segmentation
+_jieba_dict_path = Path(__file__).parent / "jieba_tw_dict.txt"
+if _jieba_dict_path.exists():
+    import jieba as _jieba_init
+    with open(_jieba_dict_path) as _f:
+        for _line in _f:
+            _w = _line.strip()
+            if _w:
+                _jieba_init.add_word(_w)
 
 _particle_overrides = {
     "的": "(possessive/descriptive particle)", "了": "(completion/change particle)",
