@@ -92,6 +92,14 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Grammar notes sometimes empty after English source filter** ✅ 2026-02-15 — salvages English content from CJK-heavy notes instead of dropping; adds fallback note when all notes are stripped
 - [x] **Rule 18 test flaky** ✅ 2026-02-15 — added retry on timeout
 
+## P3.6 — Code Health & Reliability (from 2026-02-16 reflection)
+- [ ] **Split monolith index.html (4333 lines)** — extract JS into `app.js`, CSS into `style.css`. Easier to maintain, debug, and cache separately.
+- [ ] **Move hardcoded secrets to env vars** — `APP_PASSWORD = "sentsei2026"` is in source. Use `os.environ.get("SENTSEI_PASSWORD")` with fallback.
+- [ ] **Fix empty surprise bank on startup** — `/api/surprise-bank-status` returns `{"banks":{}}`. Pre-compute task may be failing silently. Add logging, verify Ollama connectivity at startup.
+- [ ] **Add /api/health endpoint** — return app status, Ollama reachability, cache stats, surprise bank status. Useful for watchdog and monitoring.
+- [ ] **Persistent translation cache** — current in-memory LRU is lost on restart. Consider SQLite or simple JSON file for cache persistence across restarts.
+- [ ] **Admin view for feedback** — feedback goes to a JSONL file with no way to read it. Add a simple `/api/feedback-list` (admin-only) or a basic admin page.
+
 ## Cron Test Matrix
 Each iteration should run these checks:
 1. English → Korean: explanations in English? Translation in 한글?
