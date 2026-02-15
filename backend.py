@@ -1,4 +1,5 @@
 """SentSay — Sentence-based language learning app."""
+import os
 import json
 import re as _re
 import random
@@ -157,7 +158,7 @@ def _rate_limit_cleanup():
             del _rate_buckets[ip]
 
 
-APP_PASSWORD = "sentsei2026"
+APP_PASSWORD = os.environ.get("SENTSEI_PASSWORD", "sentsei2026")
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_MODEL = "qwen2.5:14b"
 TAIDE_MODEL = "jcai/llama3-taide-lx-8b-chat-alpha1:Q4_K_M"
@@ -1200,6 +1201,18 @@ async def _fill_surprise_bank_task():
                 await asyncio.sleep(0.5)
     _surprise_bank_filling = False
     print(f"[surprise-bank] Pre-computed {count} sentences across {len(_surprise_bank)} banks")
+    _save_surprise_bank()
+
+
+def _save_surprise_bank():
+    """Persist surprise bank to disk so it survives restarts."""
+    try:
+        bank_file = Path(__file__).parent / "surprise_bank.json"
+        data = {k: v for k, v in _surprise_bank.items() if v}
+        bank_file.write_text(json.dumps(data, ensure_ascii=False))
+        print(f"[surprise-bank] Saved {sum(len(v) for v in data.values())} entries to disk")
+    except Exception as e:
+        print(f"[surprise-bank] Failed to save bank: {e}")
 
 
 async def _refill_surprise_bank_task():
@@ -1226,6 +1239,18 @@ async def _refill_surprise_bank_task():
                                 "result": result,
                             })
                         await asyncio.sleep(1)
+        _save_surprise_bank()
+
+
+async def _check_ollama_connectivity() -> bool:
+    """Check if Ollama is reachable."""
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(f"{OLLAMA_URL}/api/tags")
+            return resp.status_code == 200
+    except Exception as e:
+        print(f"[startup] Ollama not reachable: {e}")
+        return False
 
 
 @app.on_event("startup")
@@ -1240,9 +1265,15 @@ async def _startup_surprise():
             print(f"[surprise-bank] Loaded {sum(len(v) for v in data.values())} pre-baked entries from disk")
         except Exception as e:
             print(f"[surprise-bank] Failed to load bank: {e}")
-    # Background fill disabled — conflicts with user requests on single-GPU Ollama
-    # asyncio.create_task(_fill_surprise_bank_task())
-    # asyncio.create_task(_refill_surprise_bank_task())
+    # Start background fill if Ollama is reachable (yields to user requests)
+    ollama_ok = await _check_ollama_connectivity()
+    if ollama_ok:
+        if not _surprise_bank or sum(len(v) for v in _surprise_bank.values()) < 5:
+            print("[surprise-bank] Bank is low/empty, starting background fill...")
+            asyncio.create_task(_fill_surprise_bank_task())
+        asyncio.create_task(_refill_surprise_bank_task())
+    else:
+        print("[surprise-bank] Ollama not available, skipping background fill")
 
 
 @app.get("/api/surprise")
@@ -1282,6 +1313,33 @@ async def surprise_bank_status():
     for key, items in _surprise_bank.items():
         status[key] = len(items)
     return {"filling": _surprise_bank_filling, "banks": status}
+
+
+@app.get("/api/health")
+async def health_check():
+    """App health: Ollama reachability, cache stats, surprise bank status."""
+    # Ollama check
+    ollama_ok = False
+    try:
+        async with httpx.AsyncClient(timeout=5) as client:
+            resp = await client.get(f"{OLLAMA_URL}/api/tags")
+            ollama_ok = resp.status_code == 200
+    except Exception:
+        pass
+
+    # Cache stats
+    cache_size = len(_translation_cache)
+
+    # Surprise bank
+    bank_total = sum(len(v) for v in _surprise_bank.values())
+    bank_langs = len(_surprise_bank)
+
+    return {
+        "status": "ok" if ollama_ok else "degraded",
+        "ollama": {"reachable": ollama_ok, "url": OLLAMA_URL, "model": OLLAMA_MODEL},
+        "cache": {"entries": cache_size, "max": CACHE_MAX, "ttl_hours": CACHE_TTL / 3600},
+        "surprise_bank": {"total_entries": bank_total, "languages": bank_langs, "filling": _surprise_bank_filling},
+    }
 
 
 class QuizHistoryItem(BaseModel):
