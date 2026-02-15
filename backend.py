@@ -590,6 +590,33 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
                 result["translation"] = fixed
                 translation_text = fixed
 
+    # Two-pass: TAIDE taiwanification for Chinese translations
+    if lang_code == "zh" and translation_text:
+        try:
+            taide_prompt = f"""請把以下中文改成道地的台灣繁體中文（台灣口語用法）。只需要回傳修改後的句子，不要加任何解釋。如果已經是台灣用法就原樣回傳。
+{casual_hint}
+
+原文：{translation_text}
+台灣用法："""
+            taide_resp = requests.post(
+                f"{OLLAMA_URL}/api/chat",
+                json={"model": TAIDE_MODEL, "messages": [{"role": "user", "content": taide_prompt}], "stream": False, "options": {"temperature": 0.3, "num_predict": 200}},
+                timeout=30
+            )
+            if taide_resp.ok:
+                taide_text = taide_resp.json().get("message", {}).get("content", "").strip()
+                # Only use if it's pure Chinese (no English, no JSON, reasonable length)
+                if taide_text and len(taide_text) < len(translation_text) * 3 and not taide_text.startswith("{"):
+                    import re as _re
+                    if not _re.search(r'[a-zA-Z]{3,}', taide_text):
+                        # Clean up: remove quotes, trailing punctuation artifacts
+                        taide_text = taide_text.strip('"\'').strip()
+                        if taide_text:
+                            result["translation"] = taide_text
+                            translation_text = taide_text
+        except Exception:
+            pass  # Fall back to qwen output
+
     # Post-process: override LLM pronunciation with deterministic libraries
     det_pron = deterministic_pronunciation(translation_text, lang_code)
     if det_pron:
