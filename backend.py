@@ -747,6 +747,30 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
         if native_core == trans_core:
             result["native_expression"] = None
 
+    # Dataset-based Taiwanese native phrases (keyword matching)
+    if lang_code == "zh":
+        try:
+            phrases_file = Path(__file__).parent / "taiwanese_phrases.json"
+            if phrases_file.exists():
+                tw_data = json.loads(phrases_file.read_text())
+                input_lower = req.sentence.lower()
+                trans_text = translation_text or ""
+                matches = []
+                for p in tw_data.get("phrases", []):
+                    score = sum(1 for kw in p["keywords"] if kw.lower() in input_lower or kw in trans_text)
+                    if score > 0:
+                        matches.append((score, p))
+                matches.sort(key=lambda x: -x[0])
+                # Add top 2 matches as "tw_native_phrases"
+                if matches:
+                    top = matches[:2]
+                    result["tw_native_phrases"] = [
+                        {"phrase": m[1]["phrase"], "pinyin": m[1]["pinyin"], "meaning": m[1]["meaning"], "context": m[1].get("context", "")}
+                        for m in top
+                    ]
+        except Exception:
+            pass
+
     # Post-process: enforce explanations in source language
     if not input_is_chinese:
         # When input is English, grammar_notes and meanings must be in English

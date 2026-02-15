@@ -3768,6 +3768,12 @@
                     ${data.cultural_note ? `<div class="cultural-note">💡 ${data.cultural_note}</div>` : ''}
                     ${data.alternative ? `<div class="alternative-note">🔄 Alternative: ${data.alternative}</div>` : ''}
                     ${data.native_expression ? `<div class="cultural-note">🗣️ Native expression: ${data.native_expression}</div>` : ''}
+                    ${data.tw_native_phrases && data.tw_native_phrases.length > 0 ? `
+                        <div class="cultural-note" style="margin-top:0.5rem;">
+                            <div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:0.3rem;">🇹🇼 How Taiwanese people actually say it:</div>
+                            ${data.tw_native_phrases.map(p => `<div style="margin:0.3rem 0;"><strong>${p.phrase}</strong> <span style="color:var(--accent);font-size:0.8rem;">${p.pinyin}</span><br><span style="font-size:0.8rem;color:var(--text-dim);">${p.meaning}${p.context ? ' · ' + p.context : ''}</span></div>`).join('')}
+                        </div>
+                    ` : ''}
                 </div>
             `;
 
