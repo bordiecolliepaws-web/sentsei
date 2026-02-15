@@ -408,6 +408,11 @@ async def learn_sentence(
     if not req.sentence or not req.sentence.strip():
         raise HTTPException(400, "Sentence cannot be empty")
 
+    # Signal bank-filling tasks to pause while user request is active
+    global _user_request_count
+    _user_request_count += 1
+    _get_user_event().clear()
+
     # Prompt injection protection
     MAX_INPUT_LEN = 500
     if len(req.sentence) > MAX_INPUT_LEN:
@@ -833,6 +838,12 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
     # Cache the result
     cache_put(ck, result)
 
+    # Release bank-filling pause
+    _user_request_count -= 1
+    if _user_request_count <= 0:
+        _user_request_count = 0
+        _get_user_event().set()
+
     return result
 
 
@@ -1072,6 +1083,16 @@ SURPRISE_SENTENCES_ZH = [
 # --- Pre-computed Surprise Bank ---
 _surprise_bank: dict = defaultdict(list)  # "lang_inputlang" -> list of {sentence, difficulty, category, result}
 _surprise_bank_filling = False
+_user_request_active: Optional[asyncio.Event] = None  # SET when no user request is active
+_user_request_count = 0  # track concurrent user requests
+
+
+def _get_user_event() -> asyncio.Event:
+    global _user_request_active
+    if _user_request_active is None:
+        _user_request_active = asyncio.Event()
+        _get_user_event().set()
+    return _user_request_active
 
 
 async def _precompute_one(sentence: str, lang: str, input_lang: str):
@@ -1116,6 +1137,8 @@ async def _fill_surprise_bank_task():
             for s in samples:
                 if len(_surprise_bank[bank_key]) >= SURPRISE_BANK_TARGET:
                     break
+                # Wait if a user request is active
+                await _get_user_event().wait()
                 result = await _precompute_one(s["sentence"], lang, input_lang)
                 if result:
                     _surprise_bank[bank_key].append({
@@ -1144,6 +1167,7 @@ async def _refill_surprise_bank_task():
                 if len(_surprise_bank[bank_key]) < 2:
                     samples = random.sample(pool, min(4, len(pool)))
                     for s in samples:
+                        await _get_user_event().wait()
                         result = await _precompute_one(s["sentence"], lang, input_lang)
                         if result:
                             _surprise_bank[bank_key].append({
@@ -1157,8 +1181,19 @@ async def _refill_surprise_bank_task():
 
 @app.on_event("startup")
 async def _startup_surprise():
-    asyncio.create_task(_fill_surprise_bank_task())
-    asyncio.create_task(_refill_surprise_bank_task())
+    # Load pre-baked surprise bank from disk if available
+    bank_file = Path(__file__).parent / "surprise_bank.json"
+    if bank_file.exists():
+        try:
+            data = json.loads(bank_file.read_text())
+            for key, items in data.items():
+                _surprise_bank[key] = items
+            print(f"[surprise-bank] Loaded {sum(len(v) for v in data.values())} pre-baked entries from disk")
+        except Exception as e:
+            print(f"[surprise-bank] Failed to load bank: {e}")
+    # Background fill disabled — conflicts with user requests on single-GPU Ollama
+    # asyncio.create_task(_fill_surprise_bank_task())
+    # asyncio.create_task(_refill_surprise_bank_task())
 
 
 @app.get("/api/surprise")
