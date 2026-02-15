@@ -508,8 +508,12 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
     if lang_code == "zh":
         casual_hint = ""
         if formality == "casual":
-            casual_hint = " For CASUAL register: translate like a young Taiwanese person talking to friends or at a local shop. Use 口語/street Taiwanese Mandarin. Examples: 'Can I get the bill?' → '老闆，買單！' or '結帳！', NOT '請問可以開帳單嗎'. 'I want to eat ramen' → '我想吃拉麵' NOT '我想要品嚐拉麵'. Keep it short, direct, natural."
-        system_msg = f"You are a Taiwanese Chinese (繁體中文/台灣用法) language teacher. You translate into Traditional Chinese as spoken in Taiwan. NEVER use mainland Chinese phrasing or simplified characters. Think like a native Taiwanese speaker.{casual_hint} CRITICAL: The translation MUST be fully in Chinese. Do NOT leave any English words untranslated (e.g. 'menu' must become '菜單', 'bill' must become '帳單', 'coffee' must become '咖啡'). Every single word must be in Chinese characters. {explanation_lang_instruction} Always respond with valid JSON only.\n{taiwan_chinese_rules}"
+            casual_hint = "口語程度：口語/街頭用法。像台灣年輕人跟朋友或在小吃店講話一樣。例：'Can I get the bill?' → '老闆，買單！'，不要用'請問可以開帳單嗎'。簡短、直接、自然。"
+        elif formality == "formal":
+            casual_hint = "口語程度：正式/書面用法。使用敬語和完整句型。"
+        else:
+            casual_hint = "口語程度：禮貌/標準用法。"
+        system_msg = f"你是一位台灣華語教師，專門教外國人學繁體中文（台灣用法）。翻譯必須完全使用繁體中文，絕對不可以使用簡體字或大陸用語。{casual_hint} 重要：翻譯中不可以夾雜任何英文單字（例如 menu 要翻成「菜單」，bill 要翻成「帳單」）。{explanation_lang_instruction} 請只回傳有效的 JSON 格式。\n{taiwan_chinese_rules}"
     elif input_is_chinese and lang_code == "en":
         system_msg = f"You are an English language teacher helping Chinese speakers learn English. The user writes in Chinese and you translate into ENGLISH. The 'translation' field MUST be in English. The 'pronunciation' field should be English pronunciation guide. The 'word' fields in breakdown MUST be English words. {explanation_lang_instruction} The 'native_expression' field should show how a native English speaker would naturally say it in English, with 繁體中文 explanation. Always respond with valid JSON only.\n{taiwan_chinese_rules}"
     elif input_is_chinese:
