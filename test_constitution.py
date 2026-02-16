@@ -207,6 +207,45 @@ if d:
     trans = d.get("translation", "")
     test("Uses 資訊 not 信息", "信息" not in trans or "資訊" in trans, f"Got: {trans}")
 
+# Rule 22: Health endpoint
+print("\n[Rule 22: Health Endpoint]")
+r = requests.get(f"{BASE}/api/health", timeout=10)
+test("Health endpoint returns 200", r.ok)
+if r.ok:
+    h = r.json()
+    test("Health has status field", "status" in h, str(h.keys()))
+    test("Health has ollama info", "ollama" in h and "reachable" in h["ollama"])
+    test("Health has cache stats", "cache" in h and "entries" in h["cache"])
+    test("Health has surprise_bank info", "surprise_bank" in h and "total_entries" in h["surprise_bank"])
+
+# Rule 23: Surprise Bank Status
+print("\n[Rule 23: Surprise Bank Status]")
+r = requests.get(f"{BASE}/api/surprise-bank-status", timeout=10)
+test("Surprise bank status returns 200", r.ok)
+if r.ok:
+    sb = r.json()
+    test("Has 'filling' field", "filling" in sb)
+    test("Has 'banks' field", "banks" in sb and isinstance(sb["banks"], dict))
+
+# Rule 24: Feedback List (auth required)
+print("\n[Rule 24: Feedback List]")
+r_noauth = requests.get(f"{BASE}/api/feedback-list", timeout=10)
+test("Feedback list rejects without password", r_noauth.status_code == 401)
+r_auth = requests.get(f"{BASE}/api/feedback-list", headers={"X-App-Password": PASSWORD}, timeout=10)
+test("Feedback list returns 200 with password", r_auth.ok)
+if r_auth.ok:
+    fb = r_auth.json()
+    test("Feedback list has 'total' field", "total" in fb)
+    test("Feedback list has 'entries' array", "entries" in fb and isinstance(fb["entries"], list))
+
+# Rule 25: Feedback Delete (auth required)
+print("\n[Rule 25: Feedback Delete]")
+r_noauth = requests.delete(f"{BASE}/api/feedback/0", timeout=10)
+test("Feedback delete rejects without password", r_noauth.status_code == 401)
+# Deleting index 999999 should 404
+r_oob = requests.delete(f"{BASE}/api/feedback/999999", headers={"X-App-Password": PASSWORD}, timeout=10)
+test("Feedback delete returns 404 for out-of-range index", r_oob.status_code == 404)
+
 # Summary
 print("\n" + "="*50)
 print(f"Results: {passed} passed, {failed} failed")
