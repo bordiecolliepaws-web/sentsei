@@ -116,7 +116,7 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Spaced repetition reminders** ✅ 2026-02-16 — SM-2 algorithm with localStorage SRS deck. Auto-adds learned sentences. Review mode with multiple-choice cards, interval tracking (1d→3d→N*EF), ease factor adjustments. Badge shows due count. Stats modal shows deck size, due items, mastered (30d+). Integrates with existing quiz UI patterns.
 
 ## P6 — Next Wave (from 2026-02-16 reflection #3)
-- [ ] **Contextual example sentences** — When learning a word/phrase, show 2-3 example sentences using it in different contexts. Helps build intuition beyond single translation.
+- [x] **Contextual example sentences** ✅ 2026-02-16 — "See it in context" toggle on each result card, lazy-loads 3 example sentences via `/api/context-examples` endpoint. Shows same grammar/vocab in different everyday situations (restaurant, texting, etc). Cached, deterministic pronunciation for CJK.
 - [ ] **Grammar pattern library** — Collect recurring grammar patterns from translations, let users browse by pattern (e.g. "〜てもいい", "〜(으)면"). Builds on existing grammar_notes.
 - [ ] **Multi-user support** — Currently single-password. Add simple user accounts (username/password) so multiple people can have separate history, SRS decks, and progress. SQLite backend.
 - [ ] **Difficulty auto-detection** — Analyze input sentence complexity and show difficulty level (beginner/intermediate/advanced). Could use word frequency lists + sentence length heuristics.
