@@ -118,10 +118,20 @@ _Items for cron iterations to work through, in priority order._
 ## P6 — Next Wave (from 2026-02-16 reflection #3)
 - [x] **Contextual example sentences** ✅ 2026-02-16 — "See it in context" toggle on each result card, lazy-loads 3 example sentences via `/api/context-examples` endpoint. Shows same grammar/vocab in different everyday situations (restaurant, texting, etc). Cached, deterministic pronunciation for CJK.
 - [x] **Grammar pattern library** ✅ 2026-02-16 — Collect recurring grammar patterns from translations, let users browse by pattern (e.g. "〜てもいい", "〜(으)면"). Backend extraction from grammar_notes, persistent storage, browse/detail endpoints. Frontend panel with language filter, frequency sorting, expandable examples.
-- [ ] **Multi-user support** — Currently single-password. Add simple user accounts (username/password) so multiple people can have separate history, SRS decks, and progress. SQLite backend.
+- [x] **Multi-user support** ✅ 2026-02-16 — SQLite backend with users/sessions/user_data tables. Register/login/logout endpoints, Bearer token auth (30-day TTL), server-side sync for history/SRS/progress/preferences. Optional — app still works without login. Frontend auth modal + auto-sync on data changes.
 - [x] **Difficulty auto-detection** ✅ 2026-02-16 — Heuristic analysis (word count, sentence length, CJK diversity, complexity markers, breakdown word difficulty). Returns beginner/intermediate/advanced with 0-100 score + factors. Color-coded badge on result cards with tooltip.
 - [x] **Romanization toggle** ✅ 2026-02-16 — "Aa" toggle pill hides/shows all pronunciation (romaji, pinyin, romanized Korean) across result cards, word chips, quiz, compare, and context examples. Persisted to localStorage. Default ON.
 - [ ] **Backend test coverage for SRS/review** — Currently no backend tests needed (SRS is frontend-only), but if SRS moves server-side for multi-user, add comprehensive tests.
+
+## P7 — Code Health & Security (from 2026-02-17 reflection)
+- [ ] **Use bcrypt/argon2 for password hashing** — Currently SHA-256 with salt, which is fast and GPU-crackable. Switch to `bcrypt` or `argon2-cffi` for proper key derivation.
+- [ ] **Split backend.py into modules** — 2340 lines in one file. Split into: `auth.py` (user/session management), `llm.py` (Ollama interaction/prompt building), `cache.py` (LRU + persistence), `routes.py` (API endpoints), `models.py` (Pydantic schemas). Keep `backend.py` as the app entry point that wires everything together.
+- [ ] **Make test suite pytest-compatible** — `test_constitution.py` uses a bare `def test()` that collides with pytest discovery. Either rename to `check_constitution.py` or refactor into proper `test_*` functions with pytest fixtures.
+- [ ] **Difficulty field missing from /api/learn response** — `detect_sentence_difficulty` exists but the `/api/learn` endpoint returns `difficulty: null`. Wire it up to actually call the function on the input sentence.
+- [ ] **CORS headers** — No CORS configuration. If the app is ever served from a different origin or embedded, this will break. Add configurable CORS middleware.
+- [ ] **Session cleanup cron** — Expired user sessions accumulate in SQLite forever. Add a periodic cleanup task (e.g. on startup or every hour) to delete expired sessions.
+- [ ] **Structured logging** — All error handling uses bare `except Exception`. Add Python `logging` module with structured output (JSON lines) for debugging production issues.
+- [ ] **Input validation hardening** — Max sentence length isn't enforced on some endpoints. Add consistent 500-char limit across learn/learn-multi/word-detail/context-examples.
 
 ## Cron Test Matrix
 Each iteration should run these checks:
