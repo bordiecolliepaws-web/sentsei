@@ -128,7 +128,7 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Split backend.py into modules** — 2340 lines in one file. Split into: `auth.py` (user/session management), `llm.py` (Ollama interaction/prompt building), `cache.py` (LRU + persistence), `routes.py` (API endpoints), `models.py` (Pydantic schemas). Keep `backend.py` as the app entry point that wires everything together.
 - [x] **Make test suite pytest-compatible** ✅ 2026-02-17 — Refactored into proper `test_*` functions with pytest fixtures in `conftest.py`. Session-scoped fixtures for base_url, headers, api_learn, lockfile.
 - [x] **Difficulty field missing from /api/learn response** ✅ 2026-02-17 — Wired `result["difficulty"]` from `sentence_difficulty.level` in routes.py.
-- [ ] **CORS headers** — No CORS configuration. If the app is ever served from a different origin or embedded, this will break. Add configurable CORS middleware.
+- [x] **CORS headers** ✅ 2026-02-17 — CORSMiddleware activated when `SENTSEI_CORS_ORIGINS` env var is set (comma-separated). Allows credentials, GET/POST/DELETE/OPTIONS, Authorization+Content-Type headers. No CORS when unset (same-origin only).
 - [ ] **Session cleanup cron** — Expired user sessions accumulate in SQLite forever. Add a periodic cleanup task (e.g. on startup or every hour) to delete expired sessions.
 - [ ] **Structured logging** — All error handling uses bare `except Exception`. Add Python `logging` module with structured output (JSON lines) for debugging production issues.
 - [ ] **Input validation hardening** — Max sentence length isn't enforced on some endpoints. Add consistent 500-char limit across learn/learn-multi/word-detail/context-examples.

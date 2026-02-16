@@ -1,9 +1,11 @@
 """SentSay — Sentence-based language learning app. Entry point."""
 import asyncio
 import json
+import os
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from cache import load_cache, save_cache, is_cache_dirty, load_grammar_patterns, save_grammar_patterns, is_grammar_dirty
@@ -12,6 +14,18 @@ from llm import check_ollama_connectivity
 from routes import router, load_surprise_bank, fill_surprise_bank_task, refill_surprise_bank_task, get_surprise_bank
 
 app = FastAPI()
+
+# CORS — configurable via env vars, defaults to same-origin only
+_cors_origins = [o.strip() for o in os.environ.get("SENTSEI_CORS_ORIGINS", "").split(",") if o.strip()]
+if _cors_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_cors_origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type"],
+    )
+
 app.include_router(router)
 
 
