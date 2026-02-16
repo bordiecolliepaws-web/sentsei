@@ -25,6 +25,107 @@ _kakasi = pykakasi.kakasi()
 _s2twp = OpenCC('s2twp')  # Simplified → Traditional (Taiwan phrases)
 
 
+def detect_sentence_difficulty(sentence: str, breakdown: list = None) -> dict:
+    """Analyze input sentence complexity and return difficulty level with reasoning.
+    
+    Returns: {"level": "beginner"|"intermediate"|"advanced", "score": 0-100, "factors": [...]}
+    """
+    factors = []
+    score = 0
+    
+    # --- Text analysis ---
+    text = sentence.strip()
+    char_count = len(text)
+    
+    # Detect if CJK-heavy
+    cjk_chars = sum(1 for c in text if '\u4e00' <= c <= '\u9fff' or '\u3040' <= c <= '\u30ff' or '\uac00' <= c <= '\ud7af')
+    is_cjk = cjk_chars / max(len(text.replace(" ", "")), 1) > 0.3
+    
+    if is_cjk:
+        # CJK: count characters (excluding punctuation/spaces)
+        meaningful = sum(1 for c in text if c.strip() and c not in '，。！？、「」『』（）…—·')
+        if meaningful <= 5:
+            score += 5
+            factors.append("Very short phrase")
+        elif meaningful <= 12:
+            score += 20
+            factors.append(f"Medium length ({meaningful} characters)")
+        elif meaningful <= 25:
+            score += 45
+            factors.append(f"Long sentence ({meaningful} characters)")
+        else:
+            score += 65
+            factors.append(f"Very long sentence ({meaningful} characters)")
+        
+        # Unique character diversity (more unique chars = harder)
+        unique_chars = len(set(c for c in text if '\u4e00' <= c <= '\u9fff'))
+        if unique_chars > 15:
+            score += 15
+            factors.append(f"High character diversity ({unique_chars} unique)")
+        elif unique_chars > 8:
+            score += 8
+    else:
+        # English/Latin: count words
+        words = text.split()
+        word_count = len(words)
+        if word_count <= 4:
+            score += 5
+            factors.append("Short phrase")
+        elif word_count <= 10:
+            score += 20
+            factors.append(f"Medium sentence ({word_count} words)")
+        elif word_count <= 20:
+            score += 40
+            factors.append(f"Long sentence ({word_count} words)")
+        else:
+            score += 60
+            factors.append(f"Very long sentence ({word_count} words)")
+        
+        # Average word length (longer words tend to be harder)
+        avg_len = sum(len(w.strip('.,!?;:')) for w in words) / max(word_count, 1)
+        if avg_len > 7:
+            score += 15
+            factors.append("Complex vocabulary (long words)")
+        elif avg_len > 5:
+            score += 8
+        
+        # Subordinate clauses / complexity markers
+        complexity_markers = ['although', 'however', 'nevertheless', 'whereas', 'furthermore',
+                            'consequently', 'notwithstanding', 'if', 'because', 'since', 'while',
+                            'unless', 'whether', 'whom', 'whose', 'whereby']
+        found = [m for m in complexity_markers if m in text.lower()]
+        if found:
+            score += min(len(found) * 8, 20)
+            factors.append(f"Complex grammar ({', '.join(found[:3])})")
+    
+    # --- Breakdown analysis (if available) ---
+    if breakdown:
+        hard_count = sum(1 for w in breakdown if w.get("difficulty") == "hard")
+        medium_count = sum(1 for w in breakdown if w.get("difficulty") == "medium")
+        total = len(breakdown)
+        if total > 0:
+            hard_ratio = hard_count / total
+            if hard_ratio > 0.3:
+                score += 20
+                factors.append(f"{hard_count}/{total} words marked hard")
+            elif hard_ratio > 0.1:
+                score += 10
+            medium_ratio = medium_count / total
+            if medium_ratio > 0.5:
+                score += 5
+    
+    # Clamp and classify
+    score = min(score, 100)
+    if score <= 25:
+        level = "beginner"
+    elif score <= 55:
+        level = "intermediate"
+    else:
+        level = "advanced"
+    
+    return {"level": level, "score": score, "factors": factors}
+
+
 def ensure_traditional_chinese(obj):
     """Recursively convert any simplified Chinese to Traditional Chinese (Taiwan) in JSON output."""
     if isinstance(obj, str):
@@ -951,6 +1052,11 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
                 cleaned = _re2.sub(r'\s*\)?\s*$', '', cleaned)
                 if cleaned:
                     item["meaning"] = cleaned
+
+    # Auto-detect sentence difficulty
+    result["sentence_difficulty"] = detect_sentence_difficulty(
+        req.sentence, result.get("breakdown", [])
+    )
 
     # Ensure all Chinese text is Traditional Chinese (Taiwan)
     result = ensure_traditional_chinese(result)

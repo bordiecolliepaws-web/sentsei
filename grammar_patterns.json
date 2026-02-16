@@ -1,0 +1,184 @@
+{
+  "0b5b6d5750b737ce": {
+    "id": "0b5b6d5750b737ce",
+    "name": "The Hebrew sentence uses 'האם' (ha'im) to form a p",
+    "lang": "he",
+    "explanation": "The Hebrew sentence uses 'האם' (ha'im) to form a polite request or question.",
+    "examples": [
+      {
+        "source": "Could you please speak a little slower?",
+        "translation": "האם תוכל לדבר קצת יותרゆっくり?",
+        "timestamp": 1771248610.979354
+      }
+    ],
+    "count": 1
+  },
+  "cc1340d0461d56a2": {
+    "id": "cc1340d0461d56a2",
+    "name": "The verb 'לדבר' (la'daber) is in infinitive form,",
+    "lang": "he",
+    "explanation": "The verb 'לדבר' (la'daber) is in infinitive form, which is common for requests.",
+    "examples": [
+      {
+        "source": "Could you please speak a little slower?",
+        "translation": "האם תוכל לדבר קצת יותרゆっくり?",
+        "timestamp": 1771248610.9793622
+      }
+    ],
+    "count": 1
+  },
+  "d8289a436f200f38": {
+    "id": "d8289a436f200f38",
+    "name": "The phrase 'קצת יותר' (katzat yoter) means literal",
+    "lang": "he",
+    "explanation": "The phrase 'קצת יותר' (katzat yoter) means literally 'a little more', used here to mean 'slower'.",
+    "examples": [
+      {
+        "source": "Could you please speak a little slower?",
+        "translation": "האם תוכל לדבר קצת יותרゆっくり?",
+        "timestamp": 1771248610.9793696
+      }
+    ],
+    "count": 1
+  },
+  "311264f9af6f01fc": {
+    "id": "311264f9af6f01fc",
+    "name": "The Hebrew sentence uses the verb 'to taste' in a",
+    "lang": "he",
+    "explanation": "The Hebrew sentence uses the verb 'to taste' in a way that conveys both tasting and liking something.",
+    "examples": [
+      {
+        "source": "This coffee tastes absolutely amazing",
+        "translation": "הקפה הזה טעים ממש 좋",
+        "timestamp": 1771248659.826773
+      }
+    ],
+    "count": 1
+  },
+  "9b05e5c05e3e8ad7": {
+    "id": "9b05e5c05e3e8ad7",
+    "name": "The word 'ממש' (mishma) is used to emphasize how g",
+    "lang": "he",
+    "explanation": "The word 'ממש' (mishma) is used to emphasize how good or true something is, similar to 'really' or 'truly'.",
+    "examples": [
+      {
+        "source": "This coffee tastes absolutely amazing",
+        "translation": "הקפה הזה טעים ממש 좋",
+        "timestamp": 1771248659.8267834
+      }
+    ],
+    "count": 1
+  },
+  "2bddc5a744b6cd20": {
+    "id": "2bddc5a744b6cd20",
+    "name": "The adjective 'יפה' (yafe) can be used for taste a",
+    "lang": "he",
+    "explanation": "The adjective 'יפה' (yafe) can be used for taste as well as appearance.",
+    "examples": [
+      {
+        "source": "This coffee tastes absolutely amazing",
+        "translation": "הקפה הזה טעים ממש 좋",
+        "timestamp": 1771248659.8267899
+      }
+    ],
+    "count": 1
+  },
+  "e7991571704f109f": {
+    "id": "e7991571704f109f",
+    "name": "The conditional clause uses the past tense (ידעתי)",
+    "lang": "he",
+    "explanation": "The conditional clause uses the past tense (ידעתי) to express a hypothetical situation in the past.",
+    "examples": [
+      {
+        "source": "If I had known earlier, I would have come sooner",
+        "translation": "אם ידעתי לפני כן, הייתי בא раньше",
+        "timestamp": 1771248721.9580514
+      }
+    ],
+    "count": 1
+  },
+  "fc7fae8d7eb56a3b": {
+    "id": "fc7fae8d7eb56a3b",
+    "name": "The main clause uses the past perfect form (הייתי",
+    "lang": "he",
+    "explanation": "The main clause uses the past perfect form (הייתי בא) to indicate an action that would have happened before another point in the past.",
+    "examples": [
+      {
+        "source": "If I had known earlier, I would have come sooner",
+        "translation": "אם ידעתי לפני כן, הייתי בא раньше",
+        "timestamp": 1771248721.9580703
+      }
+    ],
+    "count": 1
+  },
+  "1b967f2cdc914730": {
+    "id": "1b967f2cdc914730",
+    "name": "Gender/formality note: ⚠️ '私' (watashi): neutral/f",
+    "lang": "ja",
+    "explanation": "Gender/formality note: ⚠️ '私' (watashi): neutral/formal, used by all genders",
+    "examples": [
+      {
+        "source": "Despite the overwhelming complexity, we found an elegant solution",
+        "translation": "圧倒的な複雑さにもかかわらず、私たちが洗練された解決策を見つけました。",
+        "timestamp": 1771250323.7031972
+      }
+    ],
+    "count": 1
+  },
+  "044a22341c34145f": {
+    "id": "044a22341c34145f",
+    "name": "さにもかかわらず",
+    "lang": "ja",
+    "explanation": "圧倒的な複雑さにもかかわらず is a set phrase meaning 'despite overwhelming complexity'.",
+    "examples": [
+      {
+        "source": "Despite the overwhelming complexity, we found an elegant solution",
+        "translation": "圧倒的な複雑さにもかかわらず、私たちが洗練された解決策を見つけました。",
+        "timestamp": 1771250323.703206
+      }
+    ],
+    "count": 1
+  },
+  "28e07f1478d2a280": {
+    "id": "28e07f1478d2a280",
+    "name": "された",
+    "lang": "ja",
+    "explanation": "洗練された is used to describe an elegant or sophisticated solution.",
+    "examples": [
+      {
+        "source": "Despite the overwhelming complexity, we found an elegant solution",
+        "translation": "圧倒的な複雑さにもかかわらず、私たちが洗練された解決策を見つけました。",
+        "timestamp": 1771250323.7032125
+      }
+    ],
+    "count": 1
+  },
+  "aeb778656d41d58b": {
+    "id": "aeb778656d41d58b",
+    "name": "つけました",
+    "lang": "ja",
+    "explanation": "見つけました is the polite past form of 見つける (to find).",
+    "examples": [
+      {
+        "source": "Despite the overwhelming complexity, we found an elegant solution",
+        "translation": "圧倒的な複雑さにもかかわらず、私たちが洗練された解決策を見つけました。",
+        "timestamp": 1771250323.703218
+      }
+    ],
+    "count": 1
+  },
+  "856701c8097dfa19": {
+    "id": "856701c8097dfa19",
+    "name": "つける",
+    "lang": "ja",
+    "explanation": "見つけました is the polite past form of 見つける (to find).",
+    "examples": [
+      {
+        "source": "Despite the overwhelming complexity, we found an elegant solution",
+        "translation": "圧倒的な複雑さにもかかわらず、私たちが洗練された解決策を見つけました。",
+        "timestamp": 1771250323.7032201
+      }
+    ],
+    "count": 1
+  }
+}

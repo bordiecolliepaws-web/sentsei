@@ -1391,6 +1391,30 @@
             font-weight: 500;
         }
 
+        .result-difficulty {
+            display: inline-block;
+            margin-top: 0.75rem;
+            margin-left: 0.5rem;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 99px;
+            font-weight: 500;
+            text-transform: capitalize;
+            cursor: help;
+        }
+        .result-difficulty--beginner {
+            background: rgba(72, 187, 120, 0.15);
+            color: #48bb78;
+        }
+        .result-difficulty--intermediate {
+            background: rgba(236, 201, 75, 0.15);
+            color: #ecc94b;
+        }
+        .result-difficulty--advanced {
+            background: rgba(245, 101, 101, 0.15);
+            color: #f56565;
+        }
+
         /* Breakdown */
         .breakdown-section {
             padding: 1.5rem;

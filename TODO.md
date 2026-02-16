@@ -117,7 +117,7 @@ _Items for cron iterations to work through, in priority order._
 
 ## P6 — Next Wave (from 2026-02-16 reflection #3)
 - [x] **Contextual example sentences** ✅ 2026-02-16 — "See it in context" toggle on each result card, lazy-loads 3 example sentences via `/api/context-examples` endpoint. Shows same grammar/vocab in different everyday situations (restaurant, texting, etc). Cached, deterministic pronunciation for CJK.
-- [ ] **Grammar pattern library** — Collect recurring grammar patterns from translations, let users browse by pattern (e.g. "〜てもいい", "〜(으)면"). Builds on existing grammar_notes.
+- [x] **Grammar pattern library** ✅ 2026-02-16 — Collect recurring grammar patterns from translations, let users browse by pattern (e.g. "〜てもいい", "〜(으)면"). Backend extraction from grammar_notes, persistent storage, browse/detail endpoints. Frontend panel with language filter, frequency sorting, expandable examples.
 - [ ] **Multi-user support** — Currently single-password. Add simple user accounts (username/password) so multiple people can have separate history, SRS decks, and progress. SQLite backend.
 - [ ] **Difficulty auto-detection** — Analyze input sentence complexity and show difficulty level (beginner/intermediate/advanced). Could use word frequency lists + sentence length heuristics.
 - [ ] **Romanization toggle** — Let users show/hide romanization independently. Some learners want to wean off romaji/pinyin; toggle lets them practice reading native script.

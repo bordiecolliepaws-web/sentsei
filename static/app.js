@@ -2025,6 +2025,7 @@ const langSelect = document.getElementById('lang');
                     </div>
                     <div class="result-pronunciation">${data.pronunciation}</div>
                     <div class="result-formality">${data.formality}</div>
+                    ${data.sentence_difficulty ? `<div class="result-difficulty result-difficulty--${data.sentence_difficulty.level}" title="${(data.sentence_difficulty.factors || []).join(', ')}">${data.sentence_difficulty.level === 'beginner' ? '🟢' : data.sentence_difficulty.level === 'intermediate' ? '🟡' : '🔴'} ${data.sentence_difficulty.level}</div>` : ''}
                 </div>
                 <div class="breakdown-section">
                     <div class="section-title">Word Breakdown</div>
