@@ -255,3 +255,13 @@ def test_feedback_delete_out_of_range(base_url, headers):
     r = requests.delete(f"{base_url}/api/feedback/999999",
         headers={"X-App-Password": headers["X-App-Password"]}, timeout=10)
     assert r.status_code == 404
+
+
+# ── Difficulty Field ──────────────────────────────────────
+
+def test_difficulty_field_wired(api_learn):
+    """difficulty should be populated from sentence_difficulty.level"""
+    d = api_learn("My neighbor grows beautiful sunflowers", "ja", "en")
+    assert d, "API call failed"
+    assert d.get("difficulty") is not None, \
+        f"difficulty is null, sentence_difficulty={d.get('sentence_difficulty')}"
