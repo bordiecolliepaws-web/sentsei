@@ -108,12 +108,20 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Surprise bank stays empty** ✅ 2026-02-16 — Not a bug; fill is working but slow due to sequential Ollama calls (~30-60s each × 72 combos). Health now shows entries accumulating (e.g. he_en: 4). Persistence to disk means it recovers across restarts.
 
 ## P5 — Next Wave (from 2026-02-16 reflection #2)
-- [ ] **Fix 5 pre-existing test failures → done** ✅ already fixed this session
+- [x] **Fix 5 pre-existing test failures** ✅ 2026-02-16
 - [x] **Offline/PWA support** ✅ 2026-02-16 — service worker caches static assets (cache-first) + API responses (network-first with offline fallback). Web app manifest, 192/512px icons, installable as PWA. Works on subway/plane.
 - [x] **Dark/light theme toggle** ✅ 2026-02-16 — Light theme CSS variables, toggle in header + side menu, localStorage persistence, warm cream/amber palette.
 - [x] **Keyboard shortcuts** ✅ 2026-02-16 — Ctrl+Enter to learn, Ctrl+H for history, Ctrl+K to focus input, Ctrl+Shift+S for surprise, ? for shortcut help overlay. Escape closes panels. All with accessible kbd styling.
 - [x] **Shareable links** ✅ 2026-02-16 — `/learn?s=hello&t=ja` deep links. Share button on results (Web Share API + clipboard fallback). URL updates after each learn via history.replaceState. Auto-learns shared sentence on load.
-- [ ] **Spaced repetition reminders** — track which sentences user learned, suggest review based on forgetting curve. Could integrate with the quiz mode.
+- [x] **Spaced repetition reminders** ✅ 2026-02-16 — SM-2 algorithm with localStorage SRS deck. Auto-adds learned sentences. Review mode with multiple-choice cards, interval tracking (1d→3d→N*EF), ease factor adjustments. Badge shows due count. Stats modal shows deck size, due items, mastered (30d+). Integrates with existing quiz UI patterns.
+
+## P6 — Next Wave (from 2026-02-16 reflection #3)
+- [ ] **Contextual example sentences** — When learning a word/phrase, show 2-3 example sentences using it in different contexts. Helps build intuition beyond single translation.
+- [ ] **Grammar pattern library** — Collect recurring grammar patterns from translations, let users browse by pattern (e.g. "〜てもいい", "〜(으)면"). Builds on existing grammar_notes.
+- [ ] **Multi-user support** — Currently single-password. Add simple user accounts (username/password) so multiple people can have separate history, SRS decks, and progress. SQLite backend.
+- [ ] **Difficulty auto-detection** — Analyze input sentence complexity and show difficulty level (beginner/intermediate/advanced). Could use word frequency lists + sentence length heuristics.
+- [ ] **Romanization toggle** — Let users show/hide romanization independently. Some learners want to wean off romaji/pinyin; toggle lets them practice reading native script.
+- [ ] **Backend test coverage for SRS/review** — Currently no backend tests needed (SRS is frontend-only), but if SRS moves server-side for multi-user, add comprehensive tests.
 
 ## Cron Test Matrix
 Each iteration should run these checks:
