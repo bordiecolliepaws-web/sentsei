@@ -111,7 +111,7 @@ _Items for cron iterations to work through, in priority order._
 - [ ] **Fix 5 pre-existing test failures → done** ✅ already fixed this session
 - [ ] **Offline/PWA support** — service worker for caching static assets + previously learned sentences. Works on subway/plane.
 - [ ] **Dark/light theme toggle** — currently dark-only. Some users prefer light mode for readability.
-- [ ] **Keyboard shortcuts** — Ctrl+Enter to learn, Ctrl+H for history, Escape to close panels. Power user flow.
+- [x] **Keyboard shortcuts** ✅ 2026-02-16 — Ctrl+Enter to learn, Ctrl+H for history, Ctrl+K to focus input, Ctrl+Shift+S for surprise, ? for shortcut help overlay. Escape closes panels. All with accessible kbd styling.
 - [ ] **Shareable links** — `/learn?s=hello&t=ja` deep links. Share a sentence breakdown with friends.
 - [ ] **Spaced repetition reminders** — track which sentences user learned, suggest review based on forgetting curve. Could integrate with the quiz mode.
 
