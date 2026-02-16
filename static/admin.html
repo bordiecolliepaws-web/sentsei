@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SentSay Admin — Feedback</title>
+<style>
+  :root { --bg: #0c0c0c; --surface: #161616; --border: #2a2a2a; --accent: #e8a838; --text: #f0ece4; --muted: #908a7e; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); padding: 24px; max-width: 800px; margin: 0 auto; }
+  h1 { font-size: 1.4rem; margin-bottom: 16px; color: var(--accent); }
+  .login { display: flex; gap: 8px; margin-bottom: 24px; }
+  .login input { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 8px; font-size: 14px; }
+  .login button { background: var(--accent); color: #0c0c0c; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+  .card .meta { font-size: 12px; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between; }
+  .card .msg { font-size: 15px; line-height: 1.5; }
+  .card .context { font-size: 13px; color: var(--muted); margin-top: 8px; font-style: italic; }
+  .card .del { background: none; border: 1px solid #5a2020; color: #d44; border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 12px; }
+  .card .del:hover { background: #5a2020; }
+  .empty { color: var(--muted); text-align: center; padding: 40px; }
+  .stats { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+<h1>⚡ SentSay Feedback</h1>
+<div class="login">
+  <input type="password" id="pw" placeholder="Admin password" />
+  <button onclick="load()">Load</button>
+</div>
+<div class="stats" id="stats"></div>
+<div id="list"></div>
+<script>
+const pw = () => document.getElementById('pw').value;
+async function load() {
+  const res = await fetch('/api/feedback-list', { headers: { 'x-app-password': pw() } });
+  if (!res.ok) { alert('Unauthorized'); return; }
+  const data = await res.json();
+  document.getElementById('stats').textContent = `${data.total} feedback entries`;
+  const el = document.getElementById('list');
+  if (!data.entries.length) { el.innerHTML = '<div class="empty">No feedback yet</div>'; return; }
+  el.innerHTML = data.entries.map((e, i) => `
+    <div class="card">
+      <div class="meta"><span>${e.timestamp || '?'} ${e.target_language ? '· ' + e.target_language : ''}</span><button class="del" onclick="del_(${i})">Delete</button></div>
+      <div class="msg">${esc(e.message)}</div>
+      ${e.sentence ? `<div class="context">"${esc(e.sentence)}" → ${esc(e.translation || '')}</div>` : ''}
+    </div>
+  `).join('');
+}
+function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+async function del_(i) {
+  if (!confirm('Delete this feedback?')) return;
+  await fetch(`/api/feedback/${i}`, { method: 'DELETE', headers: { 'x-app-password': pw() } });
+  load();
+}
+</script>
+</body>
+</html>

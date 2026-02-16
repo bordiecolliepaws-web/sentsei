@@ -1756,4 +1756,34 @@ async def submit_feedback(req: FeedbackRequest, x_app_password: Optional[str] = 
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
     return {"ok": True}
 
+@app.get("/api/feedback-list")
+async def list_feedback(x_app_password: Optional[str] = Header(default=None), limit: int = 50, offset: int = 0):
+    if x_app_password != APP_PASSWORD:
+        raise HTTPException(401, "Unauthorized")
+    entries = []
+    if FEEDBACK_FILE.exists():
+        for line in FEEDBACK_FILE.read_text().strip().splitlines():
+            if line.strip():
+                try:
+                    entries.append(json.loads(line))
+                except json.JSONDecodeError:
+                    pass
+    entries.reverse()  # newest first
+    return {"total": len(entries), "entries": entries[offset:offset + limit]}
+
+@app.delete("/api/feedback/{index}")
+async def delete_feedback(index: int, x_app_password: Optional[str] = Header(default=None)):
+    if x_app_password != APP_PASSWORD:
+        raise HTTPException(401, "Unauthorized")
+    if not FEEDBACK_FILE.exists():
+        raise HTTPException(404, "No feedback file")
+    lines = [l for l in FEEDBACK_FILE.read_text().strip().splitlines() if l.strip()]
+    # index is 0-based from newest-first, convert to file order
+    file_index = len(lines) - 1 - index
+    if file_index < 0 or file_index >= len(lines):
+        raise HTTPException(404, "Index out of range")
+    lines.pop(file_index)
+    FEEDBACK_FILE.write_text("\n".join(lines) + "\n" if lines else "")
+    return {"ok": True}
+
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
