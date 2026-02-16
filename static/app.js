@@ -2619,6 +2619,118 @@ const langSelect = document.getElementById('lang');
             applyTheme(next);
         }
 
+        // --- Grammar Patterns Panel ---
+        const grammarPanelEl = document.getElementById('grammar-panel');
+        const grammarOverlayEl = document.getElementById('grammar-overlay');
+        const grammarPanelListEl = document.getElementById('grammar-panel-list');
+        const grammarFilterEl = document.getElementById('grammar-filter');
+        const grammarPanelCloseBtn = document.getElementById('grammar-panel-close');
+        let grammarPanelOpen = false;
+        let grammarPatterns = [];
+        let grammarFilterLang = null;
+
+        function toggleGrammarPanel() {
+            grammarPanelOpen = !grammarPanelOpen;
+            grammarPanelEl.classList.toggle('open', grammarPanelOpen);
+            grammarOverlayEl.classList.toggle('open', grammarPanelOpen);
+            if (grammarPanelOpen) loadGrammarPatterns();
+        }
+
+        function closeGrammarPanel() {
+            grammarPanelOpen = false;
+            grammarPanelEl.classList.remove('open');
+            grammarOverlayEl.classList.remove('open');
+        }
+
+        if (grammarPanelCloseBtn) grammarPanelCloseBtn.addEventListener('click', closeGrammarPanel);
+        if (grammarOverlayEl) grammarOverlayEl.addEventListener('click', closeGrammarPanel);
+
+        async function loadGrammarPatterns() {
+            try {
+                const url = grammarFilterLang ? `/api/grammar-patterns?lang=${grammarFilterLang}` : '/api/grammar-patterns';
+                const resp = await fetch(url, { headers: { 'x-app-password': APP_PASSWORD } });
+                if (!resp.ok) return;
+                grammarPatterns = await resp.json();
+                renderGrammarPatterns();
+            } catch (e) { console.error('[grammar]', e); }
+        }
+
+        function renderGrammarPatterns() {
+            // Build language filter pills
+            const langs = [...new Set(grammarPatterns.map(p => p.lang))];
+            if (grammarFilterEl) {
+                grammarFilterEl.innerHTML = `<button class="grammar-filter-pill ${!grammarFilterLang ? 'active' : ''}" data-lang="">All</button>` +
+                    langs.map(l => {
+                        const flag = LANG_FLAGS[l] || '🌐';
+                        return `<button class="grammar-filter-pill ${grammarFilterLang === l ? 'active' : ''}" data-lang="${l}">${flag} ${l}</button>`;
+                    }).join('');
+                grammarFilterEl.querySelectorAll('.grammar-filter-pill').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        grammarFilterLang = btn.dataset.lang || null;
+                        loadGrammarPatterns();
+                    });
+                });
+            }
+
+            if (!grammarPatterns.length) {
+                grammarPanelListEl.innerHTML = '<div class="grammar-panel-empty">No grammar patterns yet. Translate some sentences to discover patterns!</div>';
+                return;
+            }
+
+            grammarPanelListEl.innerHTML = grammarPatterns.map(p => `
+                <div class="grammar-card" data-pattern-id="${p.id}">
+                    <div class="grammar-card-head">
+                        <span class="grammar-card-name">${escapeHtml(p.name)}</span>
+                        <span class="grammar-card-count">${p.count}× · ${p.example_count} examples</span>
+                    </div>
+                    <div class="grammar-card-explanation">${escapeHtml(p.explanation)}</div>
+                    <div class="grammar-card-examples" id="gp-examples-${p.id}"></div>
+                </div>
+            `).join('');
+
+            grammarPanelListEl.querySelectorAll('.grammar-card').forEach(card => {
+                card.addEventListener('click', async () => {
+                    const pid = card.dataset.patternId;
+                    if (card.classList.contains('expanded')) {
+                        card.classList.remove('expanded');
+                        return;
+                    }
+                    // Load full detail
+                    try {
+                        const resp = await fetch(`/api/grammar-patterns/${pid}`, { headers: { 'x-app-password': APP_PASSWORD } });
+                        if (!resp.ok) return;
+                        const detail = await resp.json();
+                        const exDiv = card.querySelector('.grammar-card-examples');
+                        exDiv.innerHTML = (detail.examples || []).map(ex => `
+                            <div class="grammar-example" data-source="${escapeHtml(ex.source)}">
+                                <div class="grammar-example-source">"${escapeHtml(ex.source)}"</div>
+                                <div class="grammar-example-translation">→ ${escapeHtml(ex.translation)}</div>
+                            </div>
+                        `).join('') || '<div style="color:var(--text-dim);font-size:0.78rem;">No examples yet.</div>';
+                        // Click example to load into input
+                        exDiv.querySelectorAll('.grammar-example').forEach(ex => {
+                            ex.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                const src = ex.dataset.source;
+                                if (src && sentenceInput) {
+                                    sentenceInput.value = src;
+                                    sentenceInput.dispatchEvent(new Event('input'));
+                                    closeGrammarPanel();
+                                    sentenceInput.focus();
+                                }
+                            });
+                        });
+                        card.classList.add('expanded');
+                    } catch (e) { console.error(e); }
+                });
+            });
+        }
+
+        function escapeHtml(s) {
+            if (!s) return '';
+            return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
         // Init theme from localStorage
         (function initTheme() {
             const saved = localStorage.getItem('sentsei-theme') || 'dark';

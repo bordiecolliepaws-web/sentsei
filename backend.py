@@ -67,6 +67,104 @@ _cache_last_save = 0.0
 QUIZ_ANSWER_TTL = 3600   # quiz answer retention (seconds)
 _quiz_answers: dict = {}  # quiz_id -> answer payload
 
+# --- Grammar Pattern Library ---
+GRAMMAR_PATTERNS_FILE = Path(__file__).parent / "grammar_patterns.json"
+_grammar_patterns: dict = {}  # pattern_id -> {name, lang, explanation, examples: [{sentence, translation, source}], count}
+_grammar_dirty = False
+
+
+def _gp_id(name: str, lang: str) -> str:
+    raw = f"{name.strip()}|{lang}"
+    return hashlib.sha256(raw.encode()).hexdigest()[:16]
+
+
+def _load_grammar_patterns():
+    global _grammar_patterns
+    if GRAMMAR_PATTERNS_FILE.exists():
+        try:
+            _grammar_patterns = json.loads(GRAMMAR_PATTERNS_FILE.read_text())
+        except Exception as e:
+            print(f"[grammar] Failed to load: {e}")
+            _grammar_patterns = {}
+
+
+def _save_grammar_patterns():
+    global _grammar_dirty
+    try:
+        GRAMMAR_PATTERNS_FILE.write_text(json.dumps(_grammar_patterns, ensure_ascii=False, indent=2))
+        _grammar_dirty = False
+    except Exception as e:
+        print(f"[grammar] Failed to save: {e}")
+
+
+def _extract_and_store_grammar_patterns(result: dict, lang_code: str, source_sentence: str):
+    """Extract grammar patterns from translation result and store them."""
+    global _grammar_dirty
+    grammar_notes = result.get("grammar_notes", []) or []
+    if not grammar_notes:
+        return
+
+    translation = result.get("translation", "")
+
+    # Extract pattern names from grammar notes using regex
+    # Look for patterns like 〜てもいい, ～(으)면, Verb+てform, etc.
+    pattern_re = _re.compile(
+        r'[〜~～][\w\u3040-\u309f\u30a0-\u30ff\u4e00-\u9fff\uac00-\ud7af()（）/\+\-…]+|'
+        r'[\u3040-\u309f\u30a0-\u30ff]{2,}[\u3040-\u309f\u30a0-\u30ff/（）()]*|'
+        r'[\uac00-\ud7af]{2,}[/\uac00-\ud7af()（）]*'
+    )
+
+    for note in grammar_notes:
+        # Try to find pattern names in the note
+        matches = pattern_re.findall(note)
+        if not matches:
+            # Use the first ~30 chars as a pattern name if it looks like a grammar explanation
+            if len(note) > 10:
+                # Create a condensed pattern name from the note
+                name = note[:50].strip().rstrip('.')
+                matches = [name]
+            else:
+                continue
+
+        for pattern_name in matches[:2]:  # max 2 patterns per note
+            pattern_name = pattern_name.strip()
+            if len(pattern_name) < 2:
+                continue
+            pid = _gp_id(pattern_name, lang_code)
+            if pid not in _grammar_patterns:
+                _grammar_patterns[pid] = {
+                    "id": pid,
+                    "name": pattern_name,
+                    "lang": lang_code,
+                    "explanation": note,
+                    "examples": [],
+                    "count": 0,
+                }
+
+            entry = _grammar_patterns[pid]
+            # Update explanation if current one is longer/better
+            if len(note) > len(entry.get("explanation", "")):
+                entry["explanation"] = note
+            entry["count"] += 1
+
+            # Add example (dedupe by source sentence)
+            existing_sources = {ex.get("source", "") for ex in entry["examples"]}
+            if source_sentence not in existing_sources:
+                entry["examples"].append({
+                    "source": source_sentence,
+                    "translation": translation,
+                    "timestamp": time.time(),
+                })
+                # Keep max 20 examples
+                if len(entry["examples"]) > 20:
+                    entry["examples"] = entry["examples"][-20:]
+
+            _grammar_dirty = True
+
+    # Save periodically
+    if _grammar_dirty:
+        _save_grammar_patterns()
+
 
 def _cache_key(sentence: str, target: str, gender: str, formality: str) -> str:
     raw = f"{sentence.strip().lower()}|{target}|{gender}|{formality}"
@@ -860,6 +958,12 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
     # Cache the result
     cache_put(ck, result)
 
+    # Extract grammar patterns
+    try:
+        _extract_and_store_grammar_patterns(result, lang_code, req.sentence)
+    except Exception as e:
+        print(f"[grammar] Extraction error: {e}")
+
     # Release bank-filling pause
     _user_request_count -= 1
     if _user_request_count <= 0:
@@ -1406,6 +1510,7 @@ async def _check_ollama_connectivity() -> bool:
 @app.on_event("startup")
 async def _startup_cache():
     _load_cache()
+    _load_grammar_patterns()
 
 
 @app.on_event("shutdown")
@@ -1413,6 +1518,9 @@ async def _shutdown_cache():
     if _cache_dirty:
         _save_cache()
         print("[cache] Saved on shutdown")
+    if _grammar_dirty:
+        _save_grammar_patterns()
+        print("[grammar] Saved on shutdown")
 
 
 @app.on_event("startup")
@@ -1891,5 +1999,32 @@ async def delete_feedback(index: int, x_app_password: Optional[str] = Header(def
     lines.pop(file_index)
     FEEDBACK_FILE.write_text("\n".join(lines) + "\n" if lines else "")
     return {"ok": True}
+
+# --- Grammar Pattern Library endpoints ---
+
+@app.get("/api/grammar-patterns")
+async def list_grammar_patterns(lang: Optional[str] = None, x_app_password: Optional[str] = Header(default=None)):
+    if x_app_password != APP_PASSWORD:
+        raise HTTPException(401, "Unauthorized")
+    patterns = list(_grammar_patterns.values())
+    if lang:
+        patterns = [p for p in patterns if p.get("lang") == lang]
+    patterns.sort(key=lambda p: -p.get("count", 0))
+    # Return summary (without full examples)
+    return [
+        {"id": p["id"], "name": p["name"], "lang": p["lang"], "explanation": p["explanation"], "count": p["count"], "example_count": len(p.get("examples", []))}
+        for p in patterns
+    ]
+
+
+@app.get("/api/grammar-patterns/{pattern_id}")
+async def get_grammar_pattern(pattern_id: str, x_app_password: Optional[str] = Header(default=None)):
+    if x_app_password != APP_PASSWORD:
+        raise HTTPException(401, "Unauthorized")
+    pattern = _grammar_patterns.get(pattern_id)
+    if not pattern:
+        raise HTTPException(404, "Pattern not found")
+    return pattern
+
 
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

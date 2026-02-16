@@ -189,6 +189,9 @@
                 <span class="menu-icon">📅</span> Review
                 <span id="menu-review-badge" class="menu-badge" style="display:none">0</span>
             </button>
+            <button class="side-menu-item" id="menu-grammar" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open'); toggleGrammarPanel();">
+                <span class="menu-icon">📐</span> Grammar Patterns
+            </button>
             <button class="side-menu-item" id="menu-stories" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open'); toggleStoriesPanel();">
                 <span class="menu-icon">📖</span> Stories
             </button>
@@ -226,6 +229,19 @@
                     <button id="story-next-btn" type="button">Next →</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Grammar Patterns Panel -->
+    <div id="grammar-overlay" class="grammar-overlay"></div>
+    <div id="grammar-panel" class="grammar-panel" role="dialog" aria-label="Grammar Patterns">
+        <div class="grammar-panel-header">
+            <h3>📐 Grammar Patterns</h3>
+            <button id="grammar-panel-close" class="history-panel-close" aria-label="Close grammar patterns">✕</button>
+        </div>
+        <div class="grammar-filter" id="grammar-filter"></div>
+        <div id="grammar-panel-list" class="grammar-panel-list">
+            <div class="grammar-panel-empty">No grammar patterns yet. Translate some sentences to discover patterns!</div>
         </div>
     </div>
 
