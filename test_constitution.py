@@ -46,9 +46,15 @@ print("\n[JS Syntax]")
 js_check = subprocess.run(
     ['node', '-e', '''
 const fs = require('fs');
-const html = fs.readFileSync('static/index.html', 'utf8');
-const match = html.match(/<script>([\\s\\S]*?)<\\/script>/);
-if (match) { try { new Function(match[1]); console.log('OK'); } catch(e) { console.log('ERROR:' + e.message); } }
+// Try external app.js first, fall back to inline script in index.html
+let code;
+try { code = fs.readFileSync('static/app.js', 'utf8'); } catch(e) {
+  const html = fs.readFileSync('static/index.html', 'utf8');
+  const match = html.match(/<script>([\\s\\S]*?)<\\/script>/);
+  code = match ? match[1] : null;
+}
+if (code) { try { new Function(code); console.log('OK'); } catch(e) { console.log('ERROR:' + e.message); } }
+else { console.log('NO_JS'); }
 '''],
     capture_output=True, text=True, cwd='/home/opclaw/.openclaw/workspace-sora/sentsei'
 )
@@ -119,10 +125,13 @@ if d:
 print("\n[Rule 8: Layout Order]")
 import re
 html = requests.get(f"{BASE}/").text
-source_pos = html.find('result-source')
-trans_pos = html.find('result-translation')
-# In the template, source should come before translation
-test("Input sentence before translation in HTML", source_pos < trans_pos and source_pos > 0, f"source@{source_pos} trans@{trans_pos}")
+# Also fetch external JS/CSS for content checks
+app_js = requests.get(f"{BASE}/app.js").text if requests.get(f"{BASE}/app.js").ok else ""
+all_content = html + app_js
+# Check that source appears before translation in HTML or JS (dynamic rendering)
+source_pos = all_content.find('result-source')
+trans_pos = all_content.find('result-translation')
+test("Input sentence before translation in HTML/JS", source_pos < trans_pos and source_pos > 0, f"source@{source_pos} trans@{trans_pos}")
 
 # Rule 10: Favicon is 學 not 学
 print("\n[Rule 10: Traditional Favicon]")
@@ -131,9 +140,9 @@ test("Favicon NOT 学 (simplified)", '学' not in html.split('favicon')[0] if 'f
 
 # Rule 11: IME composition guard
 print("\n[Rule 11: IME Composition Guard]")
-test("compositionstart listener exists", 'compositionstart' in html)
-test("compositionend listener exists", 'compositionend' in html)
-test("isComposing check in keydown", 'isComposing' in html)
+test("compositionstart listener exists", 'compositionstart' in all_content)
+test("compositionend listener exists", 'compositionend' in all_content)
+test("isComposing check in keydown", 'isComposing' in all_content)
 
 # Rule 13: Native expression differs from translation
 print("\n[Rule 13: Native Expression]")
