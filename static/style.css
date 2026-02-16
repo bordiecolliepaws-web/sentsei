@@ -1155,6 +1155,31 @@
             height: 14px;
         }
 
+        .share-btn {
+            background: var(--surface2);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.35rem 0.55rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.76rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .share-btn:hover {
+            color: var(--text);
+            border-color: var(--accent);
+        }
+
+        .share-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
         .speak-btn {
             background: var(--surface2);
             color: var(--text-dim);

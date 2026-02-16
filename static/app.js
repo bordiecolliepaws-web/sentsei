@@ -1293,7 +1293,32 @@ const langSelect = document.getElementById('lang');
 
         renderSentenceHistory();
         // Always load languages (not gated by password)
-        loadLanguages().catch(err => {
+        loadLanguages().then(() => {
+            // Handle shareable deep links: ?s=sentence&t=lang
+            const urlParams = new URLSearchParams(window.location.search);
+            const sharedSentence = urlParams.get('s');
+            const sharedLang = urlParams.get('t');
+            if (sharedSentence) {
+                sentenceInput.value = sharedSentence;
+                if (sharedLang && langSelect.querySelector(`option[value="${sharedLang}"]`)) {
+                    selectLangPill(sharedLang);
+                }
+                // Auto-learn after password is confirmed
+                const tryAutoLearn = () => {
+                    if (ensurePassword()) {
+                        learn();
+                    } else {
+                        // Password modal will show; learn after it's submitted
+                        const origSubmit = passwordFormEl.onsubmit;
+                        passwordFormEl.addEventListener('submit', function autoLearnAfterPw() {
+                            passwordFormEl.removeEventListener('submit', autoLearnAfterPw);
+                            setTimeout(() => learn(), 300);
+                        });
+                    }
+                };
+                tryAutoLearn();
+            }
+        }).catch(err => {
             console.error(err);
             alert('Failed to load languages.');
         });
@@ -1732,6 +1757,16 @@ const langSelect = document.getElementById('lang');
                             </svg>
                             <span class="copy-label">Copy</span>
                         </button>
+                        <button type="button" class="share-btn" aria-label="Share link" data-sentence="${original.replace(/"/g, '&quot;')}" data-lang="${reqCtx.target_language || langSelect.value}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                                <circle cx="18" cy="5" r="3"></circle>
+                                <circle cx="6" cy="12" r="3"></circle>
+                                <circle cx="18" cy="19" r="3"></circle>
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                            </svg>
+                            <span class="share-label">Share</span>
+                        </button>
                     </div>
                     <div class="result-pronunciation">${data.pronunciation}</div>
                     <div class="result-formality">${data.formality}</div>
@@ -1792,6 +1827,37 @@ const langSelect = document.getElementById('lang');
                     copyBtn.classList.remove('copied');
                 }, 1200);
             });
+
+            // Share button
+            const shareBtn = card.querySelector('.share-btn');
+            if (shareBtn) {
+                shareBtn.addEventListener('click', async () => {
+                    const s = shareBtn.dataset.sentence;
+                    const t = shareBtn.dataset.lang;
+                    const shareUrl = new URL(window.location.href);
+                    shareUrl.search = '';
+                    shareUrl.searchParams.set('s', s);
+                    shareUrl.searchParams.set('t', t);
+                    const url = shareUrl.toString();
+                    const shareLabelEl = shareBtn.querySelector('.share-label');
+                    if (navigator.share) {
+                        try {
+                            await navigator.share({ title: 'Learn: ' + s, url: url });
+                        } catch(e) { /* user cancelled */ }
+                    } else {
+                        const ok = await copyTextToClipboard(url);
+                        shareLabelEl.textContent = ok ? 'Copied!' : 'Failed';
+                        setTimeout(() => { shareLabelEl.textContent = 'Share'; }, 1200);
+                    }
+                });
+            }
+
+            // Update URL to reflect current sentence
+            const shareUrl = new URL(window.location.href);
+            shareUrl.search = '';
+            shareUrl.searchParams.set('s', original);
+            shareUrl.searchParams.set('t', reqCtx.target_language || langSelect.value);
+            history.replaceState(null, '', shareUrl.toString());
 
             // Prepend new result
             if (resultsEl.children.length > 0) {
