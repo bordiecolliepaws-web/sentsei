@@ -116,6 +116,27 @@
             </div>
         </div>
 
+        <div id="review-area" class="review-area hidden">
+            <div class="review-header">
+                <div>
+                    <div class="review-title">📅 Review</div>
+                    <div id="review-meta" class="review-meta"></div>
+                </div>
+                <div id="review-score" class="quiz-score">0/0</div>
+            </div>
+            <div class="review-card">
+                <div class="review-label" id="review-label">What does this mean?</div>
+                <div id="review-sentence" class="quiz-sentence">Loading...</div>
+                <div id="review-pronunciation" class="quiz-pronunciation"></div>
+                <div id="review-source" class="quiz-source"></div>
+                <div id="review-choices" style="display:flex;flex-direction:column;gap:0.5rem;margin:1rem 0;"></div>
+                <div class="quiz-actions">
+                    <button id="review-next-btn" class="quiz-next-btn" type="button">Next</button>
+                    <button id="review-exit-btn" class="quiz-exit-btn" type="button">Exit Review</button>
+                </div>
+            </div>
+        </div>
+
         <div id="loading" class="loading hidden">
             <div class="spinner"></div>
             <p id="loading-message" class="loading-message">Breaking it down...</p>
@@ -137,6 +158,8 @@
             📖 Stories <span id="stories-badge" class="badge">0</span>
         </button>
         <button id="quiz-toggle" class="quiz-toggle-btn" aria-label="Toggle quiz mode">🧠 Quiz</button>
+        <button id="review-toggle" class="review-toggle-btn" aria-label="Toggle review mode">📅 Review <span id="review-badge" class="badge" style="display:none">0</span></button>
+        <button id="review-toggle" class="review-toggle-btn" aria-label="Toggle review mode">📅 Review <span id="review-badge" class="review-badge" style="display:none">0</span></button>
     </div>
 
     <!-- Hamburger Menu -->
@@ -157,6 +180,14 @@
             </button>
             <button class="side-menu-item" id="menu-quiz" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open'); toggleQuizMode();">
                 <span class="menu-icon">🧠</span> Quiz
+            </button>
+            <button class="side-menu-item" id="menu-review" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open'); toggleReviewMode();">
+                <span class="menu-icon">📅</span> Review
+                <span id="menu-review-badge" class="menu-badge" style="display:none">0</span>
+            </button>
+            <button class="side-menu-item" id="menu-review" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open'); toggleReviewMode();">
+                <span class="menu-icon">📅</span> Review
+                <span id="menu-review-badge" class="menu-badge" style="display:none">0</span>
             </button>
             <button class="side-menu-item" id="menu-stories" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open'); toggleStoriesPanel();">
                 <span class="menu-icon">📖</span> Stories
@@ -252,12 +283,36 @@
                     <div id="stats-quiz-accuracy" class="progress-stat-value">No quizzes taken yet</div>
                 </div>
                 <div class="progress-stat">
+                    <div class="progress-stat-label">SRS deck</div>
+                    <div id="stats-srs-deck" class="progress-stat-value">0 items</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-label">Due for review</div>
+                    <div id="stats-srs-due" class="progress-stat-value">0</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-label">Mastered (30d+)</div>
+                    <div id="stats-srs-mastered" class="progress-stat-value">0</div>
+                </div>
+                <div class="progress-stat">
                     <div class="progress-stat-label">Current streak</div>
                     <div id="stats-streak" class="progress-stat-value">0 days</div>
                 </div>
                 <div class="progress-stat">
                     <div class="progress-stat-label">Learning since</div>
                     <div id="stats-learning-since" class="progress-stat-value">Not started yet</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-label">Items in SRS deck</div>
+                    <div id="stats-srs-deck" class="progress-stat-value">0</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-label">Due for review</div>
+                    <div id="stats-srs-due" class="progress-stat-value">0</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-label">Mastered (interval &gt; 30d)</div>
+                    <div id="stats-srs-mastered" class="progress-stat-value">0</div>
                 </div>
             </div>
         </div>

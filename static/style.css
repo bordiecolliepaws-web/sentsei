@@ -489,7 +489,8 @@
         /* Stories + Quiz actions (legacy classes kept for JS refs) */
         .header-left-actions { display: none; }
         .stories-toggle-btn,
-        .quiz-toggle-btn { display: none; }
+        .quiz-toggle-btn,
+        .review-toggle-btn { display: none; }
         .stories-toggle-btn .badge { display: none; }
 
         /* Hamburger menu button */
@@ -840,6 +841,63 @@
             display: none;
         }
 
+        .review-toggle-btn {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.45rem 0.9rem;
+            color: var(--text);
+            font-size: 0.85rem;
+            cursor: pointer;
+            position: relative;
+        }
+        .review-toggle-btn.active {
+            background: #1a3a2a;
+            border-color: #2d8659;
+            color: #4ade80;
+        }
+        .review-toggle-btn .badge {
+            background: #dc2626;
+            color: #fff;
+            font-size: 0.7rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 9px;
+            margin-left: 0.3rem;
+        }
+        .review-area {
+            background: var(--surface);
+            border: 1px solid #2d8659;
+            border-radius: var(--radius);
+            padding: 1.1rem;
+            margin-bottom: 1rem;
+        }
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .review-title {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #4ade80;
+        }
+        .review-meta {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 0.15rem;
+        }
+        .review-card {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.1rem;
+        }
+        .review-label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+        }
         .quiz-area {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -1058,6 +1116,82 @@
         @keyframes quizReveal {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* === Review Mode (SRS) === */
+        .review-area {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.1rem;
+            margin-bottom: 1.4rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .review-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.8rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .review-title {
+            font-size: 0.96rem;
+            font-weight: 650;
+            color: #2dd4a8;
+        }
+
+        .review-meta {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 0.12rem;
+        }
+
+        .review-card {
+            background: linear-gradient(180deg, rgba(45, 212, 168, 0.06), rgba(0, 0, 0, 0) 35%), var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .review-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+            margin-bottom: 0.6rem;
+        }
+
+        .review-toggle-btn {
+            background: transparent;
+            color: #2dd4a8;
+            border: 1px solid #2dd4a8;
+            border-radius: 8px;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.82rem;
+            cursor: pointer;
+            font-family: inherit;
+            position: relative;
+        }
+
+        .review-toggle-btn.active {
+            background: #2dd4a8;
+            color: var(--bg);
+        }
+
+        .review-badge {
+            background: #e85d5d;
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 0.1rem 0.38rem;
+            min-width: 1.1rem;
+            text-align: center;
+            display: inline-block;
+            margin-left: 0.25rem;
+            vertical-align: middle;
         }
 
         /* Mobile: bottom drawer instead of side panel */
