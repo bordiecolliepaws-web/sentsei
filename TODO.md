@@ -110,7 +110,7 @@ _Items for cron iterations to work through, in priority order._
 ## P5 — Next Wave (from 2026-02-16 reflection #2)
 - [ ] **Fix 5 pre-existing test failures → done** ✅ already fixed this session
 - [ ] **Offline/PWA support** — service worker for caching static assets + previously learned sentences. Works on subway/plane.
-- [ ] **Dark/light theme toggle** — currently dark-only. Some users prefer light mode for readability.
+- [x] **Dark/light theme toggle** ✅ 2026-02-16 — Light theme CSS variables, toggle in header + side menu, localStorage persistence, warm cream/amber palette.
 - [x] **Keyboard shortcuts** ✅ 2026-02-16 — Ctrl+Enter to learn, Ctrl+H for history, Ctrl+K to focus input, Ctrl+Shift+S for surprise, ? for shortcut help overlay. Escape closes panels. All with accessible kbd styling.
 - [x] **Shareable links** ✅ 2026-02-16 — `/learn?s=hello&t=ja` deep links. Share button on results (Web Share API + clipboard fallback). URL updates after each learn via history.replaceState. Auto-learns shared sentence on load.
 - [ ] **Spaced repetition reminders** — track which sentences user learned, suggest review based on forgetting curve. Could integrate with the quiz mode.
