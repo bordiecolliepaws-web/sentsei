@@ -524,6 +524,9 @@ async def segment_sentence(
     if x_app_password != APP_PASSWORD:
         raise HTTPException(401, "Unauthorized")
 
+    if len(req.sentence) > MAX_INPUT_LEN or len(req.translation) > MAX_INPUT_LEN:
+        raise HTTPException(400, f"Input too long (max {MAX_INPUT_LEN} characters)")
+
     if req.target_language not in SUPPORTED_LANGUAGES:
         raise HTTPException(400, "Unsupported language")
 
@@ -585,6 +588,9 @@ async def get_breakdown(
     rate_limit_cleanup()
     if not rate_limit_check(client_ip):
         raise HTTPException(429, "Too many requests. Please wait a minute.")
+
+    if len(req.sentence) > MAX_INPUT_LEN or len(req.translation) > MAX_INPUT_LEN:
+        raise HTTPException(400, f"Input too long (max {MAX_INPUT_LEN} characters)")
 
     if req.target_language not in SUPPORTED_LANGUAGES:
         raise HTTPException(400, "Unsupported language")
@@ -673,6 +679,9 @@ async def learn_sentence_stream(
     if not req.sentence or not req.sentence.strip():
         raise HTTPException(400, "Sentence cannot be empty")
 
+    if len(req.sentence) > MAX_INPUT_LEN:
+        raise HTTPException(400, f"Input too long (max {MAX_INPUT_LEN} characters)")
+
     gender = req.speaker_gender or "neutral"
     formality = req.speaker_formality or "polite"
     ck = cache_key(req.sentence, req.target_language, gender, formality)
@@ -727,6 +736,9 @@ async def learn_multi(
     if x_app_password != APP_PASSWORD:
         raise HTTPException(401, "Unauthorized")
 
+    if len(req.sentences) > MAX_INPUT_LEN * 5:
+        raise HTTPException(400, f"Input too long (max {MAX_INPUT_LEN * 5} characters)")
+
     parts = split_sentences(req.sentences)
     if not parts:
         raise HTTPException(400, "No sentences detected")
@@ -771,6 +783,11 @@ async def word_detail(
     rate_limit_cleanup()
     if not rate_limit_check(client_ip):
         raise HTTPException(429, "Too many requests. Please wait a minute.")
+
+    if len(req.word) > MAX_INPUT_LEN or len(req.meaning) > MAX_INPUT_LEN:
+        raise HTTPException(400, f"Input too long (max {MAX_INPUT_LEN} characters)")
+    if req.sentence_context and len(req.sentence_context) > MAX_INPUT_LEN:
+        raise HTTPException(400, f"Input too long (max {MAX_INPUT_LEN} characters)")
 
     if req.target_language not in SUPPORTED_LANGUAGES:
         raise HTTPException(400, "Unsupported language")
@@ -834,6 +851,9 @@ async def context_examples(
     rate_limit_cleanup()
     if not rate_limit_check(client_ip):
         raise HTTPException(429, "Too many requests. Please wait a minute.")
+
+    if len(req.translation) > MAX_INPUT_LEN or len(req.source_sentence) > MAX_INPUT_LEN:
+        raise HTTPException(400, f"Input too long (max {MAX_INPUT_LEN} characters)")
 
     if req.target_language not in SUPPORTED_LANGUAGES:
         raise HTTPException(400, "Unsupported language")
@@ -1187,6 +1207,9 @@ async def compare_sentence(
 
     if not req.sentence.strip():
         raise HTTPException(400, "Sentence is required")
+
+    if len(req.sentence) > MAX_INPUT_LEN:
+        raise HTTPException(400, f"Input too long (max {MAX_INPUT_LEN} characters)")
 
     input_is_chinese = _detect_input_language(req.sentence, req.input_language or "auto")
     skip_langs = {"zh"} if input_is_chinese else {"en"}
