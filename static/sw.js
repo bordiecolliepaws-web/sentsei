@@ -1,5 +1,5 @@
 // SentSay Service Worker — Offline/PWA support
-const CACHE_NAME = 'sentsay-v1';
+const CACHE_NAME = 'sentsay-v3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

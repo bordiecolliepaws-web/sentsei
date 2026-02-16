@@ -65,6 +65,8 @@ const langSelect = document.getElementById('lang');
         function applyRomanization() {
             document.body.classList.toggle('hide-romanization', !showRomanization);
             romanizationToggleBtn.classList.toggle('active', showRomanization);
+            const label = document.getElementById('romanization-label');
+            if (label) label.textContent = showRomanization ? 'On' : 'Off';
         }
 
         romanizationToggleBtn.addEventListener('click', () => {
@@ -1608,6 +1610,7 @@ const langSelect = document.getElementById('lang');
         let currentAbortController = null;
         let loadingTimer = null;
         let lastLearnSentence = '';
+        let learnGeneration = 0; // Incremented on each new learn request; stale async ops check this
         let lastActionType = 'learn';
 
         const LOADING_PHASES = [
@@ -1621,6 +1624,7 @@ const langSelect = document.getElementById('lang');
         ];
 
         function startLoadingTimer() {
+            stopLoadingTimer(); // Clear any existing timer first
             const start = Date.now();
             loadingCancelBtn.style.display = 'none';
             loadingElapsedEl.textContent = '';
@@ -1736,6 +1740,7 @@ const langSelect = document.getElementById('lang');
 
             const sentence = sentenceInput.value.trim();
             if (!sentence) return;
+            learnGeneration++; // Invalidate any in-flight segment/grammar requests
             lastLearnSentence = sentence;
             lastActionType = 'learn';
             hideError();
@@ -2036,9 +2041,13 @@ const langSelect = document.getElementById('lang');
                 </div>
                 ` : `
                 <div class="breakdown-section breakdown-lazy">
-                    <button type="button" class="show-breakdown-btn" style="width:100%;padding:0.8rem;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-size:0.9rem;cursor:pointer;transition:background 0.2s;">
-                        📖 Show word breakdown & grammar notes
-                    </button>
+                    <div class="section-title">Word Breakdown</div>
+                    <div class="word-chips segment-chips"><div class="word-detail-loading">Segmenting...</div></div>
+                    <div class="grammar-lazy-section" style="margin-top:0.8rem;">
+                        <button type="button" class="show-grammar-btn" style="width:100%;padding:0.65rem;background:var(--accent-glow);border:1px solid rgba(232,168,56,0.25);border-radius:8px;color:var(--accent);font-size:0.85rem;cursor:pointer;transition:all 0.2s;font-family:inherit;">
+                            📝 Load grammar notes & detailed breakdown
+                        </button>
+                    </div>
                 </div>
                 `}
             `;
@@ -2112,12 +2121,60 @@ const langSelect = document.getElementById('lang');
             shareUrl.searchParams.set('t', reqCtx.target_language || langSelect.value);
             history.replaceState(null, '', shareUrl.toString());
 
-            // Lazy-load breakdown on demand
-            const showBreakdownBtn = card.querySelector('.show-breakdown-btn');
-            if (showBreakdownBtn) {
-                showBreakdownBtn.addEventListener('click', async () => {
-                    showBreakdownBtn.disabled = true;
-                    showBreakdownBtn.textContent = '⏳ Loading breakdown...';
+            // Fast segment: load jieba/cedict breakdown immediately
+            const segmentChips = card.querySelector('.segment-chips');
+            const myGeneration = learnGeneration; // Capture current generation
+            if (segmentChips) {
+                (async () => {
+                    try {
+                        const segResp = await fetch('/api/segment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-App-Password': appPassword },
+                            body: JSON.stringify({
+                                sentence: original,
+                                translation: data.translation,
+                                target_language: reqCtx.target_language || langSelect.value,
+                            })
+                        });
+                        if (!segResp.ok) throw new Error('Failed');
+                        if (myGeneration !== learnGeneration) return; // Stale — new input arrived
+                        const seg = await segResp.json();
+                        const segWords = seg.breakdown || [];
+                        if (segWords.length === 0) {
+                            segmentChips.innerHTML = '<div class="word-detail-loading">No segmentation available.</div>';
+                            return;
+                        }
+                        const DIFF_LABELS = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+                        segmentChips.innerHTML = segWords.map(w => `
+                            <div class="word-chip" role="button" tabindex="0" aria-expanded="false">
+                                <div class="word-target">${w.word}</div>
+                                <div class="word-pron">${w.pronunciation || ''}</div>
+                                <div class="word-meaning">${w.meaning || ''}</div>
+                            </div>
+                        `).join('');
+                        // Store for later merging
+                        data._segmentBreakdown = segWords;
+                        // Attach click handlers
+                        segmentChips.querySelectorAll('.word-chip').forEach((chip, idx) => {
+                            const wordData = segWords[idx];
+                            const chipHandler = () => handleWordChipClick(chip, wordData, data, reqCtx);
+                            chip.addEventListener('click', chipHandler);
+                            chip.addEventListener('keydown', (e) => {
+                                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chipHandler(); }
+                            });
+                        });
+                    } catch (err) {
+                        segmentChips.innerHTML = '<div class="word-detail-loading">Segmentation unavailable.</div>';
+                    }
+                })();
+            }
+
+            // Lazy-load full grammar notes on demand
+            const showGrammarBtn = card.querySelector('.show-grammar-btn');
+            if (showGrammarBtn) {
+                showGrammarBtn.addEventListener('click', async () => {
+                    showGrammarBtn.disabled = true;
+                    showGrammarBtn.textContent = '⏳ Loading grammar notes...';
                     try {
                         const bdResp = await fetch('/api/breakdown', {
                             method: 'POST',
@@ -2132,15 +2189,16 @@ const langSelect = document.getElementById('lang');
                             })
                         });
                         if (!bdResp.ok) throw new Error('Failed');
+                        if (myGeneration !== learnGeneration) return; // Stale — new input arrived, discard grammar
                         const bd = await bdResp.json();
 
-                        // Merge breakdown data into card data
-                        data.breakdown = bd.breakdown || [];
+                        // Merge LLM breakdown data
+                        data.breakdown = bd.breakdown || data._segmentBreakdown || [];
                         data.grammar_notes = bd.grammar_notes || [];
                         data.cultural_note = bd.cultural_note || null;
                         data.alternative = bd.alternative || null;
 
-                        // Build breakdown HTML
+                        // Update word chips with LLM data (has meanings, notes, difficulty)
                         const DIFF_LABELS = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
                         const bdHTML = data.breakdown.map(w => `
                             <div class="word-chip" role="button" tabindex="0" aria-expanded="false">
@@ -2155,7 +2213,7 @@ const langSelect = document.getElementById('lang');
                         `).join('');
                         const gHTML = (data.grammar_notes || []).map(n => `<li>${n}</li>`).join('');
 
-                        const section = showBreakdownBtn.closest('.breakdown-section');
+                        const section = showGrammarBtn.closest('.breakdown-section');
                         section.innerHTML = `
                             <div class="section-title">Word Breakdown</div>
                             <div class="word-chips">${bdHTML}</div>
@@ -2178,8 +2236,8 @@ const langSelect = document.getElementById('lang');
                             });
                         });
                     } catch (err) {
-                        showBreakdownBtn.textContent = '❌ Failed to load — tap to retry';
-                        showBreakdownBtn.disabled = false;
+                        showGrammarBtn.textContent = '❌ Failed to load — tap to retry';
+                        showGrammarBtn.disabled = false;
                     }
                 });
             }
@@ -2188,7 +2246,7 @@ const langSelect = document.getElementById('lang');
             const ctxSection = document.createElement('div');
             ctxSection.className = 'context-examples-section';
             ctxSection.innerHTML = `
-                <div class="section-title context-examples-toggle" role="button" tabindex="0" aria-expanded="false">
+                <div class="context-examples-toggle" role="button" tabindex="0" aria-expanded="false">
                     📝 See it in context <span class="ctx-arrow">▸</span>
                 </div>
                 <div class="context-examples-body" style="display:none;">

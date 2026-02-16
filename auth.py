@@ -123,6 +123,16 @@ def get_user_from_token(token: str) -> Optional[dict]:
     return None
 
 
+def cleanup_expired_sessions() -> int:
+    """Delete expired sessions from the database. Returns count of deleted rows."""
+    conn = get_db()
+    cursor = conn.execute("DELETE FROM sessions WHERE expires_at <= ?", (time.time(),))
+    deleted = cursor.rowcount
+    conn.commit()
+    conn.close()
+    return deleted
+
+
 def extract_bearer_token(authorization: Optional[str]) -> Optional[str]:
     if not authorization:
         return None

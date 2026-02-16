@@ -265,3 +265,43 @@ def test_difficulty_field_wired(api_learn):
     assert d, "API call failed"
     assert d.get("difficulty") is not None, \
         f"difficulty is null, sentence_difficulty={d.get('sentence_difficulty')}"
+
+
+def test_cleanup_expired_sessions():
+    """Session cleanup deletes expired sessions and keeps valid ones."""
+    import time
+    import sqlite3
+    from auth import get_db, cleanup_expired_sessions, init_user_db, hash_password
+
+    init_user_db()
+    conn = get_db()
+    now = time.time()
+
+    # Create a test user
+    conn.execute("INSERT OR IGNORE INTO users (username, password_hash, created_at) VALUES (?, ?, ?)",
+                 ("_test_cleanup_user", hash_password("pw"), now))
+    conn.commit()
+    user_id = conn.execute("SELECT id FROM users WHERE username = '_test_cleanup_user'").fetchone()["id"]
+
+    # Insert one expired and one valid session
+    conn.execute("INSERT INTO sessions (user_id, token, created_at, expires_at) VALUES (?, ?, ?, ?)",
+                 (user_id, "expired_token_test_123", now - 7200, now - 3600))
+    conn.execute("INSERT INTO sessions (user_id, token, created_at, expires_at) VALUES (?, ?, ?, ?)",
+                 (user_id, "valid_token_test_456", now, now + 86400))
+    conn.commit()
+    conn.close()
+
+    deleted = cleanup_expired_sessions()
+    assert deleted >= 1
+
+    conn = get_db()
+    expired = conn.execute("SELECT * FROM sessions WHERE token = 'expired_token_test_123'").fetchone()
+    valid = conn.execute("SELECT * FROM sessions WHERE token = 'valid_token_test_456'").fetchone()
+    assert expired is None, "Expired session should be deleted"
+    assert valid is not None, "Valid session should still exist"
+
+    # Cleanup
+    conn.execute("DELETE FROM sessions WHERE token = 'valid_token_test_456'")
+    conn.execute("DELETE FROM users WHERE username = '_test_cleanup_user'")
+    conn.commit()
+    conn.close()

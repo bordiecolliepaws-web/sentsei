@@ -514,6 +514,64 @@ Return ONLY valid JSON (no markdown):
     return result
 
 
+@router.post("/api/segment")
+async def segment_sentence(
+    request: Request,
+    req: BreakdownRequest,
+    x_app_password: Optional[str] = Header(default=None),
+):
+    """Fast word segmentation using jieba + cedict. No LLM needed."""
+    if x_app_password != APP_PASSWORD:
+        raise HTTPException(401, "Unauthorized")
+
+    if req.target_language not in SUPPORTED_LANGUAGES:
+        raise HTTPException(400, "Unsupported language")
+
+    lang_code = req.target_language
+    translation = req.translation or ""
+
+    if lang_code == "zh" and translation:
+        import jieba
+        # Strip punctuation for segmentation
+        clean = translation.replace("，", "").replace("。", "").replace("！", "").replace("？", "").replace("、", "").replace("「", "").replace("」", "").replace("…", "")
+        words = [w.strip() for w in jieba.cut(clean) if w.strip()]
+        breakdown = []
+        for w in words:
+            pron = deterministic_word_pronunciation(w, lang_code) or ""
+            meaning = cedict_lookup(w)
+            if not meaning:
+                chars = [cedict_lookup(c) or "" for c in w]
+                combined = " + ".join(c for c in chars if c)
+                meaning = combined if combined else ""
+            breakdown.append({
+                "word": w,
+                "pronunciation": pron,
+                "meaning": meaning,
+                "difficulty": "medium",
+                "note": None
+            })
+        return {"breakdown": breakdown, "source": "jieba+cedict"}
+    elif lang_code in ("ja", "ko") and translation:
+        # For Japanese/Korean, just return each character/word with pronunciation
+        words = translation.split() if lang_code == "ko" else [translation]
+        breakdown = []
+        for w in words:
+            pron = deterministic_word_pronunciation(w, lang_code) or ""
+            breakdown.append({
+                "word": w,
+                "pronunciation": pron,
+                "meaning": "",
+                "difficulty": "medium",
+                "note": None
+            })
+        return {"breakdown": breakdown, "source": "deterministic"}
+    else:
+        # For other languages, split by spaces
+        words = translation.split()
+        breakdown = [{"word": w, "pronunciation": "", "meaning": "", "difficulty": "medium", "note": None} for w in words]
+        return {"breakdown": breakdown, "source": "whitespace"}
+
+
 @router.post("/api/breakdown")
 async def get_breakdown(
     request: Request,

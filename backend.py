@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from cache import load_cache, save_cache, is_cache_dirty, load_grammar_patterns, save_grammar_patterns, is_grammar_dirty
-from auth import init_user_db
+from auth import init_user_db, cleanup_expired_sessions
 from llm import check_ollama_connectivity
 from routes import router, load_surprise_bank, fill_surprise_bank_task, refill_surprise_bank_task, get_surprise_bank
 
@@ -62,6 +62,29 @@ async def _startup_surprise():
 @app.on_event("startup")
 async def _startup_user_db():
     init_user_db()
+
+
+SESSION_CLEANUP_INTERVAL = 3600  # 1 hour
+
+
+@app.on_event("startup")
+async def _startup_session_cleanup():
+    """Run session cleanup on startup, then every hour."""
+    deleted = cleanup_expired_sessions()
+    if deleted:
+        print(f"[auth] Cleaned up {deleted} expired session(s) on startup")
+
+    async def _periodic_cleanup():
+        while True:
+            await asyncio.sleep(SESSION_CLEANUP_INTERVAL)
+            try:
+                deleted = cleanup_expired_sessions()
+                if deleted:
+                    print(f"[auth] Cleaned up {deleted} expired session(s)")
+            except Exception as e:
+                print(f"[auth] Session cleanup error: {e}")
+
+    asyncio.create_task(_periodic_cleanup())
 
 
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

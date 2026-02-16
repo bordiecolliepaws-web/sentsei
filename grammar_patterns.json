@@ -121,9 +121,14 @@
         "source": "Despite the overwhelming complexity, we found an elegant solution",
         "translation": "圧倒的な複雑さにもかかわらず、私たちが洗練された解決策を見つけました。",
         "timestamp": 1771250323.7031972
+      },
+      {
+        "source": "My cat enjoys sleeping on warm blankets",
+        "translation": "私の貓は暖かい毛布で寢るのが好きです。",
+        "timestamp": 1771271875.4324398
       }
     ],
-    "count": 1
+    "count": 2
   },
   "044a22341c34145f": {
     "id": "044a22341c34145f",
@@ -247,6 +252,622 @@
         "source": "I've been meaning to tell you something important",
         "translation": "היה לי רצון要說的是",
         "timestamp": 1771266892.0479827
+      }
+    ],
+    "count": 1
+  },
+  "d2b8a9a01399f585": {
+    "id": "d2b8a9a01399f585",
+    "name": "The particle は marks the topic of the sentence, in",
+    "lang": "ja",
+    "explanation": "The particle は marks the topic of the sentence, indicating that what follows is information about or related to 'this'.",
+    "examples": [
+      {
+        "source": "This is a simple sentence",
+        "translation": "これは単純な文です。",
+        "timestamp": 1771271826.4332862
+      }
+    ],
+    "count": 1
+  },
+  "b11a36a93d6dd180": {
+    "id": "b11a36a93d6dd180",
+    "name": "です",
+    "lang": "ja",
+    "explanation": "です is used here as a polite form of the copula, appropriate for neutral and formal situations.",
+    "examples": [
+      {
+        "source": "This is a simple sentence",
+        "translation": "これは単純な文です。",
+        "timestamp": 1771271826.4332979
+      }
+    ],
+    "count": 1
+  },
+  "4e51b0f1d2037a69": {
+    "id": "4e51b0f1d2037a69",
+    "name": "きです",
+    "lang": "ja",
+    "explanation": "The sentence uses the structure [noun] + の + [verb] to form a noun phrase from a verb, which is then used in conjunction with が好きです (ga suki desu) to express liking/enjoying an action.",
+    "examples": [
+      {
+        "source": "My cat enjoys sleeping on warm blankets",
+        "translation": "私の貓は暖かい毛布で寢るのが好きです。",
+        "timestamp": 1771271875.4324515
+      }
+    ],
+    "count": 1
+  },
+  "4658bd40c8aa9a38": {
+    "id": "4658bd40c8aa9a38",
+    "name": "The phrase 'האם' (ha'im) is used here as a polite",
+    "lang": "he",
+    "explanation": "The phrase 'האם' (ha'im) is used here as a polite way of asking if something is possible, similar to the English 'Can I...?'",
+    "examples": [
+      {
+        "source": "Can I get the bill please?",
+        "translation": "האם אפשר לקבל את החשבון בבקשה?",
+        "timestamp": 1771272073.4381413
+      }
+    ],
+    "count": 1
+  },
+  "d1540e912e00a91e": {
+    "id": "d1540e912e00a91e",
+    "name": "The sentence uses the past tense form of היה (haya",
+    "lang": "he",
+    "explanation": "The sentence uses the past tense form of היה (hayah) to describe a completed action or state in the past.",
+    "examples": [
+      {
+        "source": "The sunset over the ocean was breathtaking",
+        "translation": "השקיעה מעל הים הייתה מדהימה",
+        "timestamp": 1771272095.8375683
+      }
+    ],
+    "count": 1
+  },
+  "20dfbe244a85e3e7": {
+    "id": "20dfbe244a85e3e7",
+    "name": "The prefix 'ha-' is used here to indicate possessi",
+    "lang": "he",
+    "explanation": "The prefix 'ha-' is used here to indicate possession or association.",
+    "examples": [
+      {
+        "source": "I've been studying this language for three months",
+        "translation": "ה Studying this language for three months",
+        "timestamp": 1771272131.606733
+      }
+    ],
+    "count": 1
+  },
+  "c4888dd96f331cd7": {
+    "id": "c4888dd96f331cd7",
+    "name": "'Oref' is an idiomatic expression meaning 'for' in",
+    "lang": "he",
+    "explanation": "'Oref' is an idiomatic expression meaning 'for' in this context, derived from the literal meaning of back.",
+    "examples": [
+      {
+        "source": "I've been studying this language for three months",
+        "translation": "ה Studying this language for three months",
+        "timestamp": 1771272131.6067402
+      }
+    ],
+    "count": 1
+  },
+  "e33aaf45e97210d3": {
+    "id": "e33aaf45e97210d3",
+    "name": "使用「נראה」表示看起來，這是一個常見的開頭詞。",
+    "lang": "he",
+    "explanation": "使用「נראה」表示看起來，這是一個常見的開頭詞。",
+    "examples": [
+      {
+        "source": "我覺得我們迷路了，讓我看一下地圖",
+        "translation": "נראה שאנחנו נתקעו, תן לי להסתכל על המפה",
+        "timestamp": 1771272161.8214998
+      }
+    ],
+    "count": 1
+  },
+  "653320083522ba75": {
+    "id": "653320083522ba75",
+    "name": "「שאנחנו」是我們的表達方式。",
+    "lang": "he",
+    "explanation": "「שאנחנו」是我們的表達方式。",
+    "examples": [
+      {
+        "source": "我覺得我們迷路了，讓我看一下地圖",
+        "translation": "נראה שאנחנו נתקעו, תן לי להסתכל על המפה",
+        "timestamp": 1771272161.8215053
+      }
+    ],
+    "count": 1
+  },
+  "149fd972577619d2": {
+    "id": "149fd972577619d2",
+    "name": "「נתקעו」用於表示迷路了的情況。",
+    "lang": "he",
+    "explanation": "「נתקעו」用於表示迷路了的情況。",
+    "examples": [
+      {
+        "source": "我覺得我們迷路了，讓我看一下地圖",
+        "translation": "נראה שאנחנו נתקעו, תן לי להסתכל על המפה",
+        "timestamp": 1771272161.821509
+      }
+    ],
+    "count": 1
+  },
+  "001bc8f84bbe9ec9": {
+    "id": "001bc8f84bbe9ec9",
+    "name": "「תן לי」是讓我看一下的意思。",
+    "lang": "he",
+    "explanation": "「תן לי」是讓我看一下的意思。",
+    "examples": [
+      {
+        "source": "我覺得我們迷路了，讓我看一下地圖",
+        "translation": "נראה שאנחנו נתקעו, תן לי להסתכל על המפה",
+        "timestamp": 1771272161.8215122
+      }
+    ],
+    "count": 1
+  },
+  "66e1562b32193e64": {
+    "id": "66e1562b32193e64",
+    "name": "〜ています)",
+    "lang": "ja",
+    "explanation": "The sentence uses the polite form (〜ています) to indicate that the action of growing sunflowers is ongoing.",
+    "examples": [
+      {
+        "source": "My neighbor grows beautiful sunflowers",
+        "translation": "近所の人が美しい太陽花を育てています。",
+        "timestamp": 1771272199.7678607
+      }
+    ],
+    "count": 1
+  },
+  "ad5ceb50ac901499": {
+    "id": "ad5ceb50ac901499",
+    "name": "しい",
+    "lang": "ja",
+    "explanation": "美しい (うつくしい) is used as an adjective to describe 太陽花 (たいようか).",
+    "examples": [
+      {
+        "source": "My neighbor grows beautiful sunflowers",
+        "translation": "近所の人が美しい太陽花を育てています。",
+        "timestamp": 1771272199.7678678
+      }
+    ],
+    "count": 1
+  },
+  "5eb2f611b6ee5784": {
+    "id": "5eb2f611b6ee5784",
+    "name": "うつくしい)",
+    "lang": "ja",
+    "explanation": "美しい (うつくしい) is used as an adjective to describe 太陽花 (たいようか).",
+    "examples": [
+      {
+        "source": "My neighbor grows beautiful sunflowers",
+        "translation": "近所の人が美しい太陽花を育てています。",
+        "timestamp": 1771272199.7678704
+      }
+    ],
+    "count": 1
+  },
+  "0334b3057539c97e": {
+    "id": "0334b3057539c97e",
+    "name": "The phrase '你可以' is used to ask if someone can do",
+    "lang": "zh",
+    "explanation": "The phrase '你可以' is used to ask if someone can do something, often in a casual context.",
+    "examples": [
+      {
+        "source": "can yuo",
+        "translation": "你可以",
+        "timestamp": 1771274482.4559314
+      }
+    ],
+    "count": 1
+  },
+  "2ed442babf50a934": {
+    "id": "2ed442babf50a934",
+    "name": "可以 is used to form a question asking if something",
+    "lang": "zh",
+    "explanation": "可以 is used to form a question asking if something can be done.",
+    "examples": [
+      {
+        "source": "can you help",
+        "translation": "你可以幫我一下嗎",
+        "timestamp": 1771274506.8958573
+      }
+    ],
+    "count": 1
+  },
+  "a18e07cc70ba357b": {
+    "id": "a18e07cc70ba357b",
+    "name": "一下 is added after the verb phrase to indicate that",
+    "lang": "zh",
+    "explanation": "一下 is added after the verb phrase to indicate that it's for a short period of time.",
+    "examples": [
+      {
+        "source": "can you help",
+        "translation": "你可以幫我一下嗎",
+        "timestamp": 1771274506.8958647
+      }
+    ],
+    "count": 1
+  },
+  "f6f97e544c268b1d": {
+    "id": "f6f97e544c268b1d",
+    "name": "使用了 ' יותר...' 的語法來表達程度的增加。",
+    "lang": "he",
+    "explanation": "使用了 ' יותר...' 的語法來表達程度的增加。",
+    "examples": [
+      {
+        "source": "越練習就越有自信",
+        "translation": "כלما אני מתאמן יותר, אני מתחזק יותר ב_CONFIDENCE_",
+        "timestamp": 1771274755.259052
+      }
+    ],
+    "count": 1
+  },
+  "6ad0893a88c42799": {
+    "id": "6ad0893a88c42799",
+    "name": "使用了 ' אני מתחזק' 這個動詞短語來表示自我增強或自信提升。",
+    "lang": "he",
+    "explanation": "使用了 ' אני מתחזק' 這個動詞短語來表示自我增強或自信提升。",
+    "examples": [
+      {
+        "source": "越練習就越有自信",
+        "translation": "כלما אני מתאמן יותר, אני מתחזק יותר ב_CONFIDENCE_",
+        "timestamp": 1771274755.2590585
+      }
+    ],
+    "count": 1
+  },
+  "074ef75d385ee5fc": {
+    "id": "074ef75d385ee5fc",
+    "name": "使用了物件標記 את 來指代後面的賓語。",
+    "lang": "he",
+    "explanation": "使用了物件標記 את 來指代後面的賓語。",
+    "examples": [
+      {
+        "source": "不好意思，我聽不懂你在說什麼",
+        "translation": "מצטער, אני לא מבין את מה שאתה אומר",
+        "timestamp": 1771274795.752042
+      }
+    ],
+    "count": 1
+  },
+  "7df459a2d28e51de": {
+    "id": "7df459a2d28e51de",
+    "name": "使用了相對從句 ש用於指示“你說”的意思。",
+    "lang": "he",
+    "explanation": "使用了相對從句 ש用於指示“你說”的意思。",
+    "examples": [
+      {
+        "source": "不好意思，我聽不懂你在說什麼",
+        "translation": "מצטער, אני לא מבין את מה שאתה אומר",
+        "timestamp": 1771274795.7520475
+      }
+    ],
+    "count": 1
+  },
+  "e08d287cf6e953a4": {
+    "id": "e08d287cf6e953a4",
+    "name": "使用了條件句的結構，表達假設的情景。",
+    "lang": "he",
+    "explanation": "使用了條件句的結構，表達假設的情景。",
+    "examples": [
+      {
+        "source": "如果我早點知道的話，我就會早點來",
+        "translation": "אם ידעתי לפני כן, הייתי בא מוקדם יותר",
+        "timestamp": 1771274829.1619208
+      }
+    ],
+    "count": 1
+  },
+  "a01c4783df58a723": {
+    "id": "a01c4783df58a723",
+    "name": "使用將來時態表示未來的計劃。",
+    "lang": "he",
+    "explanation": "使用將來時態表示未來的計劃。",
+    "examples": [
+      {
+        "source": "我明天早上要早起",
+        "translation": "אני مستعد להậy sớm מחר בבוקר",
+        "timestamp": 1771274854.0369112
+      }
+    ],
+    "count": 1
+  },
+  "5983dd66f35b68ec": {
+    "id": "5983dd66f35b68ec",
+    "name": "הצורה 'לְהַזִמּוֹת' היא הצורה המתאימה להזמנת מישהו",
+    "lang": "he",
+    "explanation": "הצורה 'לְהַזִמּוֹת' היא הצורה המתאימה להזמנת מישהוออกไป.",
+    "examples": [
+      {
+        "source": "下班之後一起去喝一杯吧",
+        "translation": "לְהַזִמּוֹת לָחוּץ אֶת הַשַׁבָּת",
+        "timestamp": 1771274888.0689383
+      }
+    ],
+    "count": 1
+  },
+  "7b8ce18d13bc7982": {
+    "id": "7b8ce18d13bc7982",
+    "name": "הضمיר 'אֶת' משמש כאן כדי לציין את הזמן לאחר עבודה",
+    "lang": "he",
+    "explanation": "הضمיר 'אֶת' משמש כאן כדי לציין את הזמן לאחר עבודה.",
+    "examples": [
+      {
+        "source": "下班之後一起去喝一杯吧",
+        "translation": "לְהַזִמּוֹת לָחוּץ אֶת הַשַׁבָּת",
+        "timestamp": 1771274888.0689461
+      }
+    ],
+    "count": 1
+  },
+  "e2b16ece9209a896": {
+    "id": "e2b16ece9209a896",
+    "name": "使用形容詞來描述咖啡的味道。",
+    "lang": "he",
+    "explanation": "使用形容詞來描述咖啡的味道。",
+    "examples": [
+      {
+        "source": "這杯咖啡真的超好喝",
+        "translation": "הקפה הזה真的很美味",
+        "timestamp": 1771274908.221637
+      }
+    ],
+    "count": 1
+  },
+  "15d914d90e22502c": {
+    "id": "15d914d90e22502c",
+    "name": "しています",
+    "lang": "ja",
+    "explanation": "The polite form of the verb is used here: 勉強しています (benkyō shiteimasu). This indicates a continuing action in the present time.",
+    "examples": [
+      {
+        "source": "I've been studying this language for three months",
+        "translation": "この言語を三ヶ月間勉強しています。",
+        "timestamp": 1771274942.7179568
+      }
+    ],
+    "count": 1
+  },
+  "b76a3f3207eea352": {
+    "id": "b76a3f3207eea352",
+    "name": "間 (kan) is attached to the noun phrase 三ヶ月 (sankag",
+    "lang": "ja",
+    "explanation": "間 (kan) is attached to the noun phrase 三ヶ月 (sankagetsu) to indicate duration.",
+    "examples": [
+      {
+        "source": "I've been studying this language for three months",
+        "translation": "この言語を三ヶ月間勉強しています。",
+        "timestamp": 1771274942.7179651
+      }
+    ],
+    "count": 1
+  },
+  "3ca1df969c70dbf0": {
+    "id": "3ca1df969c70dbf0",
+    "name": "っていたら",
+    "lang": "ja",
+    "explanation": "The sentence uses the past conditional form 知っていたら to describe a hypothetical situation in the past.",
+    "examples": [
+      {
+        "source": "If I had known earlier, I would have come sooner",
+        "translation": "もしあの時知っていたら、もっと早く來たでしょう",
+        "timestamp": 1771274984.4377432
+      }
+    ],
+    "count": 1
+  },
+  "921c66878335e806": {
+    "id": "921c66878335e806",
+    "name": "こそあれば",
+    "lang": "ja",
+    "explanation": "The particle こそあれば (koso areba) or similar conditional structures can be used for more formal situations, but もし (moshi) is sufficient here.",
+    "examples": [
+      {
+        "source": "If I had known earlier, I would have come sooner",
+        "translation": "もしあの時知っていたら、もっと早く來たでしょう",
+        "timestamp": 1771274984.4377532
+      }
+    ],
+    "count": 1
+  },
+  "8f931d37797a7f32": {
+    "id": "8f931d37797a7f32",
+    "name": "もし",
+    "lang": "ja",
+    "explanation": "The particle こそあれば (koso areba) or similar conditional structures can be used for more formal situations, but もし (moshi) is sufficient here.",
+    "examples": [
+      {
+        "source": "If I had known earlier, I would have come sooner",
+        "translation": "もしあの時知っていたら、もっと早く來たでしょう",
+        "timestamp": 1771274984.4377553
+      }
+    ],
+    "count": 1
+  },
+  "63b6418eab787121": {
+    "id": "63b6418eab787121",
+    "name": "いただく",
+    "lang": "ja",
+    "explanation": "The sentence uses the polite form of いただく (itadaku), which is used for receiving something politely. Here it's used as いただけますか (itadakemasuka) meaning 'Could you please...?'",
+    "examples": [
+      {
+        "source": "Could you please speak a little slower?",
+        "translation": "少しゆっくり話していただけますか。",
+        "timestamp": 1771275016.202503
+      }
+    ],
+    "count": 1
+  },
+  "d6cfdc61634ed8ac": {
+    "id": "d6cfdc61634ed8ac",
+    "name": "いただけますか",
+    "lang": "ja",
+    "explanation": "The sentence uses the polite form of いただく (itadaku), which is used for receiving something politely. Here it's used as いただけますか (itadakemasuka) meaning 'Could you please...?'",
+    "examples": [
+      {
+        "source": "Could you please speak a little slower?",
+        "translation": "少しゆっくり話していただけますか。",
+        "timestamp": 1771275016.202507
+      }
+    ],
+    "count": 1
+  },
+  "f353ecec069c564c": {
+    "id": "f353ecec069c564c",
+    "name": "The te-form (て-form) of verbs can be used to descr",
+    "lang": "ja",
+    "explanation": "The te-form (て-form) of verbs can be used to describe ongoing actions or states.",
+    "examples": [
+      {
+        "source": "I'm sorry, I don't understand what you're saying",
+        "translation": "すみません、あなたの言ってることを理解できません",
+        "timestamp": 1771275058.6436331
+      }
+    ],
+    "count": 1
+  },
+  "e284faf7870fed61": {
+    "id": "e284faf7870fed61",
+    "name": "こと",
+    "lang": "ja",
+    "explanation": "The nominalizer こと (koto) turns verb phrases into nouns, allowing them to function as objects of other verbs or clauses.",
+    "examples": [
+      {
+        "source": "I'm sorry, I don't understand what you're saying",
+        "translation": "すみません、あなたの言ってることを理解できません",
+        "timestamp": 1771275058.643643
+      }
+    ],
+    "count": 1
+  },
+  "bd4540b894d54ba5": {
+    "id": "bd4540b894d54ba5",
+    "name": "～ません",
+    "lang": "ja",
+    "explanation": "The polite negative form ～ません (masen) is used for formal refusal or inability.",
+    "examples": [
+      {
+        "source": "I'm sorry, I don't understand what you're saying",
+        "translation": "すみません、あなたの言ってることを理解できません",
+        "timestamp": 1771275058.643649
+      }
+    ],
+    "count": 1
+  },
+  "ee6919b9b624821f": {
+    "id": "ee6919b9b624821f",
+    "name": "があるという",
+    "lang": "ja",
+    "explanation": "必要があるという狀況を説明するために、あるます系の動詞（あります）が使われています。",
+    "examples": [
+      {
+        "source": "I need to wake up early tomorrow morning",
+        "translation": "明日の朝早く起きる必要があります。",
+        "timestamp": 1771275088.79382
+      }
+    ],
+    "count": 1
+  },
+  "50120827c005a64d": {
+    "id": "50120827c005a64d",
+    "name": "するために",
+    "lang": "ja",
+    "explanation": "必要があるという狀況を説明するために、あるます系の動詞（あります）が使われています。",
+    "examples": [
+      {
+        "source": "I need to wake up early tomorrow morning",
+        "translation": "明日の朝早く起きる必要があります。",
+        "timestamp": 1771275088.7938237
+      }
+    ],
+    "count": 1
+  },
+  "440cd3db1e8b660e": {
+    "id": "440cd3db1e8b660e",
+    "name": "The Hebrew word 'ל-'+verb stem is used to form the",
+    "lang": "he",
+    "explanation": "The Hebrew word 'ל-'+verb stem is used to form the infinitive of a verb, here 'לאכול' means 'to eat'.",
+    "examples": [
+      {
+        "source": "I want to eat ramen for dinner tonight",
+        "translation": "אני רוצה לאכול רמנ' בערב שלTONIGHT",
+        "timestamp": 1771275230.1942968
+      }
+    ],
+    "count": 1
+  },
+  "da31c2f7d9ad7522": {
+    "id": "da31c2f7d9ad7522",
+    "name": "'בערב' is a preposition that can mean both 'in the",
+    "lang": "he",
+    "explanation": "'בערב' is a preposition that can mean both 'in the evening' and 'for dinner', depending on context.",
+    "examples": [
+      {
+        "source": "I want to eat ramen for dinner tonight",
+        "translation": "אני רוצה לאכול רמנ' בערב שלTONIGHT",
+        "timestamp": 1771275230.1943052
+      }
+    ],
+    "count": 1
+  },
+  "bba84c53dcba4866": {
+    "id": "bba84c53dcba4866",
+    "name": "The possessive suffix 'של' (shel) is added to indi",
+    "lang": "he",
+    "explanation": "The possessive suffix 'של' (shel) is added to indicate possession or association with the following noun.",
+    "examples": [
+      {
+        "source": "I want to eat ramen for dinner tonight",
+        "translation": "אני רוצה לאכול רמנ' בערב שלTONIGHT",
+        "timestamp": 1771275230.1943116
+      }
+    ],
+    "count": 1
+  },
+  "6035a0f78e868c5d": {
+    "id": "6035a0f78e868c5d",
+    "name": "てる",
+    "lang": "ja",
+    "explanation": "The te-form of the verb 育てる (そだてる) is used to describe an ongoing action, which in this context means 'growing'. The polite form of the existential verb いる (いる) is used at the end of the sentence.",
+    "examples": [
+      {
+        "source": "My neighbor grows beautiful sunflowers",
+        "translation": "近所の人が美しいひまわりを育てています。",
+        "timestamp": 1771275391.963747
+      }
+    ],
+    "count": 1
+  },
+  "6032f2b2bffd25a2": {
+    "id": "6032f2b2bffd25a2",
+    "name": "そだてる)",
+    "lang": "ja",
+    "explanation": "The te-form of the verb 育てる (そだてる) is used to describe an ongoing action, which in this context means 'growing'. The polite form of the existential verb いる (いる) is used at the end of the sentence.",
+    "examples": [
+      {
+        "source": "My neighbor grows beautiful sunflowers",
+        "translation": "近所の人が美しいひまわりを育てています。",
+        "timestamp": 1771275391.963751
+      }
+    ],
+    "count": 1
+  },
+  "eb0bb7d11544cf9f": {
+    "id": "eb0bb7d11544cf9f",
+    "name": "Use 是...什麼 to ask for the meaning of a word or phr",
+    "lang": "zh",
+    "explanation": "Use 是...什麼 to ask for the meaning of a word or phrase.",
+    "examples": [
+      {
+        "source": "what does romanization mean?",
+        "translation": "羅馬拼音是什麼意思？",
+        "timestamp": 1771275557.0808132
       }
     ],
     "count": 1
