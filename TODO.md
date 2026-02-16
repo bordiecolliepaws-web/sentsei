@@ -103,7 +103,7 @@ _Items for cron iterations to work through, in priority order._
 
 ## P4.1 — Next Wave (from 2026-02-16 reflection)
 - [x] **Error handling UX** ✅ 2026-02-16 — friendlyError() helper extracts specific messages from API responses (429 rate limit, 502 Ollama down, 400 validation). No more generic "Something went wrong".
-- [ ] **Accessibility audit** — check keyboard navigation, screen reader labels, ARIA attributes on interactive elements (word chips, toggles, drawers).
+- [x] **Accessibility audit** ✅ 2026-02-16 — skip-to-content link, ARIA roles on all panels (dialog), radiogroup+radio on toggle/language pills with aria-checked, word chips get role=button+tabindex+aria-expanded+keyboard handler (Enter/Space), difficulty dots get aria-label, Escape closes panels, focus trap in side menu, sr-only CSS class.
 - [ ] **Backend test coverage for new endpoints** — feedback-list, feedback delete, health, surprise-bank-status have no automated tests. Add to test_constitution.py.
 - [x] **Surprise bank stays empty** ✅ 2026-02-16 — Not a bug; fill is working but slow due to sequential Ollama calls (~30-60s each × 72 combos). Health now shows entries accumulating (e.g. he_en: 4). Persistence to disk means it recovers across restarts.
 
