@@ -102,7 +102,7 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Admin view for feedback** ✅ 2026-02-16 — `/api/feedback-list` (GET, paginated, newest-first) and `/api/feedback/{index}` (DELETE), both password-protected. Simple admin page at `/admin.html` with dark theme matching main app.
 
 ## P4.1 — Next Wave (from 2026-02-16 reflection)
-- [ ] **Error handling UX** — backend errors (Ollama down, timeout) show raw error text. Add user-friendly error messages with retry suggestions.
+- [x] **Error handling UX** ✅ 2026-02-16 — friendlyError() helper extracts specific messages from API responses (429 rate limit, 502 Ollama down, 400 validation). No more generic "Something went wrong".
 - [ ] **Accessibility audit** — check keyboard navigation, screen reader labels, ARIA attributes on interactive elements (word chips, toggles, drawers).
 - [ ] **Backend test coverage for new endpoints** — feedback-list, feedback delete, health, surprise-bank-status have no automated tests. Add to test_constitution.py.
 - [ ] **Surprise bank stays empty** — health shows 0 entries despite `filling: true`. Investigate why background fill isn't completing (Ollama timeout? prompt issue?).
