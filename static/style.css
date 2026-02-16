@@ -2458,3 +2458,57 @@ body.hide-romanization .example-pron,
 body.hide-romanization .ctx-pron {
     display: none !important;
 }
+
+/* === Auth UI === */
+.auth-area {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-left: auto;
+    margin-right: 0.5rem;
+}
+.auth-small-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-size: 0.78rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+.auth-small-btn:hover {
+    background: var(--surface2);
+    border-color: var(--accent);
+}
+.auth-user-display {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--accent);
+}
+#auth-username {
+    font-weight: 600;
+}
+.auth-switch {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    justify-content: center;
+}
+#auth-error {
+    color: var(--hard, #e74c3c);
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    text-align: center;
+}
+.sync-indicator {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    opacity: 0.7;
+}

@@ -43,6 +43,16 @@
         <header>
             <div class="header-title-row">
                 <h1>SentSay</h1>
+                <div id="auth-area" class="auth-area">
+                    <span id="auth-user-display" class="auth-user-display" style="display:none;">
+                        <span id="auth-username"></span>
+                        <button id="auth-logout-btn" class="auth-small-btn" type="button">Log out</button>
+                    </span>
+                    <span id="auth-buttons" class="auth-buttons">
+                        <button id="auth-login-btn" class="auth-small-btn" type="button">Log in</button>
+                        <button id="auth-register-btn" class="auth-small-btn" type="button">Sign up</button>
+                    </span>
+                </div>
                 <button id="stats-toggle" class="stats-btn" type="button" aria-label="Show learning stats">📊 Stats</button>
                 <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle light/dark theme">🌙</button>
             </div>
@@ -356,6 +366,24 @@
         </div>
     </div>
     
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+        <div class="modal">
+            <h2 id="auth-modal-title">Log In</h2>
+            <form id="auth-form" class="password-form">
+                <input id="auth-username-input" type="text" placeholder="Username" autocomplete="username" required minlength="2" maxlength="30">
+                <input id="auth-password-input" type="password" placeholder="Password" autocomplete="current-password" required minlength="4">
+                <button type="submit" id="auth-submit-btn">Log In</button>
+            </form>
+            <div id="auth-error" class="password-error hidden"></div>
+            <div class="auth-switch" id="auth-switch">
+                <span id="auth-switch-text">Don't have an account?</span>
+                <button type="button" id="auth-switch-btn" class="auth-small-btn">Sign up</button>
+            </div>
+            <button type="button" id="auth-modal-close" class="auth-small-btn" style="margin-top:0.5rem;color:var(--text-dim);">Cancel</button>
+        </div>
+    </div>
+
     <script src="/app.js"></script>
 </body>
 </html>

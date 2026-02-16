@@ -6,6 +6,8 @@ import random
 import hashlib
 import time
 import asyncio
+import sqlite3
+import secrets
 from typing import Optional, List
 from pathlib import Path
 from collections import OrderedDict, defaultdict
@@ -2131,6 +2133,208 @@ async def get_grammar_pattern(pattern_id: str, x_app_password: Optional[str] = H
     if not pattern:
         raise HTTPException(404, "Pattern not found")
     return pattern
+
+
+# === Multi-User Support (SQLite) ===
+DB_PATH = Path(__file__).parent / "sentsei.db"
+
+def _get_db() -> sqlite3.Connection:
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    return conn
+
+def _init_user_db():
+    conn = _get_db()
+    conn.executescript("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            created_at REAL NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS sessions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            token TEXT UNIQUE NOT NULL,
+            created_at REAL NOT NULL,
+            expires_at REAL NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        );
+        CREATE TABLE IF NOT EXISTS user_data (
+            user_id INTEGER NOT NULL,
+            data_key TEXT NOT NULL,
+            data_json TEXT NOT NULL,
+            updated_at REAL NOT NULL,
+            PRIMARY KEY (user_id, data_key),
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        );
+    """)
+    conn.close()
+
+def _hash_password(password: str) -> str:
+    salt = secrets.token_hex(16)
+    h = hashlib.sha256((salt + password).encode()).hexdigest()
+    return f"{salt}:{h}"
+
+def _verify_password(password: str, stored: str) -> bool:
+    if ":" not in stored:
+        return False
+    salt, h = stored.split(":", 1)
+    return hashlib.sha256((salt + password).encode()).hexdigest() == h
+
+SESSION_TTL = 30 * 24 * 3600  # 30 days
+
+def _create_session(user_id: int) -> str:
+    token = secrets.token_hex(32)
+    now = time.time()
+    conn = _get_db()
+    conn.execute("INSERT INTO sessions (user_id, token, created_at, expires_at) VALUES (?, ?, ?, ?)",
+                 (user_id, token, now, now + SESSION_TTL))
+    conn.commit()
+    conn.close()
+    return token
+
+def _get_user_from_token(token: str) -> Optional[dict]:
+    if not token:
+        return None
+    conn = _get_db()
+    row = conn.execute(
+        "SELECT s.user_id, u.username FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND s.expires_at > ?",
+        (token, time.time())
+    ).fetchone()
+    conn.close()
+    if row:
+        return {"id": row["user_id"], "username": row["username"]}
+    return None
+
+def _extract_bearer_token(authorization: Optional[str]) -> Optional[str]:
+    if not authorization:
+        return None
+    if authorization.startswith("Bearer "):
+        return authorization[7:]
+    return None
+
+
+class AuthRequest(BaseModel):
+    username: str
+    password: str
+
+
+@app.post("/api/auth/register")
+async def auth_register(req: AuthRequest):
+    username = req.username.strip()
+    password = req.password
+    if not username or len(username) < 2 or len(username) > 30:
+        raise HTTPException(400, "Username must be 2-30 characters")
+    if not _re.match(r'^[a-zA-Z0-9_-]+$', username):
+        raise HTTPException(400, "Username can only contain letters, numbers, hyphens, underscores")
+    if not password or len(password) < 4:
+        raise HTTPException(400, "Password must be at least 4 characters")
+
+    conn = _get_db()
+    existing = conn.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()
+    if existing:
+        conn.close()
+        raise HTTPException(409, "Username already taken")
+
+    pw_hash = _hash_password(password)
+    now = time.time()
+    cursor = conn.execute("INSERT INTO users (username, password_hash, created_at) VALUES (?, ?, ?)",
+                          (username, pw_hash, now))
+    user_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+
+    token = _create_session(user_id)
+    return {"token": token, "username": username}
+
+
+@app.post("/api/auth/login")
+async def auth_login(req: AuthRequest):
+    username = req.username.strip()
+    conn = _get_db()
+    row = conn.execute("SELECT id, password_hash FROM users WHERE username = ?", (username,)).fetchone()
+    conn.close()
+    if not row or not _verify_password(req.password, row["password_hash"]):
+        raise HTTPException(401, "Invalid username or password")
+
+    token = _create_session(row["id"])
+    return {"token": token, "username": username}
+
+
+@app.post("/api/auth/logout")
+async def auth_logout(authorization: Optional[str] = Header(default=None)):
+    token = _extract_bearer_token(authorization)
+    if token:
+        conn = _get_db()
+        conn.execute("DELETE FROM sessions WHERE token = ?", (token,))
+        conn.commit()
+        conn.close()
+    return {"ok": True}
+
+
+@app.get("/api/auth/me")
+async def auth_me(authorization: Optional[str] = Header(default=None)):
+    token = _extract_bearer_token(authorization)
+    user = _get_user_from_token(token)
+    if not user:
+        raise HTTPException(401, "Not logged in")
+    return {"username": user["username"]}
+
+
+ALLOWED_DATA_KEYS = {"history", "srs_deck", "progress", "preferences", "rich_history"}
+
+
+@app.get("/api/user-data/{key}")
+async def get_user_data(key: str, authorization: Optional[str] = Header(default=None)):
+    if key not in ALLOWED_DATA_KEYS:
+        raise HTTPException(400, f"Invalid data key. Allowed: {', '.join(ALLOWED_DATA_KEYS)}")
+    token = _extract_bearer_token(authorization)
+    user = _get_user_from_token(token)
+    if not user:
+        raise HTTPException(401, "Not logged in")
+
+    conn = _get_db()
+    row = conn.execute("SELECT data_json FROM user_data WHERE user_id = ? AND data_key = ?",
+                       (user["id"], key)).fetchone()
+    conn.close()
+    if not row:
+        return {"key": key, "data": None}
+    return {"key": key, "data": json.loads(row["data_json"])}
+
+
+@app.put("/api/user-data/{key}")
+async def put_user_data(key: str, request: Request, authorization: Optional[str] = Header(default=None)):
+    if key not in ALLOWED_DATA_KEYS:
+        raise HTTPException(400, f"Invalid data key. Allowed: {', '.join(ALLOWED_DATA_KEYS)}")
+    token = _extract_bearer_token(authorization)
+    user = _get_user_from_token(token)
+    if not user:
+        raise HTTPException(401, "Not logged in")
+
+    body = await request.json()
+    data = body.get("data")
+    data_json = json.dumps(data, ensure_ascii=False)
+
+    # Limit size to 1MB
+    if len(data_json) > 1_000_000:
+        raise HTTPException(400, "Data too large (max 1MB)")
+
+    conn = _get_db()
+    conn.execute(
+        "INSERT INTO user_data (user_id, data_key, data_json, updated_at) VALUES (?, ?, ?, ?) "
+        "ON CONFLICT(user_id, data_key) DO UPDATE SET data_json = excluded.data_json, updated_at = excluded.updated_at",
+        (user["id"], key, data_json, time.time())
+    )
+    conn.commit()
+    conn.close()
+    return {"ok": True}
+
+
+@app.on_event("startup")
+async def _startup_user_db():
+    _init_user_db()
 
 
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

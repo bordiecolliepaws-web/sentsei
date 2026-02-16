@@ -2768,3 +2768,233 @@ const langSelect = document.getElementById('lang');
                 });
             });
         }
+        // === Multi-User Auth & Sync ===
+        const AUTH_TOKEN_KEY = 'sentsei-auth-token';
+        const AUTH_USERNAME_KEY = 'sentsei-auth-username';
+        let authToken = localStorage.getItem(AUTH_TOKEN_KEY) || '';
+        let authUsername = localStorage.getItem(AUTH_USERNAME_KEY) || '';
+
+        const authModalEl = document.getElementById('auth-modal');
+        const authFormEl = document.getElementById('auth-form');
+        const authUsernameInput = document.getElementById('auth-username-input');
+        const authPasswordInput = document.getElementById('auth-password-input');
+        const authSubmitBtn = document.getElementById('auth-submit-btn');
+        const authErrorEl = document.getElementById('auth-error');
+        const authModalTitle = document.getElementById('auth-modal-title');
+        const authSwitchBtn = document.getElementById('auth-switch-btn');
+        const authSwitchText = document.getElementById('auth-switch-text');
+        const authModalClose = document.getElementById('auth-modal-close');
+        const authUserDisplay = document.getElementById('auth-user-display');
+        const authUsernameEl = document.getElementById('auth-username');
+        const authButtonsEl = document.getElementById('auth-buttons');
+        const authLoginBtn = document.getElementById('auth-login-btn');
+        const authRegisterBtn = document.getElementById('auth-register-btn');
+        const authLogoutBtn = document.getElementById('auth-logout-btn');
+
+        let authMode = 'login'; // 'login' or 'register'
+
+        function setAuthMode(mode) {
+            authMode = mode;
+            if (mode === 'login') {
+                authModalTitle.textContent = 'Log In';
+                authSubmitBtn.textContent = 'Log In';
+                authSwitchText.textContent = "Don't have an account?";
+                authSwitchBtn.textContent = 'Sign up';
+                authPasswordInput.autocomplete = 'current-password';
+            } else {
+                authModalTitle.textContent = 'Sign Up';
+                authSubmitBtn.textContent = 'Create Account';
+                authSwitchText.textContent = 'Already have an account?';
+                authSwitchBtn.textContent = 'Log in';
+                authPasswordInput.autocomplete = 'new-password';
+            }
+            authErrorEl.classList.add('hidden');
+        }
+
+        function openAuthModal(mode) {
+            setAuthMode(mode || 'login');
+            authUsernameInput.value = '';
+            authPasswordInput.value = '';
+            authModalEl.classList.remove('hidden');
+            requestAnimationFrame(() => authUsernameInput.focus());
+        }
+
+        function closeAuthModal() {
+            authModalEl.classList.add('hidden');
+            authErrorEl.classList.add('hidden');
+        }
+
+        function updateAuthUI() {
+            if (authToken && authUsername) {
+                authUserDisplay.style.display = '';
+                authUsernameEl.textContent = authUsername;
+                authButtonsEl.style.display = 'none';
+            } else {
+                authUserDisplay.style.display = 'none';
+                authButtonsEl.style.display = '';
+            }
+        }
+
+        authLoginBtn.addEventListener('click', () => openAuthModal('login'));
+        authRegisterBtn.addEventListener('click', () => openAuthModal('register'));
+        authModalClose.addEventListener('click', closeAuthModal);
+        authModalEl.addEventListener('click', (e) => { if (e.target === authModalEl) closeAuthModal(); });
+        authSwitchBtn.addEventListener('click', () => setAuthMode(authMode === 'login' ? 'register' : 'login'));
+
+        authLogoutBtn.addEventListener('click', async () => {
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                });
+            } catch(e) {}
+            authToken = '';
+            authUsername = '';
+            localStorage.removeItem(AUTH_TOKEN_KEY);
+            localStorage.removeItem(AUTH_USERNAME_KEY);
+            updateAuthUI();
+        });
+
+        authFormEl.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = authUsernameInput.value.trim();
+            const password = authPasswordInput.value;
+            if (!username || !password) return;
+
+            authSubmitBtn.disabled = true;
+            authErrorEl.classList.add('hidden');
+            const endpoint = authMode === 'register' ? '/api/auth/register' : '/api/auth/login';
+
+            try {
+                const resp = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                if (!resp.ok) {
+                    const body = await resp.json().catch(() => ({}));
+                    throw new Error(body.detail || 'Failed');
+                }
+                const data = await resp.json();
+                authToken = data.token;
+                authUsername = data.username;
+                localStorage.setItem(AUTH_TOKEN_KEY, authToken);
+                localStorage.setItem(AUTH_USERNAME_KEY, authUsername);
+                closeAuthModal();
+                updateAuthUI();
+                // On login, sync data from server
+                await pullAllFromServer();
+            } catch(err) {
+                authErrorEl.textContent = err.message;
+                authErrorEl.classList.remove('hidden');
+            } finally {
+                authSubmitBtn.disabled = false;
+            }
+        });
+
+        // === Data Sync ===
+        const SYNC_KEYS_MAP = {
+            'rich_history': { get: () => richHistory, set: (d) => { richHistory = d || []; saveRichHistory(); renderHistoryPanel(); updateHistoryBadge(); } },
+            'srs_deck': { get: () => srsDeck, set: (d) => { srsDeck = d || []; saveSRSDeck(); updateReviewBadge(); } },
+            'progress': { get: () => progressStats, set: (d) => { if (d) { progressStats = d; saveProgressStats(); renderProgressStats(); } } },
+            'history': { get: () => sentenceHistory, set: (d) => { sentenceHistory = d || []; localStorage.setItem(SENTENCE_HISTORY_KEY, JSON.stringify(sentenceHistory)); renderSentenceHistory(); } },
+        };
+
+        async function syncToServer(key, data) {
+            if (!authToken) return;
+            try {
+                await fetch(`/api/user-data/${key}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + authToken
+                    },
+                    body: JSON.stringify({ data })
+                });
+            } catch(e) {
+                console.warn('[sync] push failed:', key, e);
+            }
+        }
+
+        async function loadFromServer(key) {
+            if (!authToken) return null;
+            try {
+                const resp = await fetch(`/api/user-data/${key}`, {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                });
+                if (resp.status === 401) {
+                    // Token expired
+                    authToken = '';
+                    authUsername = '';
+                    localStorage.removeItem(AUTH_TOKEN_KEY);
+                    localStorage.removeItem(AUTH_USERNAME_KEY);
+                    updateAuthUI();
+                    return null;
+                }
+                if (!resp.ok) return null;
+                const body = await resp.json();
+                return body.data;
+            } catch(e) {
+                console.warn('[sync] pull failed:', key, e);
+                return null;
+            }
+        }
+
+        async function pullAllFromServer() {
+            if (!authToken) return;
+            for (const [key, handler] of Object.entries(SYNC_KEYS_MAP)) {
+                const serverData = await loadFromServer(key);
+                if (serverData !== null && serverData !== undefined) {
+                    // Server wins on conflict
+                    handler.set(serverData);
+                } else {
+                    // No server data — push local data up
+                    const localData = handler.get();
+                    if (localData && (Array.isArray(localData) ? localData.length > 0 : Object.keys(localData).length > 0)) {
+                        await syncToServer(key, localData);
+                    }
+                }
+            }
+        }
+
+        async function pushAllToServer() {
+            if (!authToken) return;
+            for (const [key, handler] of Object.entries(SYNC_KEYS_MAP)) {
+                await syncToServer(key, handler.get());
+            }
+        }
+
+        // Hook into data-changing functions to auto-sync
+        const _origSaveRichHistory = saveRichHistory;
+        saveRichHistory = function() {
+            _origSaveRichHistory();
+            syncToServer('rich_history', richHistory);
+        };
+
+        const _origSaveSRSDeck = saveSRSDeck;
+        saveSRSDeck = function() {
+            _origSaveSRSDeck();
+            syncToServer('srs_deck', srsDeck);
+        };
+
+        const _origSaveProgressStats = saveProgressStats;
+        saveProgressStats = function() {
+            _origSaveProgressStats();
+            syncToServer('progress', progressStats);
+        };
+
+        // Init auth UI
+        updateAuthUI();
+        // If logged in, verify token is still valid
+        if (authToken) {
+            fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + authToken } })
+                .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+                .then(d => { authUsername = d.username; localStorage.setItem(AUTH_USERNAME_KEY, d.username); updateAuthUI(); })
+                .catch(() => {
+                    authToken = '';
+                    authUsername = '';
+                    localStorage.removeItem(AUTH_TOKEN_KEY);
+                    localStorage.removeItem(AUTH_USERNAME_KEY);
+                    updateAuthUI();
+                });
+        }
