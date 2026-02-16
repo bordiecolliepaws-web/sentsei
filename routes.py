@@ -413,6 +413,7 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
                     item["meaning"] = cleaned
 
     result["sentence_difficulty"] = detect_sentence_difficulty(req.sentence, result.get("breakdown", []))
+    result["difficulty"] = result.get("sentence_difficulty", {}).get("level")
     result = ensure_traditional_chinese(result)
     cache_put(ck, result)
 
