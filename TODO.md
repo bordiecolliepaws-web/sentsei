@@ -120,7 +120,7 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Grammar pattern library** ✅ 2026-02-16 — Collect recurring grammar patterns from translations, let users browse by pattern (e.g. "〜てもいい", "〜(으)면"). Backend extraction from grammar_notes, persistent storage, browse/detail endpoints. Frontend panel with language filter, frequency sorting, expandable examples.
 - [ ] **Multi-user support** — Currently single-password. Add simple user accounts (username/password) so multiple people can have separate history, SRS decks, and progress. SQLite backend.
 - [x] **Difficulty auto-detection** ✅ 2026-02-16 — Heuristic analysis (word count, sentence length, CJK diversity, complexity markers, breakdown word difficulty). Returns beginner/intermediate/advanced with 0-100 score + factors. Color-coded badge on result cards with tooltip.
-- [ ] **Romanization toggle** — Let users show/hide romanization independently. Some learners want to wean off romaji/pinyin; toggle lets them practice reading native script.
+- [x] **Romanization toggle** ✅ 2026-02-16 — "Aa" toggle pill hides/shows all pronunciation (romaji, pinyin, romanized Korean) across result cards, word chips, quiz, compare, and context examples. Persisted to localStorage. Default ON.
 - [ ] **Backend test coverage for SRS/review** — Currently no backend tests needed (SRS is frontend-only), but if SRS moves server-side for multi-user, add comprehensive tests.
 
 ## Cron Test Matrix
