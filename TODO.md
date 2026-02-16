@@ -131,7 +131,7 @@ _Items for cron iterations to work through, in priority order._
 - [x] **CORS headers** ✅ 2026-02-17 — CORSMiddleware activated when `SENTSEI_CORS_ORIGINS` env var is set (comma-separated). Allows credentials, GET/POST/DELETE/OPTIONS, Authorization+Content-Type headers. No CORS when unset (same-origin only).
 - [x] **Session cleanup cron** ✅ 2026-02-17 — `cleanup_expired_sessions()` in auth.py, runs on startup + hourly via asyncio task. Deletes sessions past `expires_at`.
 - [ ] **Structured logging** — All error handling uses bare `except Exception`. Add Python `logging` module with structured output (JSON lines) for debugging production issues.
-- [ ] **Input validation hardening** — Max sentence length isn't enforced on some endpoints. Add consistent 500-char limit across learn/learn-multi/word-detail/context-examples.
+- [x] **Input validation hardening** ✅ 2026-02-17 — Added MAX_INPUT_LEN (500) checks to all endpoints: segment, breakdown, learn-stream, learn-multi (2500 for paragraphs), word-detail, context-examples, compare.
 
 ## Cron Test Matrix
 Each iteration should run these checks:
