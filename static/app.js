@@ -571,7 +571,7 @@ const langSelect = document.getElementById('lang');
                     openPasswordModal('Session expired. Enter password again.');
                     return;
                 }
-                if (!resp.ok) throw new Error('API error');
+                if (!resp.ok) throw new Error(await friendlyError(resp));
 
                 const data = await resp.json();
                 recordQuizCompletion(Boolean(data.correct), currentQuiz.language || langSelect.value);
@@ -712,7 +712,7 @@ const langSelect = document.getElementById('lang');
                     openPasswordModal('Session expired. Enter password again.');
                     return;
                 }
-                if (!resp.ok) throw new Error('API error');
+                if (!resp.ok) throw new Error(await friendlyError(resp));
 
                 const blob = await resp.blob();
                 const url = URL.createObjectURL(blob);
@@ -1334,6 +1334,24 @@ const langSelect = document.getElementById('lang');
 
         function hideError() { errorBannerEl.style.display = 'none'; }
 
+        // Extract user-friendly error from a failed fetch response
+        async function friendlyError(resp) {
+            const status = resp.status;
+            // Try to get detail from JSON body
+            let detail = '';
+            try {
+                const body = await resp.json();
+                detail = body.detail || '';
+            } catch { /* ignore */ }
+
+            if (status === 429) return 'Too many requests — wait a moment and try again.';
+            if (status === 502) return 'Translation model is unreachable. Is Ollama running?';
+            if (status === 400 && detail) return detail;
+            if (status === 401) return ''; // handled separately
+            if (detail) return detail;
+            return `Something went wrong (${status}). Tap retry.`;
+        }
+
         function closeCompareResults() {
             compareResultsEl.classList.add('hidden');
             compareResultsEl.innerHTML = '';
@@ -1467,7 +1485,7 @@ const langSelect = document.getElementById('lang');
                         openPasswordModal('Session expired. Enter password again.');
                         throw new Error('Unauthorized');
                     }
-                    if (!resp.ok) throw new Error('API error');
+                    if (!resp.ok) throw new Error(await friendlyError(resp));
                     const data = await resp.json();
                     const reqCtx = { target_language: langSelect.value, input_language: selectedInputLang, sentence: sentence };
                     const successfulResults = Array.isArray(data.results) ? data.results.filter(item => item && item.result) : [];
@@ -1511,7 +1529,7 @@ const langSelect = document.getElementById('lang');
                         openPasswordModal('Session expired. Enter password again.');
                         throw new Error('Unauthorized');
                     }
-                    if (!resp.ok) throw new Error('API error');
+                    if (!resp.ok) throw new Error(await friendlyError(resp));
 
                     // Read SSE stream
                     const reader = resp.body.getReader();
@@ -1558,7 +1576,11 @@ const langSelect = document.getElementById('lang');
                 console.error(err);
                 if (err.name === 'AbortError') {
                     showError('Request timed out — the model might be busy. Tap retry.');
-                } else if (err.message !== 'Unauthorized') {
+                } else if (err.message === 'Unauthorized') {
+                    // already handled above
+                } else if (err.message && err.message !== 'API error') {
+                    showError(err.message);
+                } else {
                     showError('Something went wrong. Tap retry to try again.');
                 }
             } finally {
@@ -1614,7 +1636,7 @@ const langSelect = document.getElementById('lang');
                     })
                 });
 
-                if (!resp.ok) throw new Error('API error');
+                if (!resp.ok) throw new Error(await friendlyError(resp));
                 const detail = await resp.json();
 
                 let html = '';
@@ -1798,7 +1820,7 @@ const langSelect = document.getElementById('lang');
                     openPasswordModal('Session expired. Enter password again.');
                     throw new Error('Unauthorized');
                 }
-                if (!resp.ok) throw new Error('API error');
+                if (!resp.ok) throw new Error(await friendlyError(resp));
 
                 const data = await resp.json();
                 renderCompareResults(data);
@@ -1807,7 +1829,11 @@ const langSelect = document.getElementById('lang');
                 console.error(err);
                 if (err.name === 'AbortError') {
                     showError('Comparison timed out — tap compare again.');
-                } else if (err.message !== 'Unauthorized') {
+                } else if (err.message === 'Unauthorized') {
+                    // handled above
+                } else if (err.message && err.message !== 'API error') {
+                    showError(err.message);
+                } else {
                     showError('Could not compare this sentence right now.');
                 }
             } finally {
@@ -1832,7 +1858,7 @@ const langSelect = document.getElementById('lang');
                 const lang = langSelect.value;
                 const inputLang = selectedInputLang === 'auto' ? 'en' : selectedInputLang;
                 const resp = await fetch(`/api/surprise?lang=${encodeURIComponent(lang)}&input_lang=${encodeURIComponent(inputLang)}`);
-                if (!resp.ok) throw new Error('API error');
+                if (!resp.ok) throw new Error(await friendlyError(resp));
                 const data = await resp.json();
                 sentenceInput.value = data.sentence;
                 sentenceInput.style.height = 'auto';
