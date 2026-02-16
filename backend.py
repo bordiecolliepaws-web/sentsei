@@ -1100,6 +1100,112 @@ Rules:
     result = ensure_traditional_chinese(result)
     return result
 
+class ContextExamplesRequest(BaseModel):
+    translation: str
+    target_language: str
+    source_sentence: str
+    source_language: Optional[str] = "en"
+
+
+@app.post("/api/context-examples")
+async def context_examples(
+    request: Request,
+    req: ContextExamplesRequest,
+    x_app_password: Optional[str] = Header(default=None),
+):
+    if x_app_password != APP_PASSWORD:
+        raise HTTPException(401, "Unauthorized")
+
+    client_ip = request.client.host if request.client else "unknown"
+    _rate_limit_cleanup()
+    if not _rate_limit_check(client_ip):
+        raise HTTPException(429, "Too many requests. Please wait a minute.")
+
+    if req.target_language not in SUPPORTED_LANGUAGES:
+        raise HTTPException(400, "Unsupported language")
+
+    lang_name = SUPPORTED_LANGUAGES[req.target_language]
+
+    input_is_chinese = any('\u4e00' <= c <= '\u9fff' for c in req.source_sentence)
+    explain_lang = "繁體中文" if input_is_chinese else "English"
+
+    # Cache key
+    ck = f"ctx:{hashlib.md5((req.translation + req.target_language).encode()).hexdigest()}"
+    cached = cache_get(ck)
+    if cached:
+        return cached
+
+    prompt = f"""Given this {lang_name} sentence: "{req.translation}"
+(Original meaning: "{req.source_sentence}")
+
+Generate 3 different example sentences in {lang_name} that use the SAME key grammar pattern or vocabulary from the sentence above, but in DIFFERENT everyday contexts.
+
+Respond with ONLY valid JSON (no markdown, no code fences):
+{{
+  "examples": [
+    {{
+      "sentence": "example in {lang_name} script",
+      "pronunciation": "romanized pronunciation",
+      "meaning": "translation in {explain_lang}",
+      "context": "brief label like 'At a restaurant' or 'Texting a friend' in {explain_lang}"
+    }}
+  ]
+}}
+
+Rules:
+- Each example should show a DIFFERENT situation/context
+- Keep sentences simple and practical (beginner-friendly)
+- Use the same grammar structure but with different vocabulary
+- All meanings/context labels in {explain_lang}"""
+
+    system_msg = f"You are a {lang_name} teacher creating contextual examples. Respond with valid JSON only."
+
+    async with httpx.AsyncClient(timeout=120) as client:
+        resp = await client.post(
+            f"{OLLAMA_URL}/api/chat",
+            json={
+                "model": OLLAMA_MODEL,
+                "messages": [
+                    {"role": "system", "content": system_msg},
+                    {"role": "user", "content": prompt},
+                ],
+                "stream": False,
+                "options": {"temperature": 0.5, "num_predict": 1024},
+            },
+        )
+
+    if resp.status_code != 200:
+        raise HTTPException(502, f"LLM API error: {resp.status_code}")
+
+    data = resp.json()
+    text = data.get("message", {}).get("content", "")
+
+    try:
+        result = json.loads(text)
+    except json.JSONDecodeError:
+        match = _re.search(r'\{.*\}', text, _re.DOTALL)
+        if match:
+            try:
+                result = json.loads(match.group())
+            except json.JSONDecodeError:
+                return {"examples": []}
+        else:
+            return {"examples": []}
+
+    result = ensure_traditional_chinese(result)
+
+    # Fix pronunciation deterministically
+    if "examples" in result:
+        for ex in result["examples"]:
+            if "sentence" in ex and req.target_language in ("ja", "zh", "ko"):
+                det = deterministic_pronunciation(ex["sentence"], req.target_language)
+                if det:
+                    ex["pronunciation"] = det
+
+    cache_put(ck, result)
+    return result
+
+
 @app.get("/api/languages")
 async def get_languages():
     return SUPPORTED_LANGUAGES

@@ -2114,6 +2114,65 @@ const langSelect = document.getElementById('lang');
             shareUrl.searchParams.set('t', reqCtx.target_language || langSelect.value);
             history.replaceState(null, '', shareUrl.toString());
 
+            // Context examples placeholder
+            const ctxSection = document.createElement('div');
+            ctxSection.className = 'context-examples-section';
+            ctxSection.innerHTML = `
+                <div class="section-title context-examples-toggle" role="button" tabindex="0" aria-expanded="false">
+                    📝 See it in context <span class="ctx-arrow">▸</span>
+                </div>
+                <div class="context-examples-body" style="display:none;">
+                    <div class="ctx-loading">Loading examples...</div>
+                </div>
+            `;
+            card.appendChild(ctxSection);
+
+            // Lazy-load context examples on toggle click
+            const ctxToggle = ctxSection.querySelector('.context-examples-toggle');
+            const ctxBody = ctxSection.querySelector('.context-examples-body');
+            const ctxArrow = ctxSection.querySelector('.ctx-arrow');
+            let ctxLoaded = false;
+            const toggleCtx = async () => {
+                const isOpen = ctxBody.style.display !== 'none';
+                ctxBody.style.display = isOpen ? 'none' : 'block';
+                ctxArrow.textContent = isOpen ? '▸' : '▾';
+                ctxToggle.setAttribute('aria-expanded', String(!isOpen));
+                if (!isOpen && !ctxLoaded) {
+                    ctxLoaded = true;
+                    try {
+                        const ctxResp = await fetch('/api/context-examples', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-App-Password': appPassword },
+                            body: JSON.stringify({
+                                translation: data.translation,
+                                target_language: reqCtx.target_language || langSelect.value,
+                                source_sentence: original
+                            })
+                        });
+                        if (!ctxResp.ok) throw new Error('Failed');
+                        const ctxData = await ctxResp.json();
+                        if (ctxData.examples && ctxData.examples.length > 0) {
+                            ctxBody.innerHTML = ctxData.examples.map(ex => `
+                                <div class="ctx-example">
+                                    <div class="ctx-sentence">${ex.sentence}</div>
+                                    <div class="ctx-pron">${ex.pronunciation || ''}</div>
+                                    <div class="ctx-meaning">${ex.meaning}</div>
+                                    ${ex.context ? `<div class="ctx-context">${ex.context}</div>` : ''}
+                                </div>
+                            `).join('');
+                        } else {
+                            ctxBody.innerHTML = '<div class="ctx-empty">No examples available.</div>';
+                        }
+                    } catch(e) {
+                        ctxBody.innerHTML = '<div class="ctx-empty">Could not load examples.</div>';
+                    }
+                }
+            };
+            ctxToggle.addEventListener('click', toggleCtx);
+            ctxToggle.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCtx(); }
+            });
+
             // Prepend new result
             if (resultsEl.children.length > 0) {
                 const divider = document.createElement('div');

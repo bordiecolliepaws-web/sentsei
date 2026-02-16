@@ -2217,3 +2217,63 @@
 [data-theme="light"] .side-menu {
     box-shadow: -4px 0 20px var(--shadow);
 }
+
+/* Context Examples */
+.context-examples-section {
+    margin-top: 1rem;
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+}
+.context-examples-toggle {
+    cursor: pointer;
+    color: var(--accent);
+    font-size: 0.85rem;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.context-examples-toggle:hover {
+    opacity: 0.8;
+}
+.ctx-arrow {
+    font-size: 0.7rem;
+    transition: transform 0.15s;
+}
+.context-examples-body {
+    margin-top: 0.5rem;
+}
+.ctx-example {
+    padding: 0.6rem 0.75rem;
+    margin: 0.4rem 0;
+    background: var(--bg-card, var(--surface));
+    border-radius: 10px;
+    border-left: 3px solid var(--accent);
+}
+.ctx-sentence {
+    font-size: 1rem;
+    color: var(--text);
+    font-weight: 500;
+}
+.ctx-pron {
+    font-size: 0.8rem;
+    color: var(--accent);
+    margin-top: 0.15rem;
+}
+.ctx-meaning {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-top: 0.2rem;
+}
+.ctx-context {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    opacity: 0.7;
+    margin-top: 0.15rem;
+    font-style: italic;
+}
+.ctx-loading, .ctx-empty {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    padding: 0.5rem 0;
+}
