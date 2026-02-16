@@ -124,7 +124,7 @@ _Items for cron iterations to work through, in priority order._
 - [ ] **Backend test coverage for SRS/review** — Currently no backend tests needed (SRS is frontend-only), but if SRS moves server-side for multi-user, add comprehensive tests.
 
 ## P7 — Code Health & Security (from 2026-02-17 reflection)
-- [ ] **Use bcrypt/argon2 for password hashing** — Currently SHA-256 with salt, which is fast and GPU-crackable. Switch to `bcrypt` or `argon2-cffi` for proper key derivation.
+- [x] **Use bcrypt for password hashing** ✅ 2026-02-17 — Switched from SHA-256+salt to bcrypt (cost 12). Legacy hashes verified via fallback and auto-rehashed to bcrypt on next login.
 - [ ] **Split backend.py into modules** — 2340 lines in one file. Split into: `auth.py` (user/session management), `llm.py` (Ollama interaction/prompt building), `cache.py` (LRU + persistence), `routes.py` (API endpoints), `models.py` (Pydantic schemas). Keep `backend.py` as the app entry point that wires everything together.
 - [ ] **Make test suite pytest-compatible** — `test_constitution.py` uses a bare `def test()` that collides with pytest discovery. Either rename to `check_constitution.py` or refactor into proper `test_*` functions with pytest fixtures.
 - [ ] **Difficulty field missing from /api/learn response** — `detect_sentence_difficulty` exists but the `/api/learn` endpoint returns `difficulty: null`. Wire it up to actually call the function on the input sentence.

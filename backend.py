@@ -4,6 +4,7 @@ import json
 import re as _re
 import random
 import hashlib
+import bcrypt
 import time
 import asyncio
 import sqlite3
@@ -2173,15 +2174,20 @@ def _init_user_db():
     conn.close()
 
 def _hash_password(password: str) -> str:
-    salt = secrets.token_hex(16)
-    h = hashlib.sha256((salt + password).encode()).hexdigest()
-    return f"{salt}:{h}"
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 def _verify_password(password: str, stored: str) -> bool:
-    if ":" not in stored:
+    try:
+        # bcrypt hashes start with $2b$
+        if stored.startswith("$2b$") or stored.startswith("$2a$"):
+            return bcrypt.checkpw(password.encode(), stored.encode())
+        # Legacy sha256 fallback for existing users
+        if ":" not in stored:
+            return False
+        salt, h = stored.split(":", 1)
+        return hashlib.sha256((salt + password).encode()).hexdigest() == h
+    except Exception:
         return False
-    salt, h = stored.split(":", 1)
-    return hashlib.sha256((salt + password).encode()).hexdigest() == h
 
 SESSION_TTL = 30 * 24 * 3600  # 30 days
 
@@ -2258,6 +2264,14 @@ async def auth_login(req: AuthRequest):
     conn.close()
     if not row or not _verify_password(req.password, row["password_hash"]):
         raise HTTPException(401, "Invalid username or password")
+
+    # Rehash legacy passwords to bcrypt on successful login
+    if not row["password_hash"].startswith("$2b$"):
+        new_hash = _hash_password(req.password)
+        conn2 = _get_db()
+        conn2.execute("UPDATE users SET password_hash = ? WHERE id = ?", (new_hash, row["id"]))
+        conn2.commit()
+        conn2.close()
 
     token = _create_session(row["id"])
     return {"token": token, "username": username}
