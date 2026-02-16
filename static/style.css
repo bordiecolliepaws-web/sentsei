@@ -11,6 +11,28 @@
             --medium: #e8a838;
             --hard: #e85d5d;
             --radius: 14px;
+            --overlay: rgba(6, 6, 10, 0.55);
+            --shadow: rgba(0, 0, 0, 0.45);
+            --accent-on-btn: #111;
+            color-scheme: dark;
+        }
+
+        [data-theme="light"] {
+            --bg: #f5f3ee;
+            --surface: #ffffff;
+            --surface2: #f0ece4;
+            --border: #ddd6c8;
+            --text: #1a1a1a;
+            --text-dim: #6b6560;
+            --accent: #c8872a;
+            --accent-glow: rgba(200, 135, 42, 0.10);
+            --easy: #2e8b4a;
+            --medium: #c8872a;
+            --hard: #c44040;
+            --overlay: rgba(0, 0, 0, 0.35);
+            --shadow: rgba(0, 0, 0, 0.12);
+            --accent-on-btn: #fff;
+            color-scheme: light;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -921,7 +943,7 @@
 
         .quiz-check-btn {
             background: var(--accent);
-            color: #111;
+            color: var(--accent-on-btn);
             border: none;
             border-radius: 8px;
             padding: 0.62rem 0.95rem;
@@ -1511,7 +1533,7 @@
         }
         .error-banner button {
             background: var(--accent);
-            color: #111;
+            color: var(--accent-on-btn);
             border: none;
             padding: 0.5rem 1.5rem;
             border-radius: 10px;
@@ -2024,3 +2046,40 @@
     color: var(--accent, #e8a838);
 }
 .shortcut-hint { text-align: center; margin: 16px 0 0; font-size: 0.85em; opacity: 0.6; }
+
+/* Theme toggle */
+.theme-toggle {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    color: var(--text);
+    transition: background 0.2s, border-color 0.2s;
+}
+.theme-toggle:hover {
+    border-color: var(--accent);
+}
+
+/* Light theme overrides for elements with hardcoded dark colors */
+[data-theme="light"] .shortcut-help-inner kbd {
+    background: #e8e4dc;
+    border-color: #ccc5b8;
+}
+[data-theme="light"] header h1 {
+    background: linear-gradient(135deg, var(--accent), #a06a10);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+[data-theme="light"] .onboarding-overlay,
+[data-theme="light"] .history-overlay,
+[data-theme="light"] .stories-overlay,
+[data-theme="light"] .feedback-modal,
+[data-theme="light"] #shortcut-help {
+    background: rgba(0, 0, 0, 0.35) !important;
+}
+[data-theme="light"] .side-menu {
+    box-shadow: -4px 0 20px var(--shadow);
+}

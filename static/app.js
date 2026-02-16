@@ -2271,3 +2271,31 @@ const langSelect = document.getElementById('lang');
                 }
             });
         })();
+
+        // Theme toggle (dark/light)
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const icon = theme === 'light' ? '☀️' : '🌙';
+            const label = theme === 'light' ? 'Dark Mode' : 'Light Mode';
+            const toggleBtn = document.getElementById('theme-toggle');
+            const menuIcon = document.getElementById('menu-theme-icon');
+            const menuLabel = document.getElementById('menu-theme-label');
+            if (toggleBtn) toggleBtn.textContent = icon;
+            if (menuIcon) menuIcon.textContent = icon;
+            if (menuLabel) menuLabel.textContent = label;
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('sentsei-theme', next);
+            applyTheme(next);
+        }
+
+        // Init theme from localStorage
+        (function initTheme() {
+            const saved = localStorage.getItem('sentsei-theme') || 'dark';
+            applyTheme(saved);
+            const toggleBtn = document.getElementById('theme-toggle');
+            if (toggleBtn) toggleBtn.addEventListener('click', toggleTheme);
+        })();

@@ -41,6 +41,7 @@
             <div class="header-title-row">
                 <h1>SentSay</h1>
                 <button id="stats-toggle" class="stats-btn" type="button" aria-label="Show learning stats">📊 Stats</button>
+                <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle light/dark theme">🌙</button>
             </div>
             <p>Say what's on your mind. Learn it in any language.</p>
         </header>
@@ -159,6 +160,9 @@
             </button>
             <button class="side-menu-item" id="menu-stats" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open'); openStatsModal();">
                 <span class="menu-icon">📊</span> Stats
+            </button>
+            <button class="side-menu-item" id="menu-theme" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open'); toggleTheme();">
+                <span class="menu-icon" id="menu-theme-icon">🌙</span> <span id="menu-theme-label">Light Mode</span>
             </button>
         </div>
     </div>
