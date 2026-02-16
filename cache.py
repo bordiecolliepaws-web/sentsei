@@ -7,6 +7,10 @@ from typing import Optional
 from pathlib import Path
 from collections import OrderedDict
 
+from log import get_logger
+
+logger = get_logger("sentsei.cache")
+
 # --- Translation Cache ---
 CACHE_MAX = 500
 CACHE_TTL = 3600 * 24  # 24h
@@ -57,9 +61,9 @@ def load_cache():
                     loaded += 1
                 if loaded >= CACHE_MAX:
                     break
-            print(f"[cache] Loaded {loaded} entries from disk")
-        except Exception as e:
-            print(f"[cache] Failed to load cache file: {e}")
+            logger.info("Loaded cache from disk", extra={"component": "cache", "count": loaded})
+        except Exception:
+            logger.exception("Failed to load cache file", extra={"component": "cache"})
     _cache_last_save = time.time()
 
 
@@ -69,8 +73,8 @@ def save_cache():
         CACHE_FILE.write_text(json.dumps(dict(_translation_cache), ensure_ascii=False))
         _cache_dirty = False
         _cache_last_save = time.time()
-    except Exception as e:
-        print(f"[cache] Failed to save cache: {e}")
+    except Exception:
+        logger.exception("Failed to save cache", extra={"component": "cache"})
 
 
 def _maybe_save_cache():
@@ -98,8 +102,8 @@ def load_grammar_patterns():
     if GRAMMAR_PATTERNS_FILE.exists():
         try:
             _grammar_patterns = json.loads(GRAMMAR_PATTERNS_FILE.read_text())
-        except Exception as e:
-            print(f"[grammar] Failed to load: {e}")
+        except Exception:
+            logger.exception("Failed to load grammar patterns", extra={"component": "grammar"})
             _grammar_patterns = {}
 
 
@@ -108,8 +112,8 @@ def save_grammar_patterns():
     try:
         GRAMMAR_PATTERNS_FILE.write_text(json.dumps(_grammar_patterns, ensure_ascii=False, indent=2))
         _grammar_dirty = False
-    except Exception as e:
-        print(f"[grammar] Failed to save: {e}")
+    except Exception:
+        logger.exception("Failed to save grammar patterns", extra={"component": "grammar"})
 
 
 def is_grammar_dirty():

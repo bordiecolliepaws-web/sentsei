@@ -4,6 +4,10 @@ import json
 import os
 from pathlib import Path
 
+from log import get_logger
+
+logger = get_logger("sentsei.app")
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -29,6 +33,27 @@ if _cors_origins:
 app.include_router(router)
 
 
+@app.middleware("http")
+async def log_requests(request, call_next):
+    """Log all API requests with timing."""
+    import time as _time
+    start = _time.time()
+    response = await call_next(request)
+    if request.url.path.startswith("/api/"):
+        duration_ms = round((_time.time() - start) * 1000)
+        logger.info(
+            f"{request.method} {request.url.path} → {response.status_code}",
+            extra={
+                "component": "http",
+                "endpoint": request.url.path,
+                "status_code": response.status_code,
+                "duration_ms": duration_ms,
+                "ip": request.client.host if request.client else None,
+            },
+        )
+    return response
+
+
 @app.on_event("startup")
 async def _startup_cache():
     load_cache()
@@ -39,10 +64,10 @@ async def _startup_cache():
 async def _shutdown_cache():
     if is_cache_dirty():
         save_cache()
-        print("[cache] Saved on shutdown")
+        logger.info("Cache saved on shutdown", extra={"component": "cache"})
     if is_grammar_dirty():
         save_grammar_patterns()
-        print("[grammar] Saved on shutdown")
+        logger.info("Grammar patterns saved on shutdown", extra={"component": "grammar"})
 
 
 @app.on_event("startup")
@@ -52,11 +77,11 @@ async def _startup_surprise():
     if ollama_ok:
         bank = get_surprise_bank()
         if not bank or sum(len(v) for v in bank.values()) < 5:
-            print("[surprise-bank] Bank is low/empty, starting background fill...")
+            logger.info("Surprise bank low/empty, starting background fill", extra={"component": "surprise-bank"})
             asyncio.create_task(fill_surprise_bank_task())
         asyncio.create_task(refill_surprise_bank_task())
     else:
-        print("[surprise-bank] Ollama not available, skipping background fill")
+        logger.warning("Ollama not available, skipping surprise bank fill", extra={"component": "surprise-bank"})
 
 
 @app.on_event("startup")
@@ -72,7 +97,7 @@ async def _startup_session_cleanup():
     """Run session cleanup on startup, then every hour."""
     deleted = cleanup_expired_sessions()
     if deleted:
-        print(f"[auth] Cleaned up {deleted} expired session(s) on startup")
+        logger.info("Cleaned up expired sessions on startup", extra={"component": "auth", "count": deleted})
 
     async def _periodic_cleanup():
         while True:
@@ -80,9 +105,9 @@ async def _startup_session_cleanup():
             try:
                 deleted = cleanup_expired_sessions()
                 if deleted:
-                    print(f"[auth] Cleaned up {deleted} expired session(s)")
-            except Exception as e:
-                print(f"[auth] Session cleanup error: {e}")
+                    logger.info("Cleaned up expired sessions", extra={"component": "auth", "count": deleted})
+            except Exception:
+                logger.exception("Session cleanup error", extra={"component": "auth"})
 
     asyncio.create_task(_periodic_cleanup())
 

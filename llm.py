@@ -8,6 +8,10 @@ import time
 from typing import Optional, List
 from pathlib import Path
 
+from log import get_logger
+
+logger = get_logger("sentsei.llm")
+
 import httpx
 import pykakasi
 from pypinyin import pinyin, Style as PinyinStyle
@@ -224,6 +228,6 @@ async def check_ollama_connectivity() -> bool:
         async with httpx.AsyncClient(timeout=10) as client:
             resp = await client.get(f"{OLLAMA_URL}/api/tags")
             return resp.status_code == 200
-    except Exception as e:
-        print(f"[startup] Ollama not reachable: {e}")
+    except Exception:
+        logger.warning("Ollama not reachable", extra={"component": "ollama"})
         return False

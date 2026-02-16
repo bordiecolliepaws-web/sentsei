@@ -10,6 +10,10 @@ from typing import Optional, List
 from pathlib import Path
 from collections import defaultdict
 
+from log import get_logger
+
+logger = get_logger("sentsei.routes")
+
 from fastapi import APIRouter, HTTPException, Header, Request, Response
 from fastapi.responses import StreamingResponse
 import httpx
@@ -419,8 +423,8 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
 
     try:
         extract_and_store_grammar_patterns(result, lang_code, req.sentence)
-    except Exception as e:
-        print(f"[grammar] Extraction error: {e}")
+    except Exception:
+        logger.exception("Grammar extraction error", extra={"component": "grammar"})
 
     _user_request_count -= 1
     if _user_request_count <= 0:
@@ -1474,8 +1478,8 @@ async def _precompute_one(sentence: str, lang: str, input_lang: str):
             )
             if resp.status_code == 200:
                 return resp.json()
-    except Exception as e:
-        print(f"[surprise-bank] precompute error: {e}")
+    except Exception:
+        logger.exception("Surprise bank precompute error", extra={"component": "surprise-bank"})
     return None
 
 
@@ -1483,7 +1487,7 @@ async def fill_surprise_bank_task():
     global _surprise_bank_filling
     await asyncio.sleep(10)
     _surprise_bank_filling = True
-    print("[surprise-bank] Starting pre-computation...")
+    logger.info("Starting surprise bank pre-computation", extra={"component": "surprise-bank"})
     count = 0
     for lang in SUPPORTED_LANGUAGES:
         for input_lang, pool in [("en", SURPRISE_SENTENCES_EN), ("zh", SURPRISE_SENTENCES_ZH)]:
@@ -1505,7 +1509,7 @@ async def fill_surprise_bank_task():
                     count += 1
                 await asyncio.sleep(0.5)
     _surprise_bank_filling = False
-    print(f"[surprise-bank] Pre-computed {count} sentences across {len(_surprise_bank)} banks")
+    logger.info("Surprise bank pre-computation complete", extra={"component": "surprise-bank", "count": count})
     save_surprise_bank()
 
 
@@ -1538,9 +1542,9 @@ def save_surprise_bank():
         bank_file = Path(__file__).parent / "surprise_bank.json"
         data = {k: v for k, v in _surprise_bank.items() if v}
         bank_file.write_text(json.dumps(data, ensure_ascii=False))
-        print(f"[surprise-bank] Saved {sum(len(v) for v in data.values())} entries to disk")
-    except Exception as e:
-        print(f"[surprise-bank] Failed to save bank: {e}")
+        logger.info("Surprise bank saved to disk", extra={"component": "surprise-bank", "count": sum(len(v) for v in data.values())})
+    except Exception:
+        logger.exception("Failed to save surprise bank", extra={"component": "surprise-bank"})
 
 
 def load_surprise_bank():
@@ -1550,9 +1554,9 @@ def load_surprise_bank():
             data = json.loads(bank_file.read_text())
             for key, items in data.items():
                 _surprise_bank[key] = items
-            print(f"[surprise-bank] Loaded {sum(len(v) for v in data.values())} pre-baked entries from disk")
-        except Exception as e:
-            print(f"[surprise-bank] Failed to load bank: {e}")
+            logger.info("Loaded surprise bank from disk", extra={"component": "surprise-bank", "count": sum(len(v) for v in data.values())})
+        except Exception:
+            logger.exception("Failed to load surprise bank", extra={"component": "surprise-bank"})
 
 
 def get_surprise_bank():
