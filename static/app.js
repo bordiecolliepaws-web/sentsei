@@ -2107,14 +2107,63 @@ const langSelect = document.getElementById('lang');
             hamburgerBadge.textContent = count;
             hamburgerBadge.style.display = count > 0 ? '' : 'none';
         };
-        // === Accessibility: Escape key closes panels, focus trap for side menu ===
+        // === Keyboard shortcuts ===
+        // Ctrl/Cmd+Enter → Learn, Ctrl/Cmd+H → History, Ctrl/Cmd+K → Focus input
+        // Ctrl/Cmd+Shift+S → Surprise Me, Escape → close panels
         document.addEventListener('keydown', (e) => {
+            const mod = e.ctrlKey || e.metaKey;
+            // Escape closes panels
             if (e.key === 'Escape') {
+                // Close keyboard shortcut help if open
+                const helpEl = document.getElementById('shortcut-help');
+                if (helpEl && helpEl.classList.contains('open')) { helpEl.classList.remove('open'); return; }
                 if (sideMenuEl.classList.contains('open')) { closeSideMenu(); hamburgerBtn.focus(); return; }
                 if (historyPanelOpen) { closeHistoryPanel(); return; }
                 if (storyPanelOpen) { closeStoriesPanel(); return; }
+                return;
             }
+            // Don't intercept when typing in inputs (except Ctrl combos)
+            const tag = document.activeElement?.tagName;
+            const inInput = tag === 'INPUT' || tag === 'TEXTAREA';
+            // Ctrl/Cmd+Enter → Learn
+            if (mod && e.key === 'Enter') { e.preventDefault(); learn(); return; }
+            // Ctrl/Cmd+H → Toggle history
+            if (mod && e.key === 'h') { e.preventDefault(); toggleHistoryPanel(); return; }
+            // Ctrl/Cmd+K → Focus sentence input
+            if (mod && e.key === 'k') { e.preventDefault(); sentenceInput.focus(); sentenceInput.select(); return; }
+            // Ctrl/Cmd+Shift+S → Surprise me
+            if (mod && e.shiftKey && (e.key === 'S' || e.key === 's')) { e.preventDefault(); surpriseBtn.click(); return; }
+            // ? → Show shortcut help (only when not in an input)
+            if (e.key === '?' && !inInput) { toggleShortcutHelp(); return; }
         });
+
+        // Shortcut help panel
+        function toggleShortcutHelp() {
+            let helpEl = document.getElementById('shortcut-help');
+            if (!helpEl) {
+                helpEl = document.createElement('div');
+                helpEl.id = 'shortcut-help';
+                helpEl.setAttribute('role', 'dialog');
+                helpEl.setAttribute('aria-label', 'Keyboard shortcuts');
+                helpEl.innerHTML = `
+                    <div class="shortcut-help-inner">
+                        <h3>⌨️ Keyboard Shortcuts</h3>
+                        <table>
+                            <tr><td><kbd>Ctrl</kbd>+<kbd>Enter</kbd></td><td>Learn sentence</td></tr>
+                            <tr><td><kbd>Ctrl</kbd>+<kbd>H</kbd></td><td>Toggle history</td></tr>
+                            <tr><td><kbd>Ctrl</kbd>+<kbd>K</kbd></td><td>Focus input</td></tr>
+                            <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd></td><td>Surprise me</td></tr>
+                            <tr><td><kbd>Esc</kbd></td><td>Close panels</td></tr>
+                            <tr><td><kbd>?</kbd></td><td>This help</td></tr>
+                        </table>
+                        <p class="shortcut-hint">Press <kbd>Esc</kbd> or <kbd>?</kbd> to close</p>
+                    </div>`;
+                document.body.appendChild(helpEl);
+                // Close on backdrop click
+                helpEl.addEventListener('click', (ev) => { if (ev.target === helpEl) helpEl.classList.remove('open'); });
+            }
+            helpEl.classList.toggle('open');
+        }
 
         // Focus trap for side menu
         sideMenuEl.addEventListener('keydown', (e) => {

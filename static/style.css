@@ -1971,3 +1971,31 @@
         .feedback-actions button { flex: 1; padding: 0.5rem; border-radius: 8px; font-size: 0.85rem; cursor: pointer; border: 1px solid var(--border); }
         .feedback-send { background: var(--accent); color: white; border-color: var(--accent) !important; }
         .feedback-cancel { background: transparent; color: var(--text-dim); }
+/* Keyboard shortcut help dialog */
+#shortcut-help {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 10000;
+    align-items: center; justify-content: center;
+}
+#shortcut-help.open { display: flex; }
+.shortcut-help-inner {
+    background: var(--card, #1e1e1e);
+    border: 1px solid var(--border, #333);
+    border-radius: 14px;
+    padding: 24px 32px;
+    max-width: 400px;
+    width: 90%;
+    color: var(--text, #f0ece4);
+}
+.shortcut-help-inner h3 { margin: 0 0 16px; font-size: 1.1rem; }
+.shortcut-help-inner table { width: 100%; border-collapse: collapse; }
+.shortcut-help-inner td { padding: 6px 4px; }
+.shortcut-help-inner td:first-child { white-space: nowrap; text-align: right; padding-right: 16px; }
+.shortcut-help-inner kbd {
+    background: #2a2a2a; border: 1px solid #444; border-radius: 4px;
+    padding: 2px 6px; font-size: 0.85em; font-family: inherit;
+    color: var(--accent, #e8a838);
+}
+.shortcut-hint { text-align: center; margin: 16px 0 0; font-size: 0.85em; opacity: 0.6; }
