@@ -56,10 +56,14 @@ def deterministic_word_pronunciation(word: str, lang_code: str) -> Optional[str]
 
 app = FastAPI()
 
-# --- In-memory LRU cache for translations ---
+# --- Persistent LRU cache for translations ---
 CACHE_MAX = 500          # max entries
 CACHE_TTL = 3600 * 24    # 24h expiry
+CACHE_FILE = Path(__file__).parent / "translation_cache.json"
+CACHE_SAVE_INTERVAL = 60  # save to disk at most every 60s
 _translation_cache: OrderedDict = OrderedDict()  # key -> (timestamp, result)
+_cache_dirty = False
+_cache_last_save = 0.0
 QUIZ_ANSWER_TTL = 3600   # quiz answer retention (seconds)
 _quiz_answers: dict = {}  # quiz_id -> answer payload
 
@@ -82,9 +86,49 @@ def cache_get(key: str):
 
 
 def cache_put(key: str, result: dict):
+    global _cache_dirty
     _translation_cache[key] = (time.time(), result)
     if len(_translation_cache) > CACHE_MAX:
         _translation_cache.popitem(last=False)
+    _cache_dirty = True
+    _maybe_save_cache()
+
+
+def _load_cache():
+    """Load cache from disk on startup."""
+    global _cache_last_save
+    if CACHE_FILE.exists():
+        try:
+            data = json.loads(CACHE_FILE.read_text())
+            now = time.time()
+            loaded = 0
+            for key, (ts, result) in data.items():
+                if now - ts < CACHE_TTL:
+                    _translation_cache[key] = (ts, result)
+                    loaded += 1
+                if loaded >= CACHE_MAX:
+                    break
+            print(f"[cache] Loaded {loaded} entries from disk")
+        except Exception as e:
+            print(f"[cache] Failed to load cache file: {e}")
+    _cache_last_save = time.time()
+
+
+def _save_cache():
+    """Persist cache to disk."""
+    global _cache_dirty, _cache_last_save
+    try:
+        CACHE_FILE.write_text(json.dumps(dict(_translation_cache), ensure_ascii=False))
+        _cache_dirty = False
+        _cache_last_save = time.time()
+    except Exception as e:
+        print(f"[cache] Failed to save cache: {e}")
+
+
+def _maybe_save_cache():
+    """Save if dirty and enough time has passed."""
+    if _cache_dirty and (time.time() - _cache_last_save) >= CACHE_SAVE_INTERVAL:
+        _save_cache()
 
 
 def _cleanup_quiz_answers():
@@ -1251,6 +1295,18 @@ async def _check_ollama_connectivity() -> bool:
     except Exception as e:
         print(f"[startup] Ollama not reachable: {e}")
         return False
+
+
+@app.on_event("startup")
+async def _startup_cache():
+    _load_cache()
+
+
+@app.on_event("shutdown")
+async def _shutdown_cache():
+    if _cache_dirty:
+        _save_cache()
+        print("[cache] Saved on shutdown")
 
 
 @app.on_event("startup")
