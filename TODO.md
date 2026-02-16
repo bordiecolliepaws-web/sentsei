@@ -112,7 +112,7 @@ _Items for cron iterations to work through, in priority order._
 - [ ] **Offline/PWA support** — service worker for caching static assets + previously learned sentences. Works on subway/plane.
 - [ ] **Dark/light theme toggle** — currently dark-only. Some users prefer light mode for readability.
 - [x] **Keyboard shortcuts** ✅ 2026-02-16 — Ctrl+Enter to learn, Ctrl+H for history, Ctrl+K to focus input, Ctrl+Shift+S for surprise, ? for shortcut help overlay. Escape closes panels. All with accessible kbd styling.
-- [ ] **Shareable links** — `/learn?s=hello&t=ja` deep links. Share a sentence breakdown with friends.
+- [x] **Shareable links** ✅ 2026-02-16 — `/learn?s=hello&t=ja` deep links. Share button on results (Web Share API + clipboard fallback). URL updates after each learn via history.replaceState. Auto-learns shared sentence on load.
 - [ ] **Spaced repetition reminders** — track which sentences user learned, suggest review based on forgetting curve. Could integrate with the quiz mode.
 
 ## Cron Test Matrix
