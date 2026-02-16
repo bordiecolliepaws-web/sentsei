@@ -130,7 +130,7 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Difficulty field missing from /api/learn response** ✅ 2026-02-17 — Wired `result["difficulty"]` from `sentence_difficulty.level` in routes.py.
 - [x] **CORS headers** ✅ 2026-02-17 — CORSMiddleware activated when `SENTSEI_CORS_ORIGINS` env var is set (comma-separated). Allows credentials, GET/POST/DELETE/OPTIONS, Authorization+Content-Type headers. No CORS when unset (same-origin only).
 - [x] **Session cleanup cron** ✅ 2026-02-17 — `cleanup_expired_sessions()` in auth.py, runs on startup + hourly via asyncio task. Deletes sessions past `expires_at`.
-- [ ] **Structured logging** — All error handling uses bare `except Exception`. Add Python `logging` module with structured output (JSON lines) for debugging production issues.
+- [x] **Structured logging** ✅ 2026-02-17 — `log.py` module with JSON-lines formatter (configurable level/format via env vars). HTTP request middleware logs all API calls with timing. All print() replaced with structured logger, bare excepts use logger.exception() for tracebacks.
 - [x] **Input validation hardening** ✅ 2026-02-17 — Added MAX_INPUT_LEN (500) checks to all endpoints: segment, breakdown, learn-stream, learn-multi (2500 for paragraphs), word-detail, context-examples, compare.
 
 ## Cron Test Matrix
