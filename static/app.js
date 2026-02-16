@@ -2489,10 +2489,10 @@ const langSelect = document.getElementById('lang');
         storiesPanelCloseBtn.addEventListener('click', closeStoriesPanel);
 
         // Quiz mode event handlers
-        quizToggleBtn.addEventListener('click', toggleQuizMode);
-        quizCheckBtn.addEventListener('click', checkQuizAnswer);
-        quizNextBtn.addEventListener('click', loadQuizQuestion);
-        quizExitBtn.addEventListener('click', exitQuizMode);
+        if (quizToggleBtn) quizToggleBtn.addEventListener('click', toggleQuizMode);
+        if (quizCheckBtn) quizCheckBtn.addEventListener('click', checkQuizAnswer);
+        if (quizNextBtn) quizNextBtn.addEventListener('click', loadQuizQuestion);
+        if (quizExitBtn) quizExitBtn.addEventListener('click', exitQuizMode);
 
         // Review mode event handlers
         const reviewToggleBtn = document.getElementById('review-toggle');
@@ -2502,7 +2502,7 @@ const langSelect = document.getElementById('lang');
         if (reviewNextBtn) reviewNextBtn.addEventListener('click', loadReviewQuestion);
         if (reviewExitBtn) reviewExitBtn.addEventListener('click', exitReviewMode);
         updateReviewBadge();
-        quizAnswerInputEl.addEventListener('keydown', function(e) {
+        if (quizAnswerInputEl) quizAnswerInputEl.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.isComposing) {
                 e.preventDefault();
                 checkQuizAnswer();
