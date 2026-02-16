@@ -180,5 +180,75 @@
       }
     ],
     "count": 1
+  },
+  "f94573bb3e4cda78": {
+    "id": "f94573bb3e4cda78",
+    "name": "こんにちは",
+    "lang": "ja",
+    "explanation": "こんにちは (konnichiwa) is a casual greeting used during the day.",
+    "examples": [
+      {
+        "source": "Hello world",
+        "translation": "こんにちは世界",
+        "timestamp": 1771260970.4400704
+      }
+    ],
+    "count": 1
+  },
+  "b293f7e36c7450e7": {
+    "id": "b293f7e36c7450e7",
+    "name": "了 (le) is used to indicate a completed action in t",
+    "lang": "zh",
+    "explanation": "了 (le) is used to indicate a completed action in the past.",
+    "examples": [
+      {
+        "source": "I have a good breakfast",
+        "translation": "我吃了一頓好早餐",
+        "timestamp": 1771265788.1554477
+      }
+    ],
+    "count": 1
+  },
+  "d9ac26be28897886": {
+    "id": "d9ac26be28897886",
+    "name": "ほど",
+    "lang": "ja",
+    "explanation": "ほど is used to express the degree or extent of something.",
+    "examples": [
+      {
+        "source": "The more I practice, the more confident I feel",
+        "translation": "練習するほど、自信が増してきます",
+        "timestamp": 1771266688.3388367
+      }
+    ],
+    "count": 1
+  },
+  "105ffb54c2c820f6": {
+    "id": "105ffb54c2c820f6",
+    "name": "てきます",
+    "lang": "ja",
+    "explanation": "てきます is a verb ending that shows an action is in progress and becoming more intense.",
+    "examples": [
+      {
+        "source": "The more I practice, the more confident I feel",
+        "translation": "練習するほど、自信が増してきます",
+        "timestamp": 1771266688.338844
+      }
+    ],
+    "count": 1
+  },
+  "8afd2665b5db3a81": {
+    "id": "8afd2665b5db3a81",
+    "name": "The Hebrew sentence structure is slightly differen",
+    "lang": "he",
+    "explanation": "The Hebrew sentence structure is slightly different from English, placing the verb before the subject.",
+    "examples": [
+      {
+        "source": "I've been meaning to tell you something important",
+        "translation": "היה לי רצון要說的是",
+        "timestamp": 1771266892.0479827
+      }
+    ],
+    "count": 1
   }
 }

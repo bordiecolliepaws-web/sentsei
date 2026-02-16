@@ -406,7 +406,7 @@ def _rate_limit_cleanup():
 
 APP_PASSWORD = os.environ.get("SENTSEI_PASSWORD", "sentsei2026")
 OLLAMA_URL = "http://localhost:11434"
-OLLAMA_MODEL = "qwen2.5:14b"
+OLLAMA_MODEL = "qwen2.5:14b-instruct-q3_K_M"
 TAIDE_MODEL = "jcai/llama3-taide-lx-8b-chat-alpha1:Q4_K_M"
 
 # Load CC-CEDICT dictionary + jieba custom words
@@ -1079,6 +1079,229 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
         _user_request_count = 0
         _get_user_event().set()
 
+    return result
+
+
+class BreakdownRequest(BaseModel):
+    sentence: str           # original input
+    translation: str        # the translated text
+    target_language: str
+    input_language: Optional[str] = "auto"
+    speaker_gender: Optional[str] = None
+    speaker_formality: Optional[str] = None
+
+
+@app.post("/api/learn-fast")
+async def learn_fast(
+    request: Request,
+    req: SentenceRequest,
+    x_app_password: Optional[str] = Header(default=None),
+):
+    """Fast translation-only endpoint (~3-6s). Returns translation + pronunciation + literal + formality."""
+    if x_app_password != APP_PASSWORD:
+        raise HTTPException(401, "Unauthorized")
+
+    client_ip = request.client.host if request.client else "unknown"
+    _rate_limit_cleanup()
+    if not _rate_limit_check(client_ip):
+        raise HTTPException(429, "Too many requests. Please wait a minute.")
+
+    if not req.sentence or not req.sentence.strip():
+        raise HTTPException(400, "Sentence cannot be empty")
+    MAX_INPUT_LEN = 500
+    if len(req.sentence) > MAX_INPUT_LEN:
+        raise HTTPException(400, f"Input too long (max {MAX_INPUT_LEN} characters)")
+
+    if req.target_language not in SUPPORTED_LANGUAGES:
+        raise HTTPException(400, "Unsupported language")
+
+    # Check full cache first — if we already have a full result, return it
+    gender = req.speaker_gender or "neutral"
+    formality = req.speaker_formality or "polite"
+    ck = _cache_key(req.sentence, req.target_language, gender, formality)
+    cached = cache_get(ck)
+    if cached:
+        return {**cached, "complete": True}
+
+    lang_name = SUPPORTED_LANGUAGES[req.target_language]
+    lang_code = req.target_language
+
+    input_lang = getattr(req, 'input_language', 'auto') or 'auto'
+    if input_lang == "zh":
+        input_is_chinese = True
+    elif input_lang == "en":
+        input_is_chinese = False
+    else:
+        input_is_chinese = any('\u4e00' <= c <= '\u9fff' for c in req.sentence)
+
+    source_lang_short = "繁體中文" if input_is_chinese else "English"
+
+    script_examples = {
+        "ko": "Korean script (한국어)", "ja": "Japanese script (日本語)",
+        "he": "Hebrew script (עברית)", "el": "Greek script (Ελληνικά)",
+        "zh": "Traditional Chinese (繁體中文)", "en": "English",
+        "it": "Italian", "es": "Spanish",
+    }
+    script_hint = script_examples.get(lang_code, f"{lang_name} script")
+
+    prompt = f"""Translate into {lang_name}: "{req.sentence}"
+Speaker: {gender}, {formality}
+Target script: {script_hint}
+
+Return ONLY valid JSON (no markdown):
+{{"translation": "the translation in {lang_name} script", "pronunciation": "full romanized pronunciation", "literal": "word-by-word literal translation in {source_lang_short}", "formality": "{formality}", "native_expression": "how a native speaker would naturally say this, or null if the direct translation is already natural. Format: native sentence | pronunciation | brief explanation in {source_lang_short}"}}"""
+
+    system_msg = f"You are a {lang_name} language teacher. Translate accurately. Return valid JSON only."
+    if lang_code == "zh":
+        system_msg += " Use ONLY Traditional Chinese (繁體中文) with Taiwan usage."
+
+    async with httpx.AsyncClient(timeout=30) as client:
+        resp = await client.post(
+            f"{OLLAMA_URL}/api/chat",
+            json={
+                "model": OLLAMA_MODEL,
+                "messages": [
+                    {"role": "system", "content": system_msg},
+                    {"role": "user", "content": prompt},
+                ],
+                "stream": False,
+                "options": {"temperature": 0.3, "num_predict": 256},
+            },
+        )
+
+    if resp.status_code != 200:
+        raise HTTPException(502, f"LLM API error: {resp.status_code}")
+
+    text = resp.json().get("message", {}).get("content", "")
+    result = _parse_json_object(text)
+    if not result:
+        raise HTTPException(502, "Failed to parse LLM response")
+
+    # Deterministic pronunciation override
+    translation_text = result.get("translation", "")
+    det_pron = deterministic_pronunciation(translation_text, lang_code)
+    if det_pron:
+        result["pronunciation"] = det_pron
+
+    # Ensure Traditional Chinese
+    result = ensure_traditional_chinese(result)
+
+    # Fix native_expression pronunciation
+    native = result.get("native_expression")
+    if native and "|" in str(native):
+        parts = str(native).split("|", 2)
+        native_sentence = parts[0].strip()
+        native_explanation = parts[2].strip() if len(parts) >= 3 else ""
+        native_pron = deterministic_pronunciation(native_sentence, lang_code) or ""
+        result["native_expression"] = f"{native_sentence} | {native_pron} | {native_explanation}".rstrip(" |")
+
+    result["complete"] = False  # signals frontend to offer "Show breakdown"
+    return result
+
+
+@app.post("/api/breakdown")
+async def get_breakdown(
+    request: Request,
+    req: BreakdownRequest,
+    x_app_password: Optional[str] = Header(default=None),
+):
+    """On-demand word breakdown + grammar notes for an existing translation."""
+    if x_app_password != APP_PASSWORD:
+        raise HTTPException(401, "Unauthorized")
+
+    client_ip = request.client.host if request.client else "unknown"
+    _rate_limit_cleanup()
+    if not _rate_limit_check(client_ip):
+        raise HTTPException(429, "Too many requests. Please wait a minute.")
+
+    if req.target_language not in SUPPORTED_LANGUAGES:
+        raise HTTPException(400, "Unsupported language")
+
+    lang_name = SUPPORTED_LANGUAGES[req.target_language]
+    lang_code = req.target_language
+
+    input_lang = getattr(req, 'input_language', 'auto') or 'auto'
+    if input_lang == "zh":
+        input_is_chinese = True
+    elif input_lang == "en":
+        input_is_chinese = False
+    else:
+        input_is_chinese = any('\u4e00' <= c <= '\u9fff' for c in req.sentence)
+
+    source_lang_short = "繁體中文" if input_is_chinese else "English"
+
+    prompt = f"""Break down this {lang_name} translation word by word.
+
+Original: "{req.sentence}"
+Translation: "{req.translation}"
+
+Return ONLY valid JSON:
+{{
+  "breakdown": [
+    {{"word": "each word from the translation", "pronunciation": "romanized", "meaning": "meaning in {source_lang_short}", "difficulty": "easy|medium|hard", "note": "brief grammar note in {source_lang_short} or null"}}
+  ],
+  "grammar_notes": ["1-3 key grammar patterns in {source_lang_short}"],
+  "cultural_note": "optional cultural context in {source_lang_short}, or null",
+  "alternative": "alternative phrasing in {lang_name}, or null"
+}}
+
+Rules:
+- Break down ONLY words that appear in the translation
+- All explanations in {source_lang_short}"""
+
+    system_msg = f"You are a {lang_name} grammar teacher. Return valid JSON only."
+
+    async with httpx.AsyncClient(timeout=60) as client:
+        resp = await client.post(
+            f"{OLLAMA_URL}/api/chat",
+            json={
+                "model": OLLAMA_MODEL,
+                "messages": [
+                    {"role": "system", "content": system_msg},
+                    {"role": "user", "content": prompt},
+                ],
+                "stream": False,
+                "options": {"temperature": 0.3, "num_predict": 1024},
+            },
+        )
+
+    if resp.status_code != 200:
+        raise HTTPException(502, f"LLM API error: {resp.status_code}")
+
+    text = resp.json().get("message", {}).get("content", "")
+    result = _parse_json_object(text)
+    if not result:
+        raise HTTPException(502, "Failed to parse breakdown response")
+
+    # Deterministic pronunciation for breakdown words
+    for item in result.get("breakdown", []):
+        word = item.get("word", "")
+        word_pron = deterministic_word_pronunciation(word, lang_code)
+        if word_pron:
+            item["pronunciation"] = word_pron
+
+    # Re-segment Chinese if needed
+    breakdown = result.get("breakdown", [])
+    if lang_code == "zh" and breakdown and req.translation:
+        avg_word_len = sum(len(item.get("word", "")) for item in breakdown) / max(len(breakdown), 1)
+        if avg_word_len <= 1.2 and len(breakdown) > 3:
+            import jieba
+            words = list(jieba.cut(req.translation.replace("，", "").replace("。", "").replace("！", "").replace("？", "")))
+            words = [w.strip() for w in words if w.strip()]
+            new_breakdown = []
+            for w in words:
+                pron = deterministic_word_pronunciation(w, lang_code) or ""
+                meaning = _cedict_lookup(w) or w
+                new_breakdown.append({"word": w, "pronunciation": pron, "meaning": meaning, "difficulty": "medium", "note": None})
+            result["breakdown"] = new_breakdown
+            breakdown = new_breakdown
+
+    # Filter hallucinated words
+    if breakdown and req.translation:
+        clean_translation = req.translation.replace(" ", "").replace("，", "").replace(",", "").replace("。", "").replace(".", "").replace("！", "").replace("!", "").replace("？", "").replace("?", "")
+        result["breakdown"] = [item for item in breakdown if item.get("word", "").replace(" ", "") in clean_translation]
+
+    result = ensure_traditional_chinese(result)
     return result
 
 
