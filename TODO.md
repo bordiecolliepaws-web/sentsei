@@ -107,6 +107,14 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Backend test coverage for new endpoints** ✅ 2026-02-16 — feedback-list, feedback delete, health, surprise-bank-status tested (auth checks, response shape, out-of-range handling).
 - [x] **Surprise bank stays empty** ✅ 2026-02-16 — Not a bug; fill is working but slow due to sequential Ollama calls (~30-60s each × 72 combos). Health now shows entries accumulating (e.g. he_en: 4). Persistence to disk means it recovers across restarts.
 
+## P5 — Next Wave (from 2026-02-16 reflection #2)
+- [ ] **Fix 5 pre-existing test failures → done** ✅ already fixed this session
+- [ ] **Offline/PWA support** — service worker for caching static assets + previously learned sentences. Works on subway/plane.
+- [ ] **Dark/light theme toggle** — currently dark-only. Some users prefer light mode for readability.
+- [ ] **Keyboard shortcuts** — Ctrl+Enter to learn, Ctrl+H for history, Escape to close panels. Power user flow.
+- [ ] **Shareable links** — `/learn?s=hello&t=ja` deep links. Share a sentence breakdown with friends.
+- [ ] **Spaced repetition reminders** — track which sentences user learned, suggest review based on forgetting curve. Could integrate with the quiz mode.
+
 ## Cron Test Matrix
 Each iteration should run these checks:
 1. English → Korean: explanations in English? Translation in 한글?
