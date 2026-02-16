@@ -129,7 +129,7 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Make test suite pytest-compatible** ✅ 2026-02-17 — Refactored into proper `test_*` functions with pytest fixtures in `conftest.py`. Session-scoped fixtures for base_url, headers, api_learn, lockfile.
 - [x] **Difficulty field missing from /api/learn response** ✅ 2026-02-17 — Wired `result["difficulty"]` from `sentence_difficulty.level` in routes.py.
 - [x] **CORS headers** ✅ 2026-02-17 — CORSMiddleware activated when `SENTSEI_CORS_ORIGINS` env var is set (comma-separated). Allows credentials, GET/POST/DELETE/OPTIONS, Authorization+Content-Type headers. No CORS when unset (same-origin only).
-- [ ] **Session cleanup cron** — Expired user sessions accumulate in SQLite forever. Add a periodic cleanup task (e.g. on startup or every hour) to delete expired sessions.
+- [x] **Session cleanup cron** ✅ 2026-02-17 — `cleanup_expired_sessions()` in auth.py, runs on startup + hourly via asyncio task. Deletes sessions past `expires_at`.
 - [ ] **Structured logging** — All error handling uses bare `except Exception`. Add Python `logging` module with structured output (JSON lines) for debugging production issues.
 - [ ] **Input validation hardening** — Max sentence length isn't enforced on some endpoints. Add consistent 500-char limit across learn/learn-multi/word-detail/context-examples.
 
