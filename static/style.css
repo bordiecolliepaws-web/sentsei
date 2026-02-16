@@ -2448,3 +2448,13 @@
         width: 100%;
     }
 }
+
+/* Romanization toggle */
+body.hide-romanization .result-pronunciation,
+body.hide-romanization .word-pron,
+body.hide-romanization .quiz-pronunciation,
+body.hide-romanization .compare-card-pronunciation,
+body.hide-romanization .example-pron,
+body.hide-romanization .ctx-pron {
+    display: none !important;
+}

@@ -57,6 +57,24 @@ const langSelect = document.getElementById('lang');
         initToggle(genderPillsEl, selectedGender, GENDER_KEY, v => selectedGender = v);
         initToggle(formalityPillsEl, selectedFormality, FORMALITY_KEY, v => selectedFormality = v);
 
+        // Romanization toggle
+        const ROMANIZATION_KEY = 'sent-say_show_romanization';
+        let showRomanization = localStorage.getItem(ROMANIZATION_KEY) !== 'false'; // default ON
+        const romanizationToggleBtn = document.getElementById('romanization-toggle');
+
+        function applyRomanization() {
+            document.body.classList.toggle('hide-romanization', !showRomanization);
+            romanizationToggleBtn.classList.toggle('active', showRomanization);
+        }
+
+        romanizationToggleBtn.addEventListener('click', () => {
+            showRomanization = !showRomanization;
+            localStorage.setItem(ROMANIZATION_KEY, String(showRomanization));
+            applyRomanization();
+        });
+
+        applyRomanization();
+
         // Input language selector
         const INPUT_LANG_KEY = 'sent-say_input_lang';
         let selectedInputLang = localStorage.getItem(INPUT_LANG_KEY) || 'en';
