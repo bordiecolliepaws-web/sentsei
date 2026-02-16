@@ -93,7 +93,7 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Rule 18 test flaky** ✅ 2026-02-15 — added retry on timeout
 
 ## P3.6 — Code Health & Reliability (from 2026-02-16 reflection)
-- [ ] **Split monolith index.html (4333 lines)** — extract JS into `app.js`, CSS into `style.css`. Easier to maintain, debug, and cache separately.
+- [x] **Split monolith index.html (4333 lines)** ✅ 2026-02-16 — extracted JS into `app.js`, CSS into `style.css`. Easier to maintain, debug, and cache separately.
 - [x] **Move hardcoded secrets to env vars** ✅ 2026-02-16 — (done with health endpoint commit)
 - [x] **Fix empty surprise bank on startup** ✅ 2026-02-16 — Re-enabled background fill with Ollama connectivity check. Fills only when bank is low/empty, yields to user requests. Persists to disk (surprise_bank.json) after fill/refill.
 - [x] **Add /api/health endpoint** ✅ 2026-02-16 — Returns Ollama reachability, cache stats (entries/max/TTL), surprise bank status (total/languages/filling).
