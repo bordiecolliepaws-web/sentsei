@@ -11,8 +11,9 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+    <a href="#sentence" class="sr-only focus-visible-only">Skip to input</a>
     <!-- Onboarding overlay for first-time users -->
-    <div id="onboarding-overlay" class="onboarding-overlay hidden">
+    <div id="onboarding-overlay" class="onboarding-overlay hidden" role="dialog" aria-modal="true" aria-label="Welcome to SentSay">
         <div class="onboarding-card">
             <h2>⚡ Welcome to SentSay</h2>
             <p>Type any sentence and learn how to say it in another language — with pronunciation, grammar notes, and word-by-word breakdown.</p>
@@ -47,7 +48,7 @@
         <div class="input-area">
             <div class="language-select">
                 <label>I'm typing in</label>
-                <div id="input-lang-pills" class="lang-pills">
+                <div id="input-lang-pills" class="lang-pills" role="radiogroup" aria-label="Input language">
                     <button type="button" class="lang-pill active" data-lang="auto">🔍 Auto-detect</button>
                     <button type="button" class="lang-pill" data-lang="en">🇺🇸 English</button>
                     <button type="button" class="lang-pill" data-lang="zh">🇹🇼 中文</button>
@@ -55,12 +56,12 @@
             </div>
             <div class="language-select">
                 <label>Translate to</label>
-                <div id="lang-pills" class="lang-pills"></div>
+                <div id="lang-pills" class="lang-pills" role="radiogroup" aria-label="Target language"></div>
                 <select id="lang" style="display:none"></select>
             </div>
             <div class="toggle-row">
                 <label>Speaking as</label>
-                <div class="toggle-pills" id="gender-pills">
+                <div class="toggle-pills" id="gender-pills" role="radiogroup" aria-label="Speaker gender">
                     <button type="button" class="toggle-pill" data-value="female">Female</button>
                     <button type="button" class="toggle-pill" data-value="male">Male</button>
                     <button type="button" class="toggle-pill active" data-value="neutral">Neutral</button>
@@ -68,7 +69,7 @@
             </div>
             <div class="toggle-row">
                 <label>Formality</label>
-                <div class="toggle-pills" id="formality-pills">
+                <div class="toggle-pills" id="formality-pills" role="radiogroup" aria-label="Formality level">
                     <button type="button" class="toggle-pill" data-value="casual">Casual</button>
                     <button type="button" class="toggle-pill active" data-value="polite">Polite</button>
                     <button type="button" class="toggle-pill" data-value="formal">Formal</button>
@@ -140,7 +141,7 @@
         <span id="hamburger-badge" class="hamburger-badge" style="display:none">0</span>
     </button>
     <div id="side-menu-overlay" class="side-menu-overlay" onclick="this.classList.remove('open'); document.getElementById('side-menu').classList.remove('open');"></div>
-    <div id="side-menu" class="side-menu">
+    <div id="side-menu" class="side-menu" role="dialog" aria-label="Navigation menu">
         <div class="side-menu-header">
             <h3>Menu</h3>
             <button id="side-menu-close" class="side-menu-close" aria-label="Close menu" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open');">✕</button>
@@ -164,7 +165,7 @@
 
     <!-- Stories Panel -->
     <div id="stories-overlay" class="stories-overlay"></div>
-    <div id="stories-panel" class="stories-panel">
+    <div id="stories-panel" class="stories-panel" role="dialog" aria-label="Stories">
         <div class="stories-panel-header">
             <h3>Stories</h3>
             <button id="stories-panel-close" class="history-panel-close" aria-label="Close stories">✕</button>
@@ -195,7 +196,7 @@
         📜 <span id="history-badge" class="badge">0</span>
     </button>
     <div id="history-overlay" class="history-overlay"></div>
-    <div id="history-panel" class="history-panel">
+    <div id="history-panel" class="history-panel" role="dialog" aria-label="History">
         <div class="history-panel-header">
             <h3>History</h3>
             <button id="history-panel-close" class="history-panel-close" aria-label="Close history">✕</button>

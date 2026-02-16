@@ -37,10 +37,17 @@ const langSelect = document.getElementById('lang');
 
         function initToggle(container, current, storageKey, setter) {
             container.querySelectorAll('.toggle-pill').forEach(p => {
-                p.classList.toggle('active', p.dataset.value === current);
+                const isActive = p.dataset.value === current;
+                p.classList.toggle('active', isActive);
+                p.setAttribute('role', 'radio');
+                p.setAttribute('aria-checked', String(isActive));
                 p.addEventListener('click', () => {
-                    container.querySelectorAll('.toggle-pill').forEach(q => q.classList.remove('active'));
+                    container.querySelectorAll('.toggle-pill').forEach(q => {
+                        q.classList.remove('active');
+                        q.setAttribute('aria-checked', 'false');
+                    });
                     p.classList.add('active');
+                    p.setAttribute('aria-checked', 'true');
                     localStorage.setItem(storageKey, p.dataset.value);
                     setter(p.dataset.value);
                 });
@@ -55,10 +62,17 @@ const langSelect = document.getElementById('lang');
         let selectedInputLang = localStorage.getItem(INPUT_LANG_KEY) || 'en';
         const inputLangPillsEl = document.getElementById('input-lang-pills');
         inputLangPillsEl.querySelectorAll('.lang-pill').forEach(p => {
-            p.classList.toggle('active', p.dataset.lang === selectedInputLang);
+            const isActive = p.dataset.lang === selectedInputLang;
+            p.classList.toggle('active', isActive);
+            p.setAttribute('role', 'radio');
+            p.setAttribute('aria-checked', String(isActive));
             p.addEventListener('click', () => {
-                inputLangPillsEl.querySelectorAll('.lang-pill').forEach(q => q.classList.remove('active'));
+                inputLangPillsEl.querySelectorAll('.lang-pill').forEach(q => {
+                    q.classList.remove('active');
+                    q.setAttribute('aria-checked', 'false');
+                });
                 p.classList.add('active');
+                p.setAttribute('aria-checked', 'true');
                 selectedInputLang = p.dataset.lang;
                 localStorage.setItem(INPUT_LANG_KEY, selectedInputLang);
             });
@@ -1218,7 +1232,9 @@ const langSelect = document.getElementById('lang');
             langSelect.value = code;
             localStorage.setItem(TARGET_LANG_KEY, code);
             langPillsEl.querySelectorAll('.lang-pill').forEach(p => {
-                p.classList.toggle('active', p.dataset.lang === code);
+                const isActive = p.dataset.lang === code;
+                p.classList.toggle('active', isActive);
+                p.setAttribute('aria-checked', String(isActive));
             });
         }
 
@@ -1237,6 +1253,8 @@ const langSelect = document.getElementById('lang');
                 pill.type = 'button';
                 pill.className = 'lang-pill';
                 pill.dataset.lang = code;
+                pill.setAttribute('role', 'radio');
+                pill.setAttribute('aria-checked', 'false');
                 const flag = LANG_FLAGS[code] || '🌐';
                 pill.innerHTML = `<span class="flag">${flag}</span>${name}`;
                 pill.addEventListener('click', () => selectLangPill(code));
@@ -1679,10 +1697,11 @@ const langSelect = document.getElementById('lang');
             const card = document.createElement('div');
             card.className = 'result-card';
 
+            const DIFFICULTY_LABELS = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
             const breakdownHTML = data.breakdown.map(w => `
-                <div class="word-chip">
+                <div class="word-chip" role="button" tabindex="0" aria-expanded="false">
                     <div class="word-target">
-                        <span class="difficulty-dot ${w.difficulty}"></span>
+                        <span class="difficulty-dot ${w.difficulty}" aria-label="${DIFFICULTY_LABELS[w.difficulty] || w.difficulty} difficulty"></span>
                         ${w.word}
                     </div>
                     <div class="word-pron">${w.pronunciation}</div>
@@ -1739,7 +1758,17 @@ const langSelect = document.getElementById('lang');
             // Clickable word chips
             card.querySelectorAll('.word-chip').forEach((chip, idx) => {
                 const wordData = data.breakdown[idx];
-                chip.addEventListener('click', () => handleWordChipClick(chip, wordData, data, reqCtx));
+                const chipHandler = () => {
+                    handleWordChipClick(chip, wordData, data, reqCtx);
+                    chip.setAttribute('aria-expanded', String(chip.classList.contains('expanded')));
+                };
+                chip.addEventListener('click', chipHandler);
+                chip.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        chipHandler();
+                    }
+                });
             });
 
             // Speak button
@@ -2078,6 +2107,26 @@ const langSelect = document.getElementById('lang');
             hamburgerBadge.textContent = count;
             hamburgerBadge.style.display = count > 0 ? '' : 'none';
         };
+        // === Accessibility: Escape key closes panels, focus trap for side menu ===
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (sideMenuEl.classList.contains('open')) { closeSideMenu(); hamburgerBtn.focus(); return; }
+                if (historyPanelOpen) { closeHistoryPanel(); return; }
+                if (storyPanelOpen) { closeStoriesPanel(); return; }
+            }
+        });
+
+        // Focus trap for side menu
+        sideMenuEl.addEventListener('keydown', (e) => {
+            if (e.key !== 'Tab') return;
+            const focusable = sideMenuEl.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (!focusable.length) return;
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        });
+
 (function() {
             const btn = document.getElementById('feedback-btn');
             const modal = document.getElementById('feedback-modal');

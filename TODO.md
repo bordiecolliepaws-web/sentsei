@@ -105,7 +105,7 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Error handling UX** ✅ 2026-02-16 — friendlyError() helper extracts specific messages from API responses (429 rate limit, 502 Ollama down, 400 validation). No more generic "Something went wrong".
 - [ ] **Accessibility audit** — check keyboard navigation, screen reader labels, ARIA attributes on interactive elements (word chips, toggles, drawers).
 - [ ] **Backend test coverage for new endpoints** — feedback-list, feedback delete, health, surprise-bank-status have no automated tests. Add to test_constitution.py.
-- [ ] **Surprise bank stays empty** — health shows 0 entries despite `filling: true`. Investigate why background fill isn't completing (Ollama timeout? prompt issue?).
+- [x] **Surprise bank stays empty** ✅ 2026-02-16 — Not a bug; fill is working but slow due to sequential Ollama calls (~30-60s each × 72 combos). Health now shows entries accumulating (e.g. he_en: 4). Persistence to disk means it recovers across restarts.
 
 ## Cron Test Matrix
 Each iteration should run these checks:
