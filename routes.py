@@ -54,6 +54,8 @@ from surprise import (
 from feedback import router as feedback_router
 from quiz_routes import router as quiz_router
 from learn_routes import router as learn_router
+from stream_routes import router as stream_router
+from segment_routes import router as segment_router
 from compare_routes import router as compare_router
 from favorites_routes import router as favorites_router
 
@@ -62,6 +64,8 @@ router.include_router(surprise_router)
 router.include_router(feedback_router)
 router.include_router(quiz_router)
 router.include_router(learn_router)
+router.include_router(stream_router)
+router.include_router(segment_router)
 router.include_router(compare_router)
 router.include_router(favorites_router)
 
