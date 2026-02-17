@@ -160,7 +160,7 @@ _Items for cron iterations to work through, in priority order._
 
 ## P11 — Polish & Robustness (from 2026-02-18 reflection)
 - [x] **Split style.css (2672 lines)** ✅ 2026-02-18 — Extracted into `variables.css` (38 lines, custom properties/themes), `components.css` (2446 lines, all component styles), `responsive.css` (196 lines, media queries). Main `style.css` is now 3 @import statements.
-- [ ] **Rate limit visibility** — Show remaining requests (X-RateLimit-Remaining header) in the UI. Subtle counter near input, turns amber at 10, red at 3. Prevents surprise 429s.
+- [x] **Rate limit visibility** ✅ 2026-02-18 — X-RateLimit-Limit/Remaining/Window headers on all API responses. Frontend counter appears near input when ≤10 remaining, amber at ≤10, red at ≤3. CORS expose_headers, aria-live for accessibility.
 - [ ] **Batch SRS review mode** — Queue up 10 due cards, show progress bar, stats at end (correct %, avg time per card, streak). More engaging than one-at-a-time.
 - [ ] **Sentence favorites / bookmarks** — Star button on results, separate from history. Favorites don't get pushed out by the 50-entry history limit. Exportable. Syncs to server for logged-in users.
 - [ ] **Learn endpoint returns empty `words` field** — The response has both `breakdown` (populated) and `words` (empty array). Remove the dead `words` field or alias it to `breakdown` for API consistency.
