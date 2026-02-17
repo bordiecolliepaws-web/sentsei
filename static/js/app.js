@@ -31,6 +31,13 @@ import {
     setHistoryFilterLang, normalizeSentenceHistoryEntries
 } from './history.js';
 import { initShortcuts, setShortcutDeps } from './shortcuts.js';
+import {
+    loadStoryProgress, saveStoryProgress, getStoryProgress, setStoryProgress,
+    updateStoriesBadge, toggleStoriesPanel, closeStoriesPanel, loadStories,
+    renderStoriesBrowser, openStoryReader, renderStoryReader
+} from './story.js';
+import { compareSentence } from './compare.js';
+import { toggleGrammarPanel, closeGrammarPanel, loadGrammarPatterns } from './grammar.js';
 
 // === Populate DOM refs ===
 function initDOM() {
@@ -119,33 +126,6 @@ function initState() {
     state.quizStats = loadQuizStats();
 }
 
-// === Story progress ===
-function loadStoryProgress() {
-    try {
-        const raw = localStorage.getItem(KEYS.STORY_PROGRESS) || '{}';
-        const parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== 'object') return {};
-        return parsed;
-    } catch { return {}; }
-}
-
-function saveStoryProgress() {
-    localStorage.setItem(KEYS.STORY_PROGRESS, JSON.stringify(state.storyProgress));
-}
-
-function getStoryProgress(storyId, sentenceCount) {
-    const raw = Number(state.storyProgress[storyId] || 0);
-    if (!Number.isFinite(raw) || raw < 0) return 0;
-    if (!sentenceCount || sentenceCount < 1) return 0;
-    return Math.min(raw, sentenceCount - 1);
-}
-
-function setStoryProgress(storyId, index) {
-    if (!storyId || !Number.isFinite(index) || index < 0) return;
-    state.storyProgress[storyId] = index;
-    saveStoryProgress();
-}
-
 // === Language selection ===
 function selectLangPill(code) {
     DOM.langSelect.value = code;
@@ -189,7 +169,6 @@ async function loadLanguages() {
     state.languagesLoaded = true;
     renderHistoryPanel();
     renderProgressStats();
-    // Post-hook: load stories
     await loadStories();
 }
 
@@ -422,69 +401,6 @@ async function learn() {
     }
 }
 
-// === Compare ===
-async function compareSentence() {
-    if (!ensurePassword()) return;
-    const sentence = DOM.sentenceInput.value.trim();
-    if (!sentence) return;
-    state.lastLearnSentence = sentence;
-    state.lastActionType = 'compare';
-    hideError();
-    DOM.learnBtn.disabled = true;
-    if (DOM.compareBtn) DOM.compareBtn.disabled = true;
-    setRandomLoadingTip();
-    DOM.loading.classList.remove('hidden');
-    DOM.loadingMessage.textContent = 'Comparing across languages...';
-    startLoadingTimer();
-    state.currentAbortController = new AbortController();
-    const timeoutId = setTimeout(() => state.currentAbortController.abort(), LEARN_TIMEOUT_MS);
-    try {
-        const resp = await fetch('/api/compare', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-App-Password': state.appPassword },
-            body: JSON.stringify({
-                sentence: sentence,
-                input_language: state.selectedInputLang,
-                speaker_gender: state.selectedGender,
-                speaker_formality: state.selectedFormality
-            }),
-            signal: state.currentAbortController.signal
-        });
-        clearTimeout(timeoutId);
-        if (resp.status === 401) {
-            localStorage.removeItem(KEYS.PASSWORD_STORAGE);
-            state.appPassword = '';
-            openPasswordModal('Session expired. Enter password again.');
-            throw new Error('Unauthorized');
-        }
-        if (!resp.ok) throw new Error(await friendlyError(resp));
-        const data = await resp.json();
-        renderCompareResults(data);
-    } catch (err) {
-        clearTimeout(timeoutId);
-        console.error(err);
-        if (err.name === 'AbortError') {
-            showError('Comparison timed out — tap compare again.');
-        } else if (err.message === 'Unauthorized') {
-            // handled
-        } else if (err.message && err.message !== 'API error') {
-            showError(err.message);
-        } else {
-            showError('Could not compare this sentence right now.');
-        }
-    } finally {
-        stopLoadingTimer();
-        state.currentAbortController = null;
-        if (state.appPassword === KEYS.APP_PASSWORD) {
-            DOM.learnBtn.disabled = false;
-            if (DOM.compareBtn) DOM.compareBtn.disabled = false;
-        } else {
-            lockApp();
-        }
-        DOM.loading.classList.add('hidden');
-    }
-}
-
 // === Surprise Me ===
 async function surpriseMe() {
     if (!ensurePassword()) return;
@@ -516,182 +432,6 @@ async function surpriseMe() {
     } finally {
         DOM.surpriseBtn.disabled = false;
     }
-}
-
-// === Stories ===
-function updateStoriesBadge() {
-    if (!DOM.storiesBadge) return;
-    const selectedLang = DOM.langSelect.value;
-    const count = selectedLang ? state.stories.filter(s => s.language === selectedLang).length : state.stories.length;
-    DOM.storiesBadge.textContent = count;
-}
-
-function toggleStoriesPanel() {
-    state.storyPanelOpen = !state.storyPanelOpen;
-    DOM.storiesPanel.classList.toggle('open', state.storyPanelOpen);
-    DOM.storiesOverlay.classList.toggle('open', state.storyPanelOpen);
-    if (state.storyPanelOpen) renderStoriesBrowser();
-}
-
-function closeStoriesPanel() {
-    state.storyPanelOpen = false;
-    DOM.storiesPanel.classList.remove('open');
-    DOM.storiesOverlay.classList.remove('open');
-}
-
-async function loadStories() {
-    try {
-        const resp = await fetch('/api/stories');
-        if (!resp.ok) return;
-        state.stories = await resp.json();
-        updateStoriesBadge();
-    } catch (e) { console.error(e); }
-}
-
-function renderStoriesBrowser() {
-    const selectedLang = DOM.langSelect.value;
-    const langName = DOM.langSelect.options[DOM.langSelect.selectedIndex]?.textContent || selectedLang;
-    const flag = LANG_FLAGS[selectedLang] || '🌐';
-    DOM.storiesFilter.textContent = `${flag} ${langName} stories`;
-    const filtered = state.stories.filter(s => s.language === selectedLang);
-    if (filtered.length === 0) {
-        DOM.storiesList.innerHTML = '<div class="stories-empty">No stories for this language yet.</div>';
-        return;
-    }
-    DOM.storiesList.innerHTML = filtered.map(s => {
-        const prog = getStoryProgress(s.id, s.sentence_count);
-        const progText = `${prog + 1}/${s.sentence_count}`;
-        return `<button class="story-list-item" data-story-id="${s.id}">
-            <div class="story-list-title">${s.title}</div>
-            <div class="story-list-meta">
-                <span>${s.source}</span>
-                <span class="story-list-progress">${progText}</span>
-            </div>
-        </button>`;
-    }).join('');
-    DOM.storiesList.querySelectorAll('.story-list-item').forEach(btn => {
-        btn.addEventListener('click', () => openStoryReader(btn.dataset.storyId));
-    });
-    DOM.storiesBrowser.classList.remove('hidden');
-    DOM.storyReader.classList.add('hidden');
-}
-
-async function openStoryReader(storyId) {
-    let story = state.storyCache[storyId];
-    if (!story) {
-        try {
-            const resp = await fetch(`/api/story/${encodeURIComponent(storyId)}`);
-            if (!resp.ok) return;
-            story = await resp.json();
-            state.storyCache[storyId] = story;
-        } catch (e) { console.error(e); return; }
-    }
-    state.activeStory = story;
-    state.activeStoryIndex = getStoryProgress(storyId, story.sentences.length);
-    DOM.storiesBrowser.classList.add('hidden');
-    DOM.storyReader.classList.remove('hidden');
-    renderStoryReader();
-}
-
-function renderStoryReader() {
-    if (!state.activeStory) return;
-    const total = state.activeStory.sentences.length;
-    DOM.storyTitle.textContent = state.activeStory.title;
-    DOM.storySource.textContent = state.activeStory.source;
-    DOM.storySentence.textContent = state.activeStory.sentences[state.activeStoryIndex];
-    DOM.storyProgress.textContent = `${state.activeStoryIndex + 1}/${total}`;
-    DOM.storyPrevBtn.disabled = state.activeStoryIndex <= 0;
-    DOM.storyNextBtn.disabled = state.activeStoryIndex >= total - 1;
-}
-
-// === Grammar Panel ===
-function toggleGrammarPanel() {
-    state.grammarPanelOpen = !state.grammarPanelOpen;
-    const grammarPanelEl = document.getElementById('grammar-panel');
-    const grammarOverlayEl = document.getElementById('grammar-overlay');
-    grammarPanelEl.classList.toggle('open', state.grammarPanelOpen);
-    grammarOverlayEl.classList.toggle('open', state.grammarPanelOpen);
-    if (state.grammarPanelOpen) loadGrammarPatterns();
-}
-
-function closeGrammarPanel() {
-    state.grammarPanelOpen = false;
-    document.getElementById('grammar-panel').classList.remove('open');
-    document.getElementById('grammar-overlay').classList.remove('open');
-}
-
-async function loadGrammarPatterns() {
-    try {
-        const url = state.grammarFilterLang ? `/api/grammar-patterns?lang=${state.grammarFilterLang}` : '/api/grammar-patterns';
-        const resp = await fetch(url, { headers: { 'x-app-password': KEYS.APP_PASSWORD } });
-        if (!resp.ok) return;
-        state.grammarPatterns = await resp.json();
-        renderGrammarPatterns();
-    } catch (e) { console.error('[grammar]', e); }
-}
-
-function renderGrammarPatterns() {
-    const grammarFilterEl = document.getElementById('grammar-filter');
-    const grammarPanelListEl = document.getElementById('grammar-panel-list');
-    const langs = [...new Set(state.grammarPatterns.map(p => p.lang))];
-    if (grammarFilterEl) {
-        grammarFilterEl.innerHTML = `<button class="grammar-filter-pill ${!state.grammarFilterLang ? 'active' : ''}" data-lang="">All</button>` +
-            langs.map(l => {
-                const flag = LANG_FLAGS[l] || '🌐';
-                return `<button class="grammar-filter-pill ${state.grammarFilterLang === l ? 'active' : ''}" data-lang="${l}">${flag} ${l}</button>`;
-            }).join('');
-        grammarFilterEl.querySelectorAll('.grammar-filter-pill').forEach(btn => {
-            btn.addEventListener('click', () => {
-                state.grammarFilterLang = btn.dataset.lang || null;
-                loadGrammarPatterns();
-            });
-        });
-    }
-    if (!state.grammarPatterns.length) {
-        grammarPanelListEl.innerHTML = '<div class="grammar-panel-empty">No grammar patterns yet. Translate some sentences to discover patterns!</div>';
-        return;
-    }
-    grammarPanelListEl.innerHTML = state.grammarPatterns.map(p => `
-        <div class="grammar-card" data-pattern-id="${p.id}">
-            <div class="grammar-card-head">
-                <span class="grammar-card-name">${escapeHtml(p.name)}</span>
-                <span class="grammar-card-count">${p.count}× · ${p.example_count} examples</span>
-            </div>
-            <div class="grammar-card-explanation">${escapeHtml(p.explanation)}</div>
-            <div class="grammar-card-examples" id="gp-examples-${p.id}"></div>
-        </div>
-    `).join('');
-    grammarPanelListEl.querySelectorAll('.grammar-card').forEach(card => {
-        card.addEventListener('click', async () => {
-            const pid = card.dataset.patternId;
-            if (card.classList.contains('expanded')) { card.classList.remove('expanded'); return; }
-            try {
-                const resp = await fetch(`/api/grammar-patterns/${pid}`, { headers: { 'x-app-password': KEYS.APP_PASSWORD } });
-                if (!resp.ok) return;
-                const detail = await resp.json();
-                const exDiv = card.querySelector('.grammar-card-examples');
-                exDiv.innerHTML = (detail.examples || []).map(ex => `
-                    <div class="grammar-example" data-source="${escapeHtml(ex.source)}">
-                        <div class="grammar-example-source">"${escapeHtml(ex.source)}"</div>
-                        <div class="grammar-example-translation">→ ${escapeHtml(ex.translation)}</div>
-                    </div>
-                `).join('') || '<div style="color:var(--text-dim);font-size:0.78rem;">No examples yet.</div>';
-                exDiv.querySelectorAll('.grammar-example').forEach(ex => {
-                    ex.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const src = ex.dataset.source;
-                        if (src && DOM.sentenceInput) {
-                            DOM.sentenceInput.value = src;
-                            DOM.sentenceInput.dispatchEvent(new Event('input'));
-                            closeGrammarPanel();
-                            DOM.sentenceInput.focus();
-                        }
-                    });
-                });
-                card.classList.add('expanded');
-            } catch (e) { console.error(e); }
-        });
-    });
 }
 
 // === Feedback ===
@@ -927,7 +667,6 @@ function initSideMenu() {
     document.getElementById('menu-grammar').addEventListener('click', () => { closeSideMenu(); toggleGrammarPanel(); });
     document.getElementById('menu-theme').addEventListener('click', () => { closeSideMenu(); toggleTheme(); });
 
-    // Hook: update hamburger + menu badges when history badge updates
     hooks.afterUpdateHistoryBadge.push(() => {
         const count = state.richHistory.length;
         menuHistoryBadge.textContent = count;
@@ -936,7 +675,6 @@ function initSideMenu() {
         hamburgerBadge.style.display = count > 0 ? '' : 'none';
     });
 
-    // Expose for shortcuts
     return { closeSideMenu };
 }
 
@@ -987,7 +725,6 @@ function initOnboarding() {
         showOnboarding();
     }
 
-    // Hook: show onboarding after password modal closes
     hooks.afterClosePasswordModal.push(() => {
         setTimeout(showOnboarding, 300);
     });
@@ -1000,7 +737,6 @@ function initSyncHooks() {
     hooks.afterSaveProgressStats.push(() => syncToServer('progress', state.progressStats));
 }
 
-// === Main initialization ===
 // === Ollama Health Polling ===
 async function pollOllamaHealth() {
     try {
@@ -1011,7 +747,6 @@ async function pollOllamaHealth() {
         state.ollamaOnline = data.ollama?.reachable ?? true;
         updateOfflineBanner();
         if (!wasOnline && state.ollamaOnline) {
-            // Ollama came back — re-enable
             if (state.appPassword === KEYS.APP_PASSWORD) unlockApp();
         }
     } catch { /* network error — don't change state */ }
@@ -1046,6 +781,7 @@ function startHealthPolling() {
     state._healthPollTimer = setInterval(pollOllamaHealth, 30000);
 }
 
+// === Main initialization ===
 function init() {
     initDOM();
     initState();
@@ -1244,13 +980,12 @@ function init() {
         speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
     }
 
-    // Load languages (always, not gated by password)
+    // Load languages
     loadLanguages().then(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const sharedSentence = urlParams.get('s');
         const sharedLang = urlParams.get('t');
         if (sharedSentence) {
-            // Clear URL params so refresh doesn't re-run the sentence
             history.replaceState(null, '', '/');
             DOM.sentenceInput.value = sharedSentence;
             if (sharedLang && DOM.langSelect.querySelector(`option[value="${sharedLang}"]`)) {
