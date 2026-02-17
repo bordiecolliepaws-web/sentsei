@@ -1665,7 +1665,7 @@ const langSelect = document.getElementById('lang');
             } catch { /* ignore */ }
 
             if (status === 429) return 'Too many requests — wait a moment and try again.';
-            if (status === 502) return 'Translation model is unreachable. Is Ollama running?';
+            if (status === 502) return '__AUTO_RETRY_502__';
             if (status === 400 && detail) return detail;
             if (status === 401) return ''; // handled separately
             if (detail) return detail;
@@ -1728,6 +1728,9 @@ const langSelect = document.getElementById('lang');
         });
 
         const LEARN_TIMEOUT_MS = 45000;
+        const MAX_AUTO_RETRIES = 3;
+        const AUTO_RETRY_DELAY_MS = 4000;
+        let _autoRetryCount = 0;
 
         function _hasMultipleSentences(text) {
             // Split on sentence terminators; if >1 non-empty part, it's multi
@@ -1761,6 +1764,11 @@ const langSelect = document.getElementById('lang');
                 return;
             }
             cancelSpeculative();
+
+            // Reset auto-retry on fresh learn (not a retry itself)
+            if (_autoRetryCount === 0 || !lastLearnSentence || lastLearnSentence !== sentence) {
+                _autoRetryCount = 0;
+            }
 
             learnBtn.disabled = true;
             if (compareBtn) compareBtn.disabled = true;
@@ -1865,10 +1873,28 @@ const langSelect = document.getElementById('lang');
             } catch (err) {
                 clearTimeout(timeoutId);
                 console.error(err);
+
+                // Auto-retry on 502 (Ollama down) — up to MAX_AUTO_RETRIES
+                if (err.message === '__AUTO_RETRY_502__' && _autoRetryCount < MAX_AUTO_RETRIES) {
+                    _autoRetryCount++;
+                    loadingMessageEl.textContent = `Translation engine warming up... retry ${_autoRetryCount}/${MAX_AUTO_RETRIES}`;
+                    loadingEl.classList.remove('hidden');
+                    await new Promise(r => setTimeout(r, AUTO_RETRY_DELAY_MS));
+                    // Re-invoke learn (will use lastLearnSentence since input may be cleared)
+                    if (!sentenceInput.value.trim() && lastLearnSentence) {
+                        sentenceInput.value = lastLearnSentence;
+                    }
+                    learn();
+                    return; // Skip finally cleanup — the retry will handle it
+                }
+
+                _autoRetryCount = 0;
                 if (err.name === 'AbortError') {
                     showError('Request timed out — the model might be busy. Tap retry.');
                 } else if (err.message === 'Unauthorized') {
                     // already handled above
+                } else if (err.message === '__AUTO_RETRY_502__') {
+                    showError('Translation engine is unreachable after multiple retries. Please check if Ollama is running.');
                 } else if (err.message && err.message !== 'API error') {
                     showError(err.message);
                 } else {

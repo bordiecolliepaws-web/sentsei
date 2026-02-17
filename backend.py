@@ -33,6 +33,39 @@ if _cors_origins:
 app.include_router(router)
 
 
+import collections, bisect
+
+# Rolling latency tracker — keeps last 500 API timings per endpoint
+_latency_window = {}  # type: dict[str, collections.deque]
+_LATENCY_MAX = 500
+
+def record_latency(endpoint: str, ms: int):
+    if endpoint not in _latency_window:
+        _latency_window[endpoint] = collections.deque(maxlen=_LATENCY_MAX)
+    _latency_window[endpoint].append(ms)
+
+def get_latency_stats() -> dict:
+    """Return p50/p95/p99 latency stats per endpoint + overall."""
+    def _percentiles(values):
+        s = sorted(values)
+        n = len(s)
+        if n == 0:
+            return {"p50": 0, "p95": 0, "p99": 0, "count": 0}
+        return {
+            "p50": s[n * 50 // 100],
+            "p95": s[min(n * 95 // 100, n - 1)],
+            "p99": s[min(n * 99 // 100, n - 1)],
+            "count": n,
+        }
+    result = {}
+    all_values = []
+    for ep, dq in _latency_window.items():
+        vals = list(dq)
+        result[ep] = _percentiles(vals)
+        all_values.extend(vals)
+    result["_overall"] = _percentiles(all_values)
+    return result
+
 @app.middleware("http")
 async def log_requests(request, call_next):
     """Log all API requests with timing."""
@@ -41,6 +74,7 @@ async def log_requests(request, call_next):
     response = await call_next(request)
     if request.url.path.startswith("/api/"):
         duration_ms = round((_time.time() - start) * 1000)
+        record_latency(request.url.path, duration_ms)
         logger.info(
             f"{request.method} {request.url.path} → {response.status_code}",
             extra={

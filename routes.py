@@ -1009,11 +1009,13 @@ async def health_check():
     bank_total = sum(len(v) for v in _surprise_bank.values())
     bank_langs = len(_surprise_bank)
 
+    from backend import get_latency_stats
     return {
         "status": "ok" if ollama_ok else "degraded",
         "ollama": {"reachable": ollama_ok, "url": OLLAMA_URL, "model": OLLAMA_MODEL},
         "cache": {"entries": cache_size, "max": CACHE_MAX, "ttl_hours": CACHE_TTL / 3600},
         "surprise_bank": {"total_entries": bank_total, "languages": bank_langs, "filling": _surprise_bank_filling},
+        "latency": get_latency_stats(),
     }
 
 
