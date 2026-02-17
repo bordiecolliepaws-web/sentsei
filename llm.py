@@ -122,6 +122,110 @@ def _japanese_pronunciation(text: str) -> str:
     return _clean_long_vowels(raw)
 
 
+_GREEK_TRANSLIT = {
+    'Α': 'A', 'Β': 'V', 'Γ': 'G', 'Δ': 'D', 'Ε': 'E', 'Ζ': 'Z',
+    'Η': 'I', 'Θ': 'Th', 'Ι': 'I', 'Κ': 'K', 'Λ': 'L', 'Μ': 'M',
+    'Ν': 'N', 'Ξ': 'X', 'Ο': 'O', 'Π': 'P', 'Ρ': 'R', 'Σ': 'S',
+    'Τ': 'T', 'Υ': 'Y', 'Φ': 'F', 'Χ': 'Ch', 'Ψ': 'Ps', 'Ω': 'O',
+    'α': 'a', 'β': 'v', 'γ': 'g', 'δ': 'd', 'ε': 'e', 'ζ': 'z',
+    'η': 'i', 'θ': 'th', 'ι': 'i', 'κ': 'k', 'λ': 'l', 'μ': 'm',
+    'ν': 'n', 'ξ': 'x', 'ο': 'o', 'π': 'p', 'ρ': 'r', 'σ': 's',
+    'ς': 's', 'τ': 't', 'υ': 'y', 'φ': 'f', 'χ': 'ch', 'ψ': 'ps',
+    'ω': 'o', 'ά': 'á', 'έ': 'é', 'ή': 'í', 'ί': 'í', 'ό': 'ó',
+    'ύ': 'ý', 'ώ': 'ó', 'ϊ': 'i', 'ϋ': 'y', 'ΐ': 'í', 'ΰ': 'ý',
+    'Ά': 'Á', 'Έ': 'É', 'Ή': 'Í', 'Ί': 'Í', 'Ό': 'Ó', 'Ύ': 'Ý', 'Ώ': 'Ó',
+}
+
+_GREEK_DIGRAPHS = {
+    'ου': 'ou', 'Ου': 'Ou', 'ΟΥ': 'OU',
+    'αι': 'e', 'Αι': 'E', 'ΑΙ': 'E',
+    'ει': 'i', 'Ει': 'I', 'ΕΙ': 'I',
+    'οι': 'i', 'Οι': 'I', 'ΟΙ': 'I',
+    'αυ': 'av', 'Αυ': 'Av', 'ΑΥ': 'AV',
+    'ευ': 'ev', 'Ευ': 'Ev', 'ΕΥ': 'EV',
+    'μπ': 'b', 'Μπ': 'B', 'ΜΠ': 'B',
+    'ντ': 'nt', 'Ντ': 'Nt', 'ΝΤ': 'NT',
+    'γκ': 'gk', 'Γκ': 'Gk', 'ΓΚ': 'GK',
+    'γγ': 'ng', 'ΓΓ': 'NG',
+}
+
+
+_HEBREW_TRANSLIT = {
+    'א': '', 'בּ': 'b', 'ב': 'v', 'גּ': 'g', 'ג': 'g',
+    'דּ': 'd', 'ד': 'd', 'ה': 'h', 'ו': 'v', 'וּ': 'u',
+    'וֹ': 'o', 'ז': 'z', 'ח': 'ch', 'ט': 't', 'י': 'y',
+    'כּ': 'k', 'כ': 'kh', 'ך': 'kh', 'ל': 'l', 'מ': 'm',
+    'ם': 'm', 'נ': 'n', 'ן': 'n', 'ס': 's', 'ע': '',
+    'פּ': 'p', 'פ': 'f', 'ף': 'f', 'צ': 'ts', 'ץ': 'ts',
+    'ק': 'k', 'ר': 'r', 'שׁ': 'sh', 'שׂ': 's', 'ש': 'sh',
+    'תּ': 't', 'ת': 't',
+}
+
+# Hebrew niqqud (vowel marks)
+_HEBREW_VOWELS = {
+    '\u05B0': 'e',   # shva
+    '\u05B1': 'e',   # hataf segol
+    '\u05B2': 'a',   # hataf patach
+    '\u05B3': 'o',   # hataf qamats
+    '\u05B4': 'i',   # hiriq
+    '\u05B5': 'e',   # tsere
+    '\u05B6': 'e',   # segol
+    '\u05B7': 'a',   # patach
+    '\u05B8': 'a',   # qamats
+    '\u05B9': 'o',   # holam
+    '\u05BA': 'o',   # holam haser
+    '\u05BB': 'u',   # qubuts
+}
+
+def _hebrew_romanize(text: str) -> str:
+    import unicodedata
+    result = []
+    i = 0
+    while i < len(text):
+        ch = text[i]
+        # Check for consonant + dagesh/vowel combinations (2-char keys)
+        if i + 1 < len(text):
+            pair = text[i:i+2]
+            if pair in _HEBREW_TRANSLIT:
+                result.append(_HEBREW_TRANSLIT[pair])
+                i += 2
+                continue
+        # Check single Hebrew vowel marks (niqqud)
+        if ch in _HEBREW_VOWELS:
+            result.append(_HEBREW_VOWELS[ch])
+            i += 1
+            continue
+        # Skip other combining marks (dagesh etc) that weren't part of a pair
+        if unicodedata.category(ch) == 'Mn':
+            i += 1
+            continue
+        # Check single consonant
+        if ch in _HEBREW_TRANSLIT:
+            result.append(_HEBREW_TRANSLIT[ch])
+            i += 1
+            continue
+        # Pass through spaces, punctuation, etc.
+        result.append(ch)
+        i += 1
+    return "".join(result)
+
+
+def _greek_romanize(text: str) -> str:
+    result = []
+    i = 0
+    while i < len(text):
+        if i + 1 < len(text):
+            digraph = text[i:i+2]
+            if digraph in _GREEK_DIGRAPHS:
+                result.append(_GREEK_DIGRAPHS[digraph])
+                i += 2
+                continue
+        ch = text[i]
+        result.append(_GREEK_TRANSLIT.get(ch, ch))
+        i += 1
+    return "".join(result)
+
+
 def deterministic_pronunciation(text: str, lang_code: str) -> Optional[str]:
     if lang_code == "ja":
         return _japanese_pronunciation(text)
@@ -131,6 +235,12 @@ def deterministic_pronunciation(text: str, lang_code: str) -> Optional[str]:
     elif lang_code == "ko":
         r = Romanizer(text)
         return r.romanize()
+    elif lang_code == "el":
+        return _greek_romanize(text)
+    elif lang_code == "he":
+        return _hebrew_romanize(text)
+    elif lang_code in ("it", "es", "en"):
+        return text
     return None
 
 

@@ -565,10 +565,14 @@ async def segment_sentence(
             })
         return {"breakdown": breakdown, "source": "deterministic"}
     else:
-        # For other languages, split by spaces
+        # For other languages, split by spaces and add deterministic pronunciation
         words = translation.split()
-        breakdown = [{"word": w, "pronunciation": "", "meaning": "", "difficulty": "medium", "note": None} for w in words]
-        return {"breakdown": breakdown, "source": "whitespace"}
+        breakdown = []
+        for w in words:
+            pron = deterministic_word_pronunciation(w, lang_code) or ""
+            breakdown.append({"word": w, "pronunciation": pron, "meaning": "", "difficulty": "medium", "note": None})
+        source = "deterministic" if lang_code in ("el", "it", "es", "en") else "whitespace"
+        return {"breakdown": breakdown, "source": source}
 
 
 @router.post("/api/breakdown")
