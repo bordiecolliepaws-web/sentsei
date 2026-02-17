@@ -3,7 +3,7 @@ import { state, DOM, LANG_FLAGS, KEYS, HISTORY_LIMIT, hooks, LEARN_TIMEOUT_MS, M
 import {
     ensurePassword, openPasswordModal, closePasswordModal, lockApp, unlockApp,
     showPasswordError, hidePasswordError, syncModalOpenState,
-    copyTextToClipboard, friendlyError, syncToServer, loadFromServer
+    copyTextToClipboard, friendlyError, syncToServer, loadFromServer, updateRateLimitDisplay
 } from './api.js';
 import {
     loadProgressStats, saveProgressStats, renderProgressStats, persistProgressAndRefresh,
@@ -319,6 +319,7 @@ async function learn() {
                 throw new Error('Unauthorized');
             }
             if (!resp.ok) throw new Error(await friendlyError(resp));
+            updateRateLimitDisplay(resp);
             const data = await resp.json();
             const reqCtx = { target_language: DOM.langSelect.value, input_language: state.selectedInputLang, sentence: sentence };
             const successfulResults = Array.isArray(data.results) ? data.results.filter(item => item && item.result) : [];
@@ -353,6 +354,7 @@ async function learn() {
                 throw new Error('Unauthorized');
             }
             if (!resp.ok) throw new Error(await friendlyError(resp));
+            updateRateLimitDisplay(resp);
             const data = await resp.json();
             const reqCtx = { target_language: DOM.langSelect.value, input_language: state.selectedInputLang, sentence: sentence };
             renderResult(data, sentence, reqCtx);
@@ -410,6 +412,7 @@ async function surpriseMe() {
         const inputLang = state.selectedInputLang === 'auto' ? 'en' : state.selectedInputLang;
         const resp = await fetch(`/api/surprise?lang=${encodeURIComponent(lang)}&input_lang=${encodeURIComponent(inputLang)}`);
         if (!resp.ok) throw new Error(await friendlyError(resp));
+        updateRateLimitDisplay(resp);
         const data = await resp.json();
         DOM.sentenceInput.value = data.sentence;
         DOM.sentenceInput.style.height = 'auto';

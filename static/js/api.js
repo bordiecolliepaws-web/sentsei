@@ -95,6 +95,22 @@ export async function copyTextToClipboard(text) {
     return copied;
 }
 
+// Rate limit indicator
+export function updateRateLimitDisplay(response) {
+    const el = document.getElementById('rate-limit-indicator');
+    if (!el) return;
+    const remaining = response.headers.get('X-RateLimit-Remaining');
+    const limit = response.headers.get('X-RateLimit-Limit');
+    if (remaining === null || limit === null) { el.classList.add('hidden'); return; }
+    const rem = parseInt(remaining, 10);
+    const lim = parseInt(limit, 10);
+    if (rem > 10) { el.classList.add('hidden'); return; }
+    el.classList.remove('hidden');
+    el.textContent = `${rem}/${lim} requests remaining`;
+    el.classList.toggle('warn', rem <= 10 && rem > 3);
+    el.classList.toggle('critical', rem <= 3);
+}
+
 // Auth sync helpers
 export async function syncToServer(key, data) {
     if (!state.authToken) return;

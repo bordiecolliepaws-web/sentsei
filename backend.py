@@ -15,7 +15,7 @@ from fastapi.staticfiles import StaticFiles
 from cache import (load_cache, save_cache, is_cache_dirty, load_grammar_patterns,
                    save_grammar_patterns, is_grammar_dirty, load_word_cache,
                    save_word_cache, _word_cache_dirty)
-from auth import init_user_db, cleanup_expired_sessions
+from auth import init_user_db, cleanup_expired_sessions, rate_limit_remaining, get_rate_limit_key, RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW
 from llm import check_ollama_connectivity
 from routes import router
 from surprise import load_surprise_bank, fill_surprise_bank_task, refill_surprise_bank_task, get_surprise_bank
@@ -44,6 +44,7 @@ if _cors_origins:
         allow_credentials=True,
         allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
         allow_headers=["Authorization", "Content-Type"],
+        expose_headers=["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Window"],
     )
 
 app.include_router(router)
@@ -91,6 +92,12 @@ async def log_requests(request, call_next):
     if request.url.path.startswith("/api/"):
         duration_ms = round((_time.time() - start) * 1000)
         record_latency(request.url.path, duration_ms)
+        # Inject rate limit headers
+        rate_key = get_rate_limit_key(request)
+        remaining = rate_limit_remaining(rate_key)
+        response.headers["X-RateLimit-Limit"] = str(RATE_LIMIT_REQUESTS)
+        response.headers["X-RateLimit-Remaining"] = str(remaining)
+        response.headers["X-RateLimit-Window"] = str(RATE_LIMIT_WINDOW)
         logger.info(
             f"{request.method} {request.url.path} → {response.status_code}",
             extra={

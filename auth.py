@@ -33,6 +33,14 @@ def rate_limit_check(ip: str) -> bool:
     return True
 
 
+def rate_limit_remaining(key: str) -> int:
+    """Return how many requests remain in the current window for *key*."""
+    now = time.time()
+    cutoff = now - RATE_LIMIT_WINDOW
+    recent = [t for t in _rate_buckets.get(key, []) if t > cutoff]
+    return max(0, RATE_LIMIT_REQUESTS - len(recent))
+
+
 def get_rate_limit_key(request) -> str:
     """Return a per-user rate limit key if logged in, else fall back to IP.
 

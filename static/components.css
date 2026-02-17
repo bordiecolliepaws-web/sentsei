@@ -2444,3 +2444,19 @@ body.hide-romanization .ctx-pron {
     color: #7c6900;
     border-color: #e0c550;
 }
+
+/* Rate limit indicator */
+.rate-limit-indicator {
+    font-size: 0.75rem;
+    color: var(--text-muted, #908a7e);
+    text-align: right;
+    padding: 2px 8px 0;
+    transition: color 0.3s;
+}
+.rate-limit-indicator.warn {
+    color: #e8a838;
+}
+.rate-limit-indicator.critical {
+    color: #e84838;
+    font-weight: 600;
+}
