@@ -123,6 +123,14 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Romanization toggle** ✅ 2026-02-16 — "Aa" toggle pill hides/shows all pronunciation (romaji, pinyin, romanized Korean) across result cards, word chips, quiz, compare, and context examples. Persisted to localStorage. Default ON.
 - [ ] **Backend test coverage for SRS/review** — Currently no backend tests needed (SRS is frontend-only), but if SRS moves server-side for multi-user, add comprehensive tests.
 
+## P9 — Code Health & UX (from 2026-02-17 reflection #2)
+- [ ] **DRY auth checks with FastAPI Depends** — 17 endpoints manually check `x_app_password != APP_PASSWORD`. Extract to `require_password` dependency. (In progress)
+- [ ] **Word-detail latency** — p50 is 21s, way too slow. Options: simpler LLM prompt, pre-cache common words, or serve from a dictionary DB first and only hit LLM for unknowns.
+- [ ] **routes.py still 1178 lines** — Extract learn/learn-fast/learn-multi/learn-stream into `learn_routes.py`, compare into `compare_routes.py`. Target <400 lines per file.
+- [ ] **Streaming response for word-detail** — 21s wait with no feedback is bad UX. Stream partial results like learn-stream does.
+- [ ] **E2E smoke test script** — A simple bash/pytest script that hits the main user flow (learn, surprise, quiz, history export) and checks responses. Good for catching regressions after refactors.
+- [ ] **Rate limiting per-user (not just IP)** — Logged-in users should have their own rate limit bucket, not share with other users behind the same IP/NAT.
+
 ## P7 — Code Health & Security (from 2026-02-17 reflection)
 - [x] **Use bcrypt for password hashing** ✅ 2026-02-17 — Switched from SHA-256+salt to bcrypt (cost 12). Legacy hashes verified via fallback and auto-rehashed to bcrypt on next login.
 - [x] **Split backend.py into modules** — 2340 lines in one file. Split into: `auth.py` (user/session management), `llm.py` (Ollama interaction/prompt building), `cache.py` (LRU + persistence), `routes.py` (API endpoints), `models.py` (Pydantic schemas). Keep `backend.py` as the app entry point that wires everything together.
