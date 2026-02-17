@@ -152,7 +152,7 @@ _Items for cron iterations to work through, in priority order._
 
 ## P10 — Next Wave (from 2026-02-17 reflection #3)
 - [x] **Graceful degradation when Ollama is down** ✅ 2026-02-17 — Backend serves cached results (any gender/formality match) with `from_cache`+`ollama_offline` flags when Ollama unreachable. Frontend polls `/api/health` every 30s, shows warning banner, dims learn button, displays "📦 cached" badge on offline-served results. Auto-recovers when Ollama comes back.
-- [ ] **Frontend JS module consolidation** — `static/js/app.js` is still 1257 lines. Extract story mode, compare mode, and context examples into separate modules.
+- [x] **Frontend JS module consolidation** ✅ 2026-02-17 — Extracted `story.js` (119 lines), `compare.js` (72 lines), `grammar.js` (92 lines) from app.js. Reduced from 1305→1040 lines.
 - [ ] **Translation quality feedback loop** — Track which translations get thumbs-down feedback and exclude them from cache. Feed patterns back into prompt tuning.
 - [ ] **Batch SRS review** — Currently reviews one card at a time. Add a "Review 10" mode that queues up due cards and shows stats at the end (correct %, time per card).
 - [ ] **Server-side SRS for multi-user** — SRS is currently frontend-only localStorage. For multi-user to be meaningful, migrate SRS deck to SQLite user_data with sync. Then add backend test coverage (currently deferred in P6).
