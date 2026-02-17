@@ -135,7 +135,7 @@ _Items for cron iterations to work through, in priority order._
 
 ## P8 — Next Wave (from 2026-02-17 reflection)
 - [x] **Split app.js into modules** — 3109 lines, single file. Split into: `ui.js` (DOM helpers, rendering), `api.js` (fetch wrappers), `srs.js` (spaced repetition logic), `quiz.js` (quiz mode), `history.js` (history panel), `shortcuts.js` (keyboard shortcuts). Use ES modules with `<script type="module">`. ✅ 2026-02-17
-- [ ] **Split routes.py further** — 1563 lines. Extract surprise bank logic into `surprise.py`, feedback into `feedback.py`, quiz endpoints into `quiz_routes.py`. Keep `routes.py` as the main router that includes sub-routers.
+- [x] **Split routes.py further** ✅ 2026-02-17 — Extracted `surprise.py`, `feedback.py`, `quiz_routes.py`. Routes.py reduced from 1576→~1170 lines. Sub-routers included via `router.include_router()`.
 - [x] **Pronunciation quality** ✅ 2026-02-17 — Replaced raw pykakasi with MeCab (unidic) tokenization + pykakasi romaji conversion. Fixes: particles は→wa/を→o/へ→e via POS tagging, long vowel macrons (ā/ī/ū/ē/ō), reading overrides (私→watashi), punctuation stripping. "raamen wo tabeta idesu" → "rāmen o tabe tai desu".
 - [x] **Frontend error recovery** ✅ 2026-02-17 — auto-retries up to 3× on 502 with "Translation engine warming up..." message and 4s delay. Falls back to error message after max retries.
 - [x] **Surprise bank persistence bug** ✅ 2026-02-17 — saves every 10 entries during fill, not just on completion.
