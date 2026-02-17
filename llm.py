@@ -150,15 +150,18 @@ _GREEK_DIGRAPHS = {
 }
 
 
-_HEBREW_TRANSLIT = {
-    'א': '', 'בּ': 'b', 'ב': 'v', 'גּ': 'g', 'ג': 'g',
-    'דּ': 'd', 'ד': 'd', 'ה': 'h', 'ו': 'v', 'וּ': 'u',
-    'וֹ': 'o', 'ז': 'z', 'ח': 'ch', 'ט': 't', 'י': 'y',
-    'כּ': 'k', 'כ': 'kh', 'ך': 'kh', 'ל': 'l', 'מ': 'm',
-    'ם': 'm', 'נ': 'n', 'ן': 'n', 'ס': 's', 'ע': '',
-    'פּ': 'p', 'פ': 'f', 'ף': 'f', 'צ': 'ts', 'ץ': 'ts',
-    'ק': 'k', 'ר': 'r', 'שׁ': 'sh', 'שׂ': 's', 'ש': 'sh',
-    'תּ': 't', 'ת': 't',
+_HEBREW_CONSLIT = {
+    'א': '', 'ב': 'v', 'ג': 'g', 'ד': 'd', 'ה': 'h',
+    'ז': 'z', 'ח': 'ch', 'ט': 't', 'כ': 'kh', 'ך': 'kh',
+    'ל': 'l', 'מ': 'm', 'ם': 'm', 'נ': 'n', 'ן': 'n',
+    'ס': 's', 'ע': "'", 'פ': 'f', 'ף': 'f', 'צ': 'ts', 'ץ': 'ts',
+    'ק': 'k', 'ר': 'r', 'ש': 'sh', 'ת': 't',
+}
+
+# Dagesh/shin-dot variants (2-char: consonant + combining mark)
+_HEBREW_DAGESH = {
+    'בּ': 'b', 'גּ': 'g', 'דּ': 'd', 'כּ': 'k', 'פּ': 'p', 'תּ': 't',
+    'שׁ': 'sh', 'שׂ': 's',
 }
 
 # Hebrew niqqud (vowel marks)
@@ -177,33 +180,138 @@ _HEBREW_VOWELS = {
     '\u05BB': 'u',   # qubuts
 }
 
+# Common Hebrew words with known romanization (unvoweled → romanized)
+_HEBREW_DICT = {
+    'שלום': 'shalom', 'אני': 'ani', 'אתה': 'ata', 'את': 'at',
+    'הוא': 'hu', 'היא': 'hi', 'אנחנו': 'anachnu', 'הם': 'hem',
+    'הן': 'hen', 'כן': 'ken', 'לא': 'lo', 'מה': 'ma', 'מי': 'mi',
+    'איפה': 'eifo', 'למה': 'lama', 'איך': 'eikh', 'מתי': 'matai',
+    'תודה': 'toda', 'בבקשה': 'bevakasha', 'סליחה': 'slikha',
+    'בוקר': 'boker', 'ערב': 'erev', 'לילה': 'laila', 'יום': 'yom',
+    'טוב': 'tov', 'טובה': 'tova', 'רע': 'ra', 'גדול': 'gadol',
+    'קטן': 'katan', 'יפה': 'yafe', 'חדש': 'chadash', 'ישן': 'yashan',
+    'אוכל': 'okhel', 'מים': 'mayim', 'לחם': 'lekhem', 'בית': 'bayit',
+    'ספר': 'sefer', 'ילד': 'yeled', 'ילדה': 'yalda', 'איש': 'ish',
+    'אישה': 'isha', 'אבא': 'aba', 'אמא': 'ima', 'חבר': 'khaver',
+    'ברוך': 'barukh', 'הבא': 'haba', 'שם': 'sham', 'פה': 'po',
+    'עכשיו': 'akhshav', 'היום': 'hayom', 'מחר': 'makhar', 'אתמול': 'etmol',
+    'שנה': 'shana', 'חודש': 'khodesh', 'שבוע': 'shavua',
+    'אחד': 'ekhad', 'שניים': 'shnayim', 'שלוש': 'shalosh',
+    'ארבע': 'arba', 'חמש': 'khamesh', 'שש': 'shesh', 'שבע': 'sheva',
+    'שמונה': 'shmone', 'תשע': 'tesha', 'עשר': 'eser',
+    'אהבה': 'ahava', 'חיים': 'khayim', 'עולם': 'olam',
+    'ישראל': 'yisrael', 'ירושלים': 'yerushalayim',
+    'שמח': 'same\'akh', 'רוצה': 'rotse', 'יודע': 'yode\'a',
+    'הולך': 'holekh', 'בא': 'ba', 'רואה': 'ro\'e', 'שומע': 'shome\'a',
+    'אוהב': 'ohev', 'אוהבת': 'ohevet', 'לומד': 'lomed',
+    'עובד': 'oved', 'גר': 'gar', 'נסיעה': 'nesi\'a', 'טיול': 'tiyul',
+    'כסף': 'kesef', 'זמן': 'zman', 'מקום': 'makom', 'דרך': 'derekh',
+    'שלומך': 'shlomkha', 'אותך': 'otkha', 'אותי': 'oti', 'אותו': 'oto',
+    'שלי': 'sheli', 'שלך': 'shelkha', 'של': 'shel',
+    'זה': 'ze', 'זאת': 'zot', 'אלה': 'ele', 'הזה': 'haze',
+    'עם': 'im', 'על': 'al', 'אל': 'el', 'מן': 'min', 'בין': 'bein',
+    'גם': 'gam', 'רק': 'rak', 'עוד': 'od', 'כבר': 'kvar', 'אז': 'az',
+    'יש': 'yesh', 'אין': 'ein', 'צריך': 'tsarikh', 'יכול': 'yakhol',
+    'רוצה': 'rotse', 'אוהב': 'ohev', 'אוהבת': 'ohevet',
+    'לעשות': 'la\'asot', 'ללכת': 'lalekhet', 'לאכול': 'le\'ekhol',
+    'לדבר': 'ledaber', 'לראות': 'lir\'ot', 'לשמוע': 'lishmoa',
+    'אחת': 'akhat', 'שתיים': 'shtayim', 'מאה': 'me\'a', 'אלף': 'elef',
+    'חם': 'kham', 'קר': 'kar', 'מהר': 'maher', 'לאט': 'le\'at',
+    'כל': 'kol', 'הרבה': 'harbe', 'מעט': 'me\'at', 'קצת': 'ktsat',
+    'אחרי': 'akharei', 'לפני': 'lifnei', 'ליד': 'leyad',
+    'למעלה': 'lemala', 'למטה': 'lemata',
+}
+
+def _is_hebrew(ch):
+    return '\u05D0' <= ch <= '\u05EA'
+
 def _hebrew_romanize(text: str) -> str:
+    """Romanize Hebrew text. Uses dictionary for common words, falls back to
+    character mapping with heuristics for vav/yod as vowel letters."""
     import unicodedata
+    # Word-by-word: use dictionary when available, fallback per word
+    words = text.split()
+    if len(words) > 1:
+        parts = []
+        for word in words:
+            clean = word.strip('.,!?;:\'"')
+            if clean in _HEBREW_DICT:
+                parts.append(_HEBREW_DICT[clean])
+            else:
+                parts.append(_hebrew_romanize(word))
+        return ' '.join(parts)
+
+    # Single word dictionary check
+    clean = text.strip('.,!?;:\'"')
+    if clean in _HEBREW_DICT:
+        return _HEBREW_DICT[clean]
+
+    # Fallback: character-by-character transliteration
     result = []
     i = 0
-    while i < len(text):
+    n = len(text)
+    while i < n:
         ch = text[i]
-        # Check for consonant + dagesh/vowel combinations (2-char keys)
-        if i + 1 < len(text):
+        # Check for consonant + combining mark pairs (dagesh, shin/sin dot)
+        if i + 1 < n:
             pair = text[i:i+2]
-            if pair in _HEBREW_TRANSLIT:
-                result.append(_HEBREW_TRANSLIT[pair])
+            if pair in _HEBREW_DAGESH:
+                result.append(_HEBREW_DAGESH[pair])
                 i += 2
                 continue
-        # Check single Hebrew vowel marks (niqqud)
+
+        # Niqqud vowel points
         if ch in _HEBREW_VOWELS:
             result.append(_HEBREW_VOWELS[ch])
             i += 1
             continue
-        # Skip other combining marks (dagesh etc) that weren't part of a pair
+
+        # Skip other combining marks
         if unicodedata.category(ch) == 'Mn':
             i += 1
             continue
-        # Check single consonant
-        if ch in _HEBREW_TRANSLIT:
-            result.append(_HEBREW_TRANSLIT[ch])
+
+        # Vav - could be v, o, or u
+        if ch == 'ו':
+            # Double vav = v
+            if i + 1 < n and text[i+1] == 'ו':
+                result.append('v')
+                i += 2
+                continue
+            # Vav between/after consonants in unvoweled text → 'o' (most common)
+            # but word-initial vav before consonant → 've-' (conjunction)
+            prev_is_cons = (i > 0 and _is_hebrew(text[i-1]) and text[i-1] not in 'וי')
+            next_is_cons = (i + 1 < n and _is_hebrew(text[i+1]))
+            if i == 0 and next_is_cons:
+                # Word-initial vav = ve- conjunction
+                result.append('ve')
+            elif prev_is_cons and next_is_cons:
+                result.append('o')
+            elif prev_is_cons and (i + 1 >= n or not _is_hebrew(text[i+1])):
+                result.append('o')
+            else:
+                result.append('v')
             i += 1
             continue
+
+        # Yod - could be y or i
+        if ch == 'י':
+            prev_is_cons = (i > 0 and _is_hebrew(text[i-1]) and text[i-1] not in 'וי')
+            next_is_cons = (i + 1 < n and _is_hebrew(text[i+1]))
+            next_not_heb = (i + 1 >= n or not _is_hebrew(text[i+1]))
+            if prev_is_cons and (next_is_cons or next_not_heb):
+                result.append('i')
+            else:
+                result.append('y')
+            i += 1
+            continue
+
+        # Regular consonant
+        if ch in _HEBREW_CONSLIT:
+            result.append(_HEBREW_CONSLIT[ch])
+            i += 1
+            continue
+
         # Pass through spaces, punctuation, etc.
         result.append(ch)
         i += 1
