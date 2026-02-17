@@ -128,6 +128,10 @@ async def learn_sentence(
         if _user_request_count <= 0:
             _user_request_count = 0
             _get_user_event().set()
+        if "difficulty" not in cached or cached.get("difficulty") is None:
+            sd = detect_sentence_difficulty(req.sentence, cached.get("breakdown", []))
+            cached["sentence_difficulty"] = sd
+            cached["difficulty"] = sd.get("level")
         return cached
 
     lang_name = SUPPORTED_LANGUAGES[req.target_language]
@@ -461,6 +465,10 @@ async def learn_fast(
     ck = cache_key(req.sentence, req.target_language, gender, formality)
     cached = cache_get(ck)
     if cached:
+        if "difficulty" not in cached or cached.get("difficulty") is None:
+            sd = detect_sentence_difficulty(req.sentence, cached.get("breakdown", []))
+            cached["sentence_difficulty"] = sd
+            cached["difficulty"] = sd.get("level")
         return {**cached, "complete": True}
 
     lang_name = SUPPORTED_LANGUAGES[req.target_language]
@@ -1239,6 +1247,7 @@ async def compare_sentence(
                 "pronunciation": result.get("pronunciation", ""),
                 "formality": result.get("formality", ""),
                 "literal": result.get("literal", ""),
+                "difficulty": result.get("difficulty"),
             })
         except HTTPException as e:
             if e.status_code == 429:
@@ -1507,6 +1516,8 @@ async def fill_surprise_bank_task():
                         "result": result,
                     })
                     count += 1
+                    if count % 10 == 0:
+                        save_surprise_bank()
                 await asyncio.sleep(0.5)
     _surprise_bank_filling = False
     logger.info("Surprise bank pre-computation complete", extra={"component": "surprise-bank", "count": count})
