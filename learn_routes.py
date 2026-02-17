@@ -35,7 +35,7 @@ from llm import (
     deterministic_pronunciation, deterministic_word_pronunciation,
     ensure_traditional_chinese, detect_sentence_difficulty,
     cedict_lookup, parse_json_object, split_sentences,
-    ollama_chat,
+    ollama_chat, check_ollama_connectivity,
 )
 
 from surprise import (
@@ -222,7 +222,15 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
     )
 
     if text is None:
-        raise HTTPException(502, "LLM API error")
+        # Ollama is down — check if we have ANY cached result for this sentence (ignoring gender/formality)
+        from cache import cache_scan_prefix
+        fallback = cache_scan_prefix(req.sentence, req.target_language)
+        if fallback:
+            decrement_user_request()
+            fallback["from_cache"] = True
+            fallback["ollama_offline"] = True
+            return fallback
+        raise HTTPException(502, "Translation engine offline and no cached results available")
 
     result = parse_json_object(text)
     if not result:
@@ -472,7 +480,12 @@ Return ONLY valid JSON (no markdown):
     )
 
     if text is None:
-        raise HTTPException(502, "LLM API error")
+        # Ollama down — try any cached result for this sentence
+        from cache import cache_scan_prefix
+        fallback = cache_scan_prefix(req.sentence, req.target_language)
+        if fallback:
+            return {**fallback, "complete": True, "from_cache": True, "ollama_offline": True}
+        raise HTTPException(502, "Translation engine offline and no cached results available")
 
     result = parse_json_object(text)
     if not result:

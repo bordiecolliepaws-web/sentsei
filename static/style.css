@@ -2629,3 +2629,44 @@ body.hide-romanization .ctx-pron {
     flex: 1 1 45% !important;
     min-width: 0 !important;
 }
+
+/* Ollama offline banner */
+.ollama-offline-banner {
+    background: #3d2800;
+    color: #f0c040;
+    text-align: center;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-bottom: 1px solid #5a3d00;
+    z-index: 100;
+}
+.ollama-offline-banner.hidden { display: none; }
+
+/* Cached result badge */
+.cached-badge {
+    font-size: 0.7rem;
+    background: #2a2a1a;
+    color: #c0a050;
+    padding: 2px 8px;
+    border-radius: 8px;
+    border: 1px solid #5a4d20;
+}
+
+/* Learn button offline state */
+.offline-disabled {
+    opacity: 0.6;
+    position: relative;
+}
+
+/* Light theme overrides */
+[data-theme="light"] .ollama-offline-banner {
+    background: #fff3cd;
+    color: #856404;
+    border-bottom-color: #ffc107;
+}
+[data-theme="light"] .cached-badge {
+    background: #fff8e1;
+    color: #7c6900;
+    border-color: #e0c550;
+}

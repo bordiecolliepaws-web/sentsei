@@ -438,6 +438,7 @@ export function renderResult(data, original, reqCtx) {
             <div class="result-meta">
                 <div class="result-formality">${data.formality}</div>
                 ${data.sentence_difficulty ? `<div class="result-difficulty result-difficulty--${data.sentence_difficulty.level}" title="${(data.sentence_difficulty.factors || []).join(', ')}">${data.sentence_difficulty.level === 'beginner' ? '🟢' : data.sentence_difficulty.level === 'intermediate' ? '🟡' : '🔴'} ${data.sentence_difficulty.level}</div>` : ''}
+                ${data.from_cache && data.ollama_offline ? '<div class="cached-badge" title="Served from cache while translation engine is offline">📦 cached</div>' : ''}
             </div>
             <div class="result-actions">
                 <button type="button" class="speak-btn" aria-label="Listen to pronunciation" data-lang="${activeReqCtx.target_language}">

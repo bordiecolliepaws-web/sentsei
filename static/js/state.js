@@ -144,6 +144,8 @@ export const state = {
     authMode: 'login',
     quizCorrect: 0,
     quizTotal: 0,
+    ollamaOnline: true,
+    _healthPollTimer: null,
 };
 
 // Hook registry for monkey-patch replacements

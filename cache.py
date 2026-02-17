@@ -39,6 +39,20 @@ def cache_get(key: str):
     return result
 
 
+def cache_scan_prefix(sentence: str, target_lang: str):
+    """Find any cached result for a sentence+language combo, ignoring gender/formality.
+
+    Used for graceful degradation when Ollama is down — tries all gender/formality combos.
+    """
+    import copy
+    for g in ("neutral", "male", "female"):
+        for f in ("polite", "casual", "formal"):
+            result = cache_get(cache_key(sentence, target_lang, g, f))
+            if result is not None:
+                return copy.deepcopy(result)
+    return None
+
+
 def cache_put(key: str, result: dict):
     global _cache_dirty
     _translation_cache[key] = (time.time(), result)
