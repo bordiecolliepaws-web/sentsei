@@ -4,11 +4,11 @@ import time
 import random
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Header, Request
+from fastapi import APIRouter, Depends, HTTPException, Header, Request
 
 from models import SUPPORTED_LANGUAGES, CURATED_SENTENCES, QuizCheckRequest
 from cache import get_quiz_answers, cleanup_quiz_answers
-from auth import APP_PASSWORD, rate_limit_check, rate_limit_cleanup
+from auth import APP_PASSWORD, rate_limit_check, rate_limit_cleanup, require_password
 from llm import (
     OLLAMA_MODEL, deterministic_pronunciation, parse_json_object,
     new_quiz_id, translation_hint, ollama_chat,
@@ -23,10 +23,8 @@ async def get_quiz(
     lang: str,
     gender: str = "neutral",
     formality: str = "polite",
-    x_app_password: Optional[str] = Header(default=None),
+    _pw=Depends(require_password),
 ):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
 
     if lang not in SUPPORTED_LANGUAGES:
         raise HTTPException(400, "Unsupported language")
@@ -130,10 +128,8 @@ Return ONLY valid JSON:
 async def quiz_check(
     request: Request,
     req: QuizCheckRequest,
-    x_app_password: Optional[str] = Header(default=None),
+    _pw=Depends(require_password),
 ):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
 
     client_ip = request.client.host if request.client else "unknown"
     rate_limit_cleanup()

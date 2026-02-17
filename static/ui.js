@@ -1,86 +1,15 @@
-// DOM helpers, rendering functions, progress stats
-import { state, DOM, LANG_FLAGS, KEYS, LANGUAGE_TIPS, MS_PER_DAY, LOADING_PHASES, DAY_MS, hooks } from './state.js';
-import { friendlyError, copyTextToClipboard, syncModalOpenState } from './api.js';
+// ui.js — DOM helpers, rendering, TTS, progress display
+import {
+    state, dom, LANG_FLAGS, LANG_SPEECH_MAP, LANGUAGE_TIPS, DAY_MS,
+    getLanguageNamesMap, formatDateLabel, todayDateKey, dayDiff,
+    saveProgressStats, copyTextToClipboard, escapeHtml
+} from './state.js';
+import { friendlyError } from './api.js';
 import { getDueItems } from './srs.js';
 
-// === Progress Stats ===
+// --- Progress rendering ---
 
-export function loadProgressStats() {
-    const base = {
-        sentencesLearned: 0,
-        languagesUsed: [],
-        quiz: { correct: 0, total: 0 },
-        streak: 0,
-        lastActivityDate: '',
-        firstActivityDate: '',
-        lastLearnDate: ''
-    };
-
-    try {
-        const raw = localStorage.getItem(KEYS.PROGRESS_STATS) || '{}';
-        const parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== 'object') return base;
-
-        const sentencesLearned = Math.max(0, Number(parsed.sentencesLearned) || 0);
-        const languagesRaw = Array.isArray(parsed.languagesUsed) ? parsed.languagesUsed : [];
-        const languagesUsed = [...new Set(languagesRaw
-            .map(v => (typeof v === 'string' ? v.trim().toLowerCase() : ''))
-            .filter(Boolean))];
-        const quizRaw = parsed.quiz && typeof parsed.quiz === 'object' ? parsed.quiz : {};
-        const quiz = {
-            correct: Math.max(0, Number(quizRaw.correct) || 0),
-            total: Math.max(0, Number(quizRaw.total) || 0)
-        };
-        const streak = Math.max(0, Number(parsed.streak) || 0);
-        const lastActivityDate = typeof parsed.lastActivityDate === 'string' ? parsed.lastActivityDate : '';
-        const firstActivityDate = typeof parsed.firstActivityDate === 'string' ? parsed.firstActivityDate : '';
-        const lastLearnDate = typeof parsed.lastLearnDate === 'string' ? parsed.lastLearnDate : '';
-
-        return { sentencesLearned, languagesUsed, quiz, streak, lastActivityDate, firstActivityDate, lastLearnDate };
-    } catch {
-        return base;
-    }
-}
-
-export function saveProgressStats() {
-    localStorage.setItem(KEYS.PROGRESS_STATS, JSON.stringify(state.progressStats));
-    hooks.afterSaveProgressStats.forEach(fn => fn());
-}
-
-export function todayDateKey() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-export function parseDateKey(dateKey) {
-    if (!dateKey || typeof dateKey !== 'string') return null;
-    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey);
-    if (!match) return null;
-    const year = Number(match[1]);
-    const monthIndex = Number(match[2]) - 1;
-    const day = Number(match[3]);
-    const date = new Date(year, monthIndex, day);
-    if (date.getFullYear() !== year || date.getMonth() !== monthIndex || date.getDate() !== day) return null;
-    return date;
-}
-
-export function dayDiff(fromDateKey, toDateKey) {
-    const from = parseDateKey(fromDateKey);
-    const to = parseDateKey(toDateKey);
-    if (!from || !to) return null;
-    return Math.round((to.getTime() - from.getTime()) / MS_PER_DAY);
-}
-
-export function formatDateLabel(dateKey) {
-    const parsed = parseDateKey(dateKey);
-    if (!parsed) return '';
-    return parsed.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-}
-
-export function addProgressLanguage(languageCode) {
+function addProgressLanguage(languageCode) {
     const code = typeof languageCode === 'string' ? languageCode.trim().toLowerCase() : '';
     if (!code) return;
     if (!state.progressStats.languagesUsed.includes(code)) {
@@ -88,59 +17,54 @@ export function addProgressLanguage(languageCode) {
     }
 }
 
-export function getLanguageNamesMap() {
-    const langNames = {};
-    DOM.langSelect.querySelectorAll('option').forEach(o => { langNames[o.value] = o.textContent; });
-    return langNames;
-}
-
 export function renderProgressLanguages() {
-    if (!DOM.statsLanguages) return;
-    DOM.statsLanguages.innerHTML = '';
-
+    const statsLanguagesEl = dom('stats-languages');
+    if (!statsLanguagesEl) return;
+    statsLanguagesEl.innerHTML = '';
     const langNames = getLanguageNamesMap();
     if (!state.progressStats.languagesUsed.length) {
         const empty = document.createElement('span');
         empty.className = 'progress-stat-value';
         empty.textContent = 'No languages yet';
-        DOM.statsLanguages.appendChild(empty);
+        statsLanguagesEl.appendChild(empty);
         return;
     }
-
     state.progressStats.languagesUsed.forEach(code => {
         const chip = document.createElement('span');
         chip.className = 'progress-lang-chip';
         const flag = LANG_FLAGS[code] || '🌐';
         const name = langNames[code] || code.toUpperCase();
         chip.textContent = `${flag} ${name}`;
-        DOM.statsLanguages.appendChild(chip);
+        statsLanguagesEl.appendChild(chip);
     });
 }
 
 export function renderProgressStats() {
-    if (!DOM.statsTotalSentences) return;
+    const statsTotalSentencesEl = dom('stats-total-sentences');
+    if (!statsTotalSentencesEl) return;
 
-    DOM.statsTotalSentences.textContent = String(state.progressStats.sentencesLearned || 0);
+    statsTotalSentencesEl.textContent = String(state.progressStats.sentencesLearned || 0);
     renderProgressLanguages();
 
     const quizTotal = Math.max(0, Number(state.progressStats.quiz?.total) || 0);
     const quizCorrect = Math.max(0, Number(state.progressStats.quiz?.correct) || 0);
+    const statsQuizAccuracyEl = dom('stats-quiz-accuracy');
     if (quizTotal > 0) {
         const accuracy = Math.round((quizCorrect / quizTotal) * 100);
-        DOM.statsQuizAccuracy.textContent = `${accuracy}% (${quizCorrect}/${quizTotal})`;
+        statsQuizAccuracyEl.textContent = `${accuracy}% (${quizCorrect}/${quizTotal})`;
     } else {
-        DOM.statsQuizAccuracy.textContent = 'No quizzes taken yet';
+        statsQuizAccuracyEl.textContent = 'No quizzes taken yet';
     }
 
     const streak = Math.max(0, Number(state.progressStats.streak) || 0);
-    DOM.statsStreak.textContent = `${streak} ${streak === 1 ? 'day' : 'days'}`;
+    dom('stats-streak').textContent = `${streak} ${streak === 1 ? 'day' : 'days'}`;
 
     const learningSince = formatDateLabel(state.progressStats.firstActivityDate);
-    DOM.statsLearningSince.textContent = learningSince || 'Not started yet';
+    dom('stats-learning-since').textContent = learningSince || 'Not started yet';
 
-    const srsDeckEl = document.getElementById('stats-srs-deck');
-    const srsDueEl = document.getElementById('stats-srs-due');
-    const srsMasteredEl = document.getElementById('stats-srs-mastered');
+    const srsDeckEl = dom('stats-srs-deck');
+    const srsDueEl = dom('stats-srs-due');
+    const srsMasteredEl = dom('stats-srs-mastered');
     if (srsDeckEl) srsDeckEl.textContent = String(state.srsDeck.length);
     if (srsDueEl) srsDueEl.textContent = String(getDueItems().length);
     if (srsMasteredEl) srsMasteredEl.textContent = String(state.srsDeck.filter(i => i.interval > 30 * DAY_MS).length);
@@ -156,9 +80,7 @@ export function recordLearnProgress(languageCode, learnedCount = 1) {
     if (increment < 1) return;
 
     const today = todayDateKey();
-    if (!state.progressStats.firstActivityDate) {
-        state.progressStats.firstActivityDate = today;
-    }
+    if (!state.progressStats.firstActivityDate) state.progressStats.firstActivityDate = today;
     state.progressStats.lastActivityDate = today;
     state.progressStats.sentencesLearned += increment;
     addProgressLanguage(languageCode);
@@ -175,74 +97,7 @@ export function recordLearnProgress(languageCode, learnedCount = 1) {
     persistProgressAndRefresh();
 }
 
-export function loadQuizStats() {
-    const quiz = state.progressStats.quiz && typeof state.progressStats.quiz === 'object' ? state.progressStats.quiz : {};
-    return {
-        correct: Math.max(0, Number(quiz.correct) || 0),
-        total: Math.max(0, Number(quiz.total) || 0)
-    };
-}
-
-export function saveQuizStats() {
-    state.progressStats.quiz = {
-        correct: Math.max(0, Number(state.quizStats.correct) || 0),
-        total: Math.max(0, Number(state.quizStats.total) || 0)
-    };
-    persistProgressAndRefresh();
-}
-
-export function openStatsModal() {
-    renderProgressStats();
-    DOM.statsModal.classList.remove('hidden');
-    syncModalOpenState();
-}
-
-export function closeStatsModal() {
-    DOM.statsModal.classList.add('hidden');
-    syncModalOpenState();
-}
-
-// === Loading UI ===
-
-export function startLoadingTimer() {
-    stopLoadingTimer();
-    const start = Date.now();
-    DOM.loadingCancel.style.display = 'none';
-    DOM.loadingElapsed.textContent = '';
-    state.loadingTimer = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - start) / 1000);
-        DOM.loadingElapsed.textContent = elapsed + 's';
-        for (let i = LOADING_PHASES.length - 1; i >= 0; i--) {
-            if (elapsed >= LOADING_PHASES[i].at) {
-                DOM.loadingMessage.textContent = LOADING_PHASES[i].msg;
-                break;
-            }
-        }
-        if (elapsed >= 8) DOM.loadingCancel.style.display = 'inline-block';
-    }, 1000);
-}
-
-export function stopLoadingTimer() {
-    if (state.loadingTimer) { clearInterval(state.loadingTimer); state.loadingTimer = null; }
-}
-
-export function showError(msg) {
-    DOM.errorMessage.textContent = msg;
-    DOM.errorBanner.style.display = 'block';
-}
-
-export function hideError() { DOM.errorBanner.style.display = 'none'; }
-
-export function setRandomLoadingTip() {
-    const selectedLang = DOM.langSelect.value;
-    const langName = DOM.langSelect.options[DOM.langSelect.selectedIndex]?.textContent || 'this language';
-    const tips = LANGUAGE_TIPS[selectedLang] || LANGUAGE_TIPS.default;
-    const randomTip = tips[Math.floor(Math.random() * tips.length)];
-    DOM.loadingTip.textContent = `${langName} tip: ${randomTip}`;
-}
-
-// === TTS / Speech ===
-import { LANG_SPEECH_MAP } from './state.js';
+// --- TTS / Speech ---
 
 export function speakTranslation(text, langCode, btn) {
     if (!window.speechSynthesis) return;
@@ -267,76 +122,44 @@ export function speakTranslation(text, langCode, btn) {
         btn.classList.add('speaking');
         const label = btn.querySelector('.speak-label');
         if (label) label.textContent = '▶ Playing';
-        utterance.onend = () => {
-            btn.classList.remove('speaking');
-            if (label) label.textContent = 'Listen';
-        };
-        utterance.onerror = () => {
-            btn.classList.remove('speaking');
-            if (label) label.textContent = 'Listen';
-        };
+        utterance.onend = () => { btn.classList.remove('speaking'); if (label) label.textContent = 'Listen'; };
+        utterance.onerror = () => { btn.classList.remove('speaking'); if (label) label.textContent = 'Listen'; };
     }
     speechSynthesis.speak(utterance);
 }
 
-// === Theme ===
-export function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    const icon = theme === 'light' ? '☀️' : '🌙';
-    const label = theme === 'light' ? 'Dark Mode' : 'Light Mode';
-    const toggleBtn = document.getElementById('theme-toggle');
-    const menuIcon = document.getElementById('menu-theme-icon');
-    const menuLabel = document.getElementById('menu-theme-label');
-    if (toggleBtn) toggleBtn.textContent = icon;
-    if (menuIcon) menuIcon.textContent = icon;
-    if (menuLabel) menuLabel.textContent = label;
+// Pre-load voices
+export function initSpeechSynthesis() {
+    if (window.speechSynthesis) {
+        speechSynthesis.getVoices();
+        speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+    }
 }
 
-export function toggleTheme() {
-    const current = document.documentElement.getAttribute('data-theme') || 'dark';
-    const next = current === 'dark' ? 'light' : 'dark';
-    localStorage.setItem(KEYS.THEME, next);
-    applyTheme(next);
+// --- Loading tips ---
+
+export function setRandomLoadingTip() {
+    const langSelect = dom('lang');
+    const selectedLang = langSelect.value;
+    const langName = langSelect.options[langSelect.selectedIndex]?.textContent || 'this language';
+    const tips = LANGUAGE_TIPS[selectedLang] || LANGUAGE_TIPS.default;
+    const randomTip = tips[Math.floor(Math.random() * tips.length)];
+    dom('loading-tip').textContent = `${langName} tip: ${randomTip}`;
 }
 
-// === Init toggle helper ===
-export function initToggle(container, current, storageKey, setter) {
-    container.querySelectorAll('.toggle-pill').forEach(p => {
-        const isActive = p.dataset.value === current;
-        p.classList.toggle('active', isActive);
-        p.setAttribute('role', 'radio');
-        p.setAttribute('aria-checked', String(isActive));
-        p.addEventListener('click', () => {
-            container.querySelectorAll('.toggle-pill').forEach(q => {
-                q.classList.remove('active');
-                q.setAttribute('aria-checked', 'false');
-            });
-            p.classList.add('active');
-            p.setAttribute('aria-checked', 'true');
-            localStorage.setItem(storageKey, p.dataset.value);
-            setter(p.dataset.value);
-        });
-    });
+// --- Compare results ---
+
+export function closeCompareResults() {
+    const compareResultsEl = dom('compare-results');
+    compareResultsEl.classList.add('hidden');
+    compareResultsEl.innerHTML = '';
 }
 
-// === Romanization ===
-export function applyRomanization() {
-    document.body.classList.toggle('hide-romanization', !state.showRomanization);
-    DOM.romanizationToggle.classList.toggle('active', state.showRomanization);
-    const label = document.getElementById('romanization-label');
-    if (label) label.textContent = state.showRomanization ? 'On' : 'Off';
-}
-
-// === Escape HTML ===
-export function escapeHtml(s) {
-    if (!s) return '';
-    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-// === Compare results ===
 export function renderCompareResults(data) {
+    const compareResultsEl = dom('compare-results');
+    const sentenceInput = dom('sentence');
     const results = Array.isArray(data.results) ? data.results : [];
-    const originalSentence = data.sentence || DOM.sentenceInput.value.trim();
+    const originalSentence = data.sentence || sentenceInput.value.trim();
     const cardsHTML = results.map(entry => {
         const code = (entry.language || '').toLowerCase();
         const flag = LANG_FLAGS[code] || '🌐';
@@ -354,7 +177,7 @@ export function renderCompareResults(data) {
         `;
     }).join('');
 
-    DOM.compareResults.innerHTML = `
+    compareResultsEl.innerHTML = `
         <div class="compare-results-head">
             <div class="compare-results-label">Comparison mode</div>
             <button type="button" class="compare-close-btn" id="compare-close-btn">✕ Close</button>
@@ -364,17 +187,78 @@ export function renderCompareResults(data) {
     `;
     const closeBtn = document.getElementById('compare-close-btn');
     if (closeBtn) closeBtn.addEventListener('click', closeCompareResults);
-    DOM.compareResults.classList.remove('hidden');
-    DOM.compareResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    compareResultsEl.classList.remove('hidden');
+    compareResultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-export function closeCompareResults() {
-    DOM.compareResults.classList.add('hidden');
-    DOM.compareResults.innerHTML = '';
+// --- Word chip detail handler ---
+
+export async function handleWordChipClick(chip, wordData, fullData, reqCtx) {
+    if (chip.classList.contains('expanded')) {
+        chip.classList.remove('expanded');
+        const detail = chip.querySelector('.word-detail');
+        if (detail) detail.remove();
+        return;
+    }
+
+    const parent = chip.closest('.word-chips');
+    parent.querySelectorAll('.word-chip.expanded').forEach(other => {
+        other.classList.remove('expanded');
+        const d = other.querySelector('.word-detail');
+        if (d) d.remove();
+    });
+
+    chip.classList.add('expanded');
+
+    const detailDiv = document.createElement('div');
+    detailDiv.className = 'word-detail';
+    detailDiv.innerHTML = '<div class="word-detail-loading">Loading details...</div>';
+    chip.appendChild(detailDiv);
+
+    try {
+        const resp = await fetch('/api/word-detail', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-App-Password': state.appPassword },
+            body: JSON.stringify({
+                word: wordData.word,
+                meaning: wordData.meaning,
+                target_language: reqCtx.target_language,
+                sentence_context: fullData.translation
+            })
+        });
+        if (!resp.ok) throw new Error(await friendlyError(resp));
+        const detail = await resp.json();
+
+        let html = '';
+        if (detail.examples && detail.examples.length) {
+            html += '<div class="word-detail-section"><div class="word-detail-label">Examples</div><ul class="word-detail-examples">';
+            detail.examples.forEach(ex => {
+                html += `<li>${ex.sentence}<br><span class="example-pron">${ex.pronunciation || ''}</span> <span class="example-meaning">${ex.meaning}</span></li>`;
+            });
+            html += '</ul></div>';
+        }
+        if (detail.conjugations && detail.conjugations.length) {
+            html += '<div class="word-detail-section"><div class="word-detail-label">Forms</div><div class="word-detail-conjugations">';
+            detail.conjugations.forEach(c => { html += `<span class="conjugation-tag">${c.form} <span class="conj-label">${c.label}</span></span>`; });
+            html += '</div></div>';
+        }
+        if (detail.related && detail.related.length) {
+            html += '<div class="word-detail-section"><div class="word-detail-label">Related</div><div class="word-detail-related">';
+            detail.related.forEach(r => { html += `<span class="related-word-tag" title="${r.meaning}">${r.word} — ${r.meaning}</span>`; });
+            html += '</div></div>';
+        }
+        detailDiv.innerHTML = html || '<div class="word-detail-loading">No additional details available.</div>';
+    } catch (err) {
+        console.error(err);
+        detailDiv.innerHTML = '<div class="word-detail-loading">Failed to load details.</div>';
+    }
 }
 
-// === Render result card ===
+// --- Main result rendering ---
+
 export function renderResult(data, original, reqCtx) {
+    const langSelect = dom('lang');
+    const resultsEl = dom('results');
     const card = document.createElement('div');
     card.className = 'result-card';
 
@@ -397,14 +281,9 @@ export function renderResult(data, original, reqCtx) {
     card.innerHTML = `
         <div class="result-main">
             <div class="result-source">"${original}"</div>
-            <div class="result-translation">${data.translation}</div>
-            <div class="result-pronunciation">${data.pronunciation}</div>
-            <div class="result-meta">
-                <div class="result-formality">${data.formality}</div>
-                ${data.sentence_difficulty ? `<div class="result-difficulty result-difficulty--${data.sentence_difficulty.level}" title="${(data.sentence_difficulty.factors || []).join(', ')}">${data.sentence_difficulty.level === 'beginner' ? '🟢' : data.sentence_difficulty.level === 'intermediate' ? '🟡' : '🔴'} ${data.sentence_difficulty.level}</div>` : ''}
-            </div>
-            <div class="result-actions">
-                <button type="button" class="speak-btn" aria-label="Listen to pronunciation" data-lang="${DOM.langSelect.value}">
+            <div class="result-head">
+                <div class="result-translation">${data.translation}</div>
+                <button type="button" class="speak-btn" aria-label="Listen to pronunciation" data-lang="${langSelect.value}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
                         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                         <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
@@ -419,7 +298,7 @@ export function renderResult(data, original, reqCtx) {
                     </svg>
                     <span class="copy-label">Copy</span>
                 </button>
-                <button type="button" class="share-btn" aria-label="Share link" data-sentence="${original.replace(/"/g, '&quot;')}" data-lang="${reqCtx.target_language || DOM.langSelect.value}">
+                <button type="button" class="share-btn" aria-label="Share link" data-sentence="${original.replace(/"/g, '&quot;')}" data-lang="${reqCtx.target_language || langSelect.value}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
                         <circle cx="18" cy="5" r="3"></circle>
                         <circle cx="6" cy="12" r="3"></circle>
@@ -430,6 +309,9 @@ export function renderResult(data, original, reqCtx) {
                     <span class="share-label">Share</span>
                 </button>
             </div>
+            <div class="result-pronunciation">${data.pronunciation}</div>
+            <div class="result-formality">${data.formality}</div>
+            ${data.sentence_difficulty ? `<div class="result-difficulty result-difficulty--${data.sentence_difficulty.level}" title="${(data.sentence_difficulty.factors || []).join(', ')}">${data.sentence_difficulty.level === 'beginner' ? '🟢' : data.sentence_difficulty.level === 'intermediate' ? '🟡' : '🔴'} ${data.sentence_difficulty.level}</div>` : ''}
         </div>
         ${hasBreakdown ? `
         <div class="breakdown-section">
@@ -462,7 +344,7 @@ export function renderResult(data, original, reqCtx) {
         `}
     `;
 
-    // Clickable word chips
+    // Word chip click handlers
     card.querySelectorAll('.word-chip').forEach((chip, idx) => {
         const wordData = data.breakdown[idx];
         const chipHandler = () => {
@@ -470,32 +352,21 @@ export function renderResult(data, original, reqCtx) {
             chip.setAttribute('aria-expanded', String(chip.classList.contains('expanded')));
         };
         chip.addEventListener('click', chipHandler);
-        chip.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                chipHandler();
-            }
-        });
+        chip.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chipHandler(); } });
     });
 
     // Speak button
     const speakBtn = card.querySelector('.speak-btn');
-    if (speakBtn) {
-        speakBtn.addEventListener('click', () => {
-            speakTranslation(data.translation, speakBtn.dataset.lang, speakBtn);
-        });
-    }
+    if (speakBtn) speakBtn.addEventListener('click', () => speakTranslation(data.translation, speakBtn.dataset.lang, speakBtn));
 
+    // Copy button
     const copyBtn = card.querySelector('.copy-btn');
     const copyLabelEl = card.querySelector('.copy-label');
     copyBtn.addEventListener('click', async () => {
         const copied = await copyTextToClipboard(data.translation);
         copyLabelEl.textContent = copied ? 'Copied' : 'Failed';
         if (copied) copyBtn.classList.add('copied');
-        setTimeout(() => {
-            copyLabelEl.textContent = 'Copy';
-            copyBtn.classList.remove('copied');
-        }, 1200);
+        setTimeout(() => { copyLabelEl.textContent = 'Copy'; copyBtn.classList.remove('copied'); }, 1200);
     });
 
     // Share button
@@ -511,7 +382,7 @@ export function renderResult(data, original, reqCtx) {
             const url = shareUrl.toString();
             const shareLabelEl = shareBtn.querySelector('.share-label');
             if (navigator.share) {
-                try { await navigator.share({ title: 'Learn: ' + s, url: url }); } catch(e) { /* user cancelled */ }
+                try { await navigator.share({ title: 'Learn: ' + s, url: url }); } catch(e) { /* cancelled */ }
             } else {
                 const ok = await copyTextToClipboard(url);
                 shareLabelEl.textContent = ok ? 'Copied!' : 'Failed';
@@ -524,10 +395,10 @@ export function renderResult(data, original, reqCtx) {
     const shareUrl = new URL(window.location.href);
     shareUrl.search = '';
     shareUrl.searchParams.set('s', original);
-    shareUrl.searchParams.set('t', reqCtx.target_language || DOM.langSelect.value);
+    shareUrl.searchParams.set('t', reqCtx.target_language || langSelect.value);
     history.replaceState(null, '', shareUrl.toString());
 
-    // Fast segment
+    // Fast segment: load jieba/cedict breakdown immediately
     const segmentChips = card.querySelector('.segment-chips');
     const myGeneration = state.learnGeneration;
     if (segmentChips) {
@@ -539,17 +410,14 @@ export function renderResult(data, original, reqCtx) {
                     body: JSON.stringify({
                         sentence: original,
                         translation: data.translation,
-                        target_language: reqCtx.target_language || DOM.langSelect.value,
+                        target_language: reqCtx.target_language || langSelect.value,
                     })
                 });
                 if (!segResp.ok) throw new Error('Failed');
                 if (myGeneration !== state.learnGeneration) return;
                 const seg = await segResp.json();
                 const segWords = seg.breakdown || [];
-                if (segWords.length === 0) {
-                    segmentChips.innerHTML = '<div class="word-detail-loading">No segmentation available.</div>';
-                    return;
-                }
+                if (segWords.length === 0) { segmentChips.innerHTML = '<div class="word-detail-loading">No segmentation available.</div>'; return; }
                 segmentChips.innerHTML = segWords.map(w => `
                     <div class="word-chip" role="button" tabindex="0" aria-expanded="false">
                         <div class="word-target">${w.word}</div>
@@ -562,9 +430,7 @@ export function renderResult(data, original, reqCtx) {
                     const wordData = segWords[idx];
                     const chipHandler = () => handleWordChipClick(chip, wordData, data, reqCtx);
                     chip.addEventListener('click', chipHandler);
-                    chip.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chipHandler(); }
-                    });
+                    chip.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chipHandler(); } });
                 });
             } catch (err) {
                 segmentChips.innerHTML = '<div class="word-detail-loading">Segmentation unavailable.</div>';
@@ -572,7 +438,7 @@ export function renderResult(data, original, reqCtx) {
         })();
     }
 
-    // Lazy-load grammar
+    // Lazy-load full grammar notes
     const showGrammarBtn = card.querySelector('.show-grammar-btn');
     if (showGrammarBtn) {
         showGrammarBtn.addEventListener('click', async () => {
@@ -583,9 +449,8 @@ export function renderResult(data, original, reqCtx) {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-App-Password': state.appPassword },
                     body: JSON.stringify({
-                        sentence: original,
-                        translation: data.translation,
-                        target_language: reqCtx.target_language || DOM.langSelect.value,
+                        sentence: original, translation: data.translation,
+                        target_language: reqCtx.target_language || langSelect.value,
                         input_language: reqCtx.input_language || state.selectedInputLang,
                         speaker_gender: state.selectedGender,
                         speaker_formality: state.selectedFormality
@@ -594,7 +459,6 @@ export function renderResult(data, original, reqCtx) {
                 if (!bdResp.ok) throw new Error('Failed');
                 if (myGeneration !== state.learnGeneration) return;
                 const bd = await bdResp.json();
-
                 data.breakdown = bd.breakdown || data._segmentBreakdown || [];
                 data.grammar_notes = bd.grammar_notes || [];
                 data.cultural_note = bd.cultural_note || null;
@@ -631,9 +495,7 @@ export function renderResult(data, original, reqCtx) {
                     const wordData = data.breakdown[idx];
                     const chipHandler = () => handleWordChipClick(chip, wordData, data, reqCtx);
                     chip.addEventListener('click', chipHandler);
-                    chip.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chipHandler(); }
-                    });
+                    chip.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chipHandler(); } });
                 });
             } catch (err) {
                 showGrammarBtn.textContent = '❌ Failed to load — tap to retry';
@@ -672,7 +534,7 @@ export function renderResult(data, original, reqCtx) {
                     headers: { 'Content-Type': 'application/json', 'X-App-Password': state.appPassword },
                     body: JSON.stringify({
                         translation: data.translation,
-                        target_language: reqCtx.target_language || DOM.langSelect.value,
+                        target_language: reqCtx.target_language || langSelect.value,
                         source_sentence: original
                     })
                 });
@@ -696,88 +558,42 @@ export function renderResult(data, original, reqCtx) {
         }
     };
     ctxToggle.addEventListener('click', toggleCtx);
-    ctxToggle.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCtx(); }
-    });
+    ctxToggle.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCtx(); } });
 
     // Prepend new result
-    if (DOM.results.children.length > 0) {
+    if (resultsEl.children.length > 0) {
         const divider = document.createElement('div');
         divider.className = 'history-divider';
-        DOM.results.insertBefore(divider, DOM.results.firstChild);
+        resultsEl.insertBefore(divider, resultsEl.firstChild);
     }
-    DOM.results.insertBefore(card, DOM.results.firstChild);
-
-    requestAnimationFrame(() => {
-        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+    resultsEl.insertBefore(card, resultsEl.firstChild);
+    requestAnimationFrame(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }));
 }
 
-async function handleWordChipClick(chip, wordData, fullData, reqCtx) {
-    if (chip.classList.contains('expanded')) {
-        chip.classList.remove('expanded');
-        const detail = chip.querySelector('.word-detail');
-        if (detail) detail.remove();
-        return;
-    }
+// --- Theme ---
 
-    const parent = chip.closest('.word-chips');
-    parent.querySelectorAll('.word-chip.expanded').forEach(other => {
-        other.classList.remove('expanded');
-        const d = other.querySelector('.word-detail');
-        if (d) d.remove();
-    });
+export function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    const icon = theme === 'light' ? '☀️' : '🌙';
+    const label = theme === 'light' ? 'Dark Mode' : 'Light Mode';
+    const toggleBtn = dom('theme-toggle');
+    const menuIcon = dom('menu-theme-icon');
+    const menuLabel = dom('menu-theme-label');
+    if (toggleBtn) toggleBtn.textContent = icon;
+    if (menuIcon) menuIcon.textContent = icon;
+    if (menuLabel) menuLabel.textContent = label;
+}
 
-    chip.classList.add('expanded');
+export function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('sentsei-theme', next);
+    applyTheme(next);
+}
 
-    const detailDiv = document.createElement('div');
-    detailDiv.className = 'word-detail';
-    detailDiv.innerHTML = '<div class="word-detail-loading">Loading details...</div>';
-    chip.appendChild(detailDiv);
-
-    try {
-        const resp = await fetch('/api/word-detail', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-App-Password': state.appPassword
-            },
-            body: JSON.stringify({
-                word: wordData.word,
-                meaning: wordData.meaning,
-                target_language: reqCtx.target_language,
-                sentence_context: fullData.translation
-            })
-        });
-
-        if (!resp.ok) throw new Error(await friendlyError(resp));
-        const detail = await resp.json();
-
-        let html = '';
-        if (detail.examples && detail.examples.length) {
-            html += '<div class="word-detail-section"><div class="word-detail-label">Examples</div><ul class="word-detail-examples">';
-            detail.examples.forEach(ex => {
-                html += `<li>${ex.sentence}<br><span class="example-pron">${ex.pronunciation || ''}</span> <span class="example-meaning">${ex.meaning}</span></li>`;
-            });
-            html += '</ul></div>';
-        }
-        if (detail.conjugations && detail.conjugations.length) {
-            html += '<div class="word-detail-section"><div class="word-detail-label">Forms</div><div class="word-detail-conjugations">';
-            detail.conjugations.forEach(c => {
-                html += `<span class="conjugation-tag">${c.form} <span class="conj-label">${c.label}</span></span>`;
-            });
-            html += '</div></div>';
-        }
-        if (detail.related && detail.related.length) {
-            html += '<div class="word-detail-section"><div class="word-detail-label">Related</div><div class="word-detail-related">';
-            detail.related.forEach(r => {
-                html += `<span class="related-word-tag" title="${r.meaning}">${r.word} — ${r.meaning}</span>`;
-            });
-            html += '</div></div>';
-        }
-        detailDiv.innerHTML = html || '<div class="word-detail-loading">No additional details available.</div>';
-    } catch (err) {
-        console.error(err);
-        detailDiv.innerHTML = '<div class="word-detail-loading">Failed to load details.</div>';
-    }
+export function initTheme() {
+    const saved = localStorage.getItem('sentsei-theme') || 'dark';
+    applyTheme(saved);
+    const toggleBtn = dom('theme-toggle');
+    if (toggleBtn) toggleBtn.addEventListener('click', toggleTheme);
 }

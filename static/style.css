@@ -1276,6 +1276,22 @@
             margin-bottom: 0.5rem;
         }
 
+        .result-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .result-actions {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.75rem;
+        }
+
         .result-source {
             font-size: 0.8rem;
             color: var(--text-dim);
@@ -1449,24 +1465,9 @@
             .word-chips {
                 grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
             }
+            /* Desktop: single column, just wider with better word chip grid */
             .result-card {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-            }
-            .result-card > .result-main {
-                grid-column: 1;
-                grid-row: 1 / -1;
-                border-bottom: none;
-                border-right: 1px solid var(--border);
-            }
-            .result-card > .breakdown-section {
-                grid-column: 2;
-            }
-            .result-card > .notes-section {
-                grid-column: 2;
-            }
-            .result-card > .context-examples-section {
-                grid-column: 1 / -1;
+                display: block;
             }
         }
 
@@ -1887,6 +1888,8 @@
 
         .progress-modal {
             max-width: 430px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .progress-modal-head {

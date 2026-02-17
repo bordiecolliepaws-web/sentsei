@@ -1055,15 +1055,20 @@
     "id": "6947c6704382768f",
     "name": "える",
     "lang": "ja",
-    "explanation": "The sentence uses the verb stem form 伝える followed by the noun つもり to express intention or plan.",
+    "explanation": "The verb 教える (oshieru) is used in its causative form 教て (oshite) to express the action of teaching for someone else. The polite suffix ください (kudasai) is added at the end to make a formal request.",
     "examples": [
       {
         "source": "I've been meaning to tell you something important",
         "translation": "重要なことを伝えるつもりでした",
         "timestamp": 1771293702.085342
+      },
+      {
+        "source": "Please teach me",
+        "translation": "教えてください",
+        "timestamp": 1771304827.1412401
       }
     ],
-    "count": 1
+    "count": 2
   },
   "300945c3bafd005f": {
     "id": "300945c3bafd005f",
@@ -3307,6 +3312,76 @@
         "source": "This coffee tastes amazing",
         "translation": "這咖啡味道很棒",
         "timestamp": 1771300767.2147837
+      }
+    ],
+    "count": 1
+  },
+  "f971ddd068721086": {
+    "id": "f971ddd068721086",
+    "name": "ください",
+    "lang": "ja",
+    "explanation": "The verb 教える (oshieru) is used in its causative form 教て (oshite) to express the action of teaching for someone else. The polite suffix ください (kudasai) is added at the end to make a formal request.",
+    "examples": [
+      {
+        "source": "Please teach me",
+        "translation": "教えてください",
+        "timestamp": 1771304827.1412444
+      }
+    ],
+    "count": 1
+  },
+  "aeac8c472fd0cea4": {
+    "id": "aeac8c472fd0cea4",
+    "name": "想 (xiǎng) is used to express desire or intention",
+    "lang": "zh",
+    "explanation": "想 (xiǎng) is used to express desire or intention.",
+    "examples": [
+      {
+        "source": "I want to order a coffee",
+        "translation": "我想點一杯咖啡",
+        "timestamp": 1771304899.5504572
+      }
+    ],
+    "count": 1
+  },
+  "d2472660d8308f0c": {
+    "id": "d2472660d8308f0c",
+    "name": "べたい",
+    "lang": "ja",
+    "explanation": "食べたい (tabetai) is a verb-stem + tai form which expresses desire or intention to do something.",
+    "examples": [
+      {
+        "source": "I want to eat ramen",
+        "translation": "ラーメンを食べたいです",
+        "timestamp": 1771307978.7671976
+      }
+    ],
+    "count": 1
+  },
+  "c24b2af791805430": {
+    "id": "c24b2af791805430",
+    "name": "The phrase 正在 (zhèng zài) is used to indicate an o",
+    "lang": "zh",
+    "explanation": "The phrase 正在 (zhèng zài) is used to indicate an ongoing action.",
+    "examples": [
+      {
+        "source": "Information technology is developing rapidly",
+        "translation": "資訊科技正在快速發展",
+        "timestamp": 1771308006.1106288
+      }
+    ],
+    "count": 1
+  },
+  "4e6f5a2fe10203e9": {
+    "id": "4e6f5a2fe10203e9",
+    "name": "正在 is used to indicate the present continuous tens",
+    "lang": "zh",
+    "explanation": "正在 is used to indicate the present continuous tense.",
+    "examples": [
+      {
+        "source": "Information technology is developing rapidly",
+        "translation": "資訊科技正在快速發展",
+        "timestamp": 1771308026.5650325
       }
     ],
     "count": 1

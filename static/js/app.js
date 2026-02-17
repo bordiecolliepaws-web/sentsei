@@ -12,7 +12,7 @@ import {
     startLoadingTimer, stopLoadingTimer, showError, hideError, setRandomLoadingTip,
     speakTranslation, applyTheme, toggleTheme, initToggle, applyRomanization,
     renderResult, renderCompareResults, closeCompareResults, escapeHtml
-} from './ui.js';
+} from './ui.js?v=20260217';
 import {
     loadSRSDeck, saveSRSDeck, addToSRS, getDueItems, updateSRSItem,
     updateReviewBadge, formatTimeUntil, enterReviewMode, exitReviewMode,
@@ -1193,6 +1193,8 @@ function init() {
         const sharedSentence = urlParams.get('s');
         const sharedLang = urlParams.get('t');
         if (sharedSentence) {
+            // Clear URL params so refresh doesn't re-run the sentence
+            history.replaceState(null, '', '/');
             DOM.sentenceInput.value = sharedSentence;
             if (sharedLang && DOM.langSelect.querySelector(`option[value="${sharedLang}"]`)) {
                 selectLangPill(sharedLang);

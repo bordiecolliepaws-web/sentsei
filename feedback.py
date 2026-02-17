@@ -3,10 +3,10 @@ import json
 from typing import Optional
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, Depends, HTTPException, Header
 
 from models import FeedbackRequest
-from auth import APP_PASSWORD
+from auth import APP_PASSWORD, require_password
 
 router = APIRouter()
 
@@ -14,9 +14,7 @@ FEEDBACK_FILE = Path(__file__).parent / "feedback.jsonl"
 
 
 @router.post("/api/feedback")
-async def submit_feedback(req: FeedbackRequest, x_app_password: Optional[str] = Header(default=None)):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
+async def submit_feedback(req: FeedbackRequest, _pw=Depends(require_password)):
     if not req.message or not req.message.strip():
         raise HTTPException(400, "Feedback cannot be empty")
     if len(req.message) > 1000:
@@ -36,9 +34,7 @@ async def submit_feedback(req: FeedbackRequest, x_app_password: Optional[str] = 
 
 
 @router.get("/api/feedback-list")
-async def list_feedback(x_app_password: Optional[str] = Header(default=None), limit: int = 50, offset: int = 0):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
+async def list_feedback(_pw=Depends(require_password), limit: int = 50, offset: int = 0):
     entries = []
     if FEEDBACK_FILE.exists():
         for line in FEEDBACK_FILE.read_text().strip().splitlines():
@@ -52,9 +48,7 @@ async def list_feedback(x_app_password: Optional[str] = Header(default=None), li
 
 
 @router.delete("/api/feedback/{index}")
-async def delete_feedback(index: int, x_app_password: Optional[str] = Header(default=None)):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
+async def delete_feedback(index: int, _pw=Depends(require_password)):
     if not FEEDBACK_FILE.exists():
         raise HTTPException(404, "No feedback file")
     lines = [l for l in FEEDBACK_FILE.read_text().strip().splitlines() if l.strip()]

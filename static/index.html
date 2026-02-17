@@ -11,7 +11,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/style.css?v=20260217">
 </head>
 <body>
     <a href="#sentence" class="sr-only focus-visible-only">Skip to input</a>
@@ -178,46 +178,41 @@
         </button>
         <button id="quiz-toggle" class="quiz-toggle-btn" aria-label="Toggle quiz mode">🧠 Quiz</button>
         <button id="review-toggle" class="review-toggle-btn" aria-label="Toggle review mode">📅 Review <span id="review-badge" class="badge" style="display:none">0</span></button>
-        <button id="review-toggle" class="review-toggle-btn" aria-label="Toggle review mode">📅 Review <span id="review-badge" class="review-badge" style="display:none">0</span></button>
     </div>
 
     <!-- Hamburger Menu -->
-    <button id="hamburger-btn" class="hamburger-btn" aria-label="Open menu" onclick="document.getElementById('side-menu').classList.add('open'); document.getElementById('side-menu-overlay').classList.add('open');">
+    <button id="hamburger-btn" class="hamburger-btn" aria-label="Open menu">
         ☰
         <span id="hamburger-badge" class="hamburger-badge" style="display:none">0</span>
     </button>
-    <div id="side-menu-overlay" class="side-menu-overlay" onclick="this.classList.remove('open'); document.getElementById('side-menu').classList.remove('open');"></div>
+    <div id="side-menu-overlay" class="side-menu-overlay"></div>
     <div id="side-menu" class="side-menu" role="dialog" aria-label="Navigation menu">
         <div class="side-menu-header">
             <h3>Menu</h3>
-            <button id="side-menu-close" class="side-menu-close" aria-label="Close menu" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open');">✕</button>
+            <button id="side-menu-close" class="side-menu-close" aria-label="Close menu">✕</button>
         </div>
         <div class="side-menu-items">
-            <button class="side-menu-item" id="menu-history" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open'); toggleHistoryPanel();">
+            <button class="side-menu-item" id="menu-history">
                 <span class="menu-icon">📜</span> History
                 <span id="menu-history-badge" class="menu-badge" style="display:none">0</span>
             </button>
-            <button class="side-menu-item" id="menu-quiz" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open'); toggleQuizMode();">
+            <button class="side-menu-item" id="menu-quiz">
                 <span class="menu-icon">🧠</span> Quiz
             </button>
-            <button class="side-menu-item" id="menu-review" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open'); toggleReviewMode();">
+            <button class="side-menu-item" id="menu-review">
                 <span class="menu-icon">📅</span> Review
                 <span id="menu-review-badge" class="menu-badge" style="display:none">0</span>
             </button>
-            <button class="side-menu-item" id="menu-review" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open'); toggleReviewMode();">
-                <span class="menu-icon">📅</span> Review
-                <span id="menu-review-badge" class="menu-badge" style="display:none">0</span>
-            </button>
-            <button class="side-menu-item" id="menu-grammar" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open'); toggleGrammarPanel();">
+            <button class="side-menu-item" id="menu-grammar">
                 <span class="menu-icon">📐</span> Grammar Patterns
             </button>
-            <button class="side-menu-item" id="menu-stories" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open'); toggleStoriesPanel();">
+            <button class="side-menu-item" id="menu-stories">
                 <span class="menu-icon">📖</span> Stories
             </button>
-            <button class="side-menu-item" id="menu-stats" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open'); openStatsModal();">
+            <button class="side-menu-item" id="menu-stats">
                 <span class="menu-icon">📊</span> Stats
             </button>
-            <button class="side-menu-item" id="menu-theme" onclick="document.getElementById('side-menu').classList.remove('open'); document.getElementById('side-menu-overlay').classList.remove('open'); toggleTheme();">
+            <button class="side-menu-item" id="menu-theme">
                 <span class="menu-icon" id="menu-theme-icon">🌙</span> <span id="menu-theme-label">Light Mode</span>
             </button>
         </div>
@@ -337,18 +332,7 @@
                     <div class="progress-stat-label">Learning since</div>
                     <div id="stats-learning-since" class="progress-stat-value">Not started yet</div>
                 </div>
-                <div class="progress-stat">
-                    <div class="progress-stat-label">Items in SRS deck</div>
-                    <div id="stats-srs-deck" class="progress-stat-value">0</div>
-                </div>
-                <div class="progress-stat">
-                    <div class="progress-stat-label">Due for review</div>
-                    <div id="stats-srs-due" class="progress-stat-value">0</div>
-                </div>
-                <div class="progress-stat">
-                    <div class="progress-stat-label">Mastered (interval &gt; 30d)</div>
-                    <div id="stats-srs-mastered" class="progress-stat-value">0</div>
-                </div>
+<!-- duplicate stats removed -->
             </div>
         </div>
     </div>
@@ -387,6 +371,6 @@
         </div>
     </div>
 
-    <script type="module" src="/js/app.js"></script>
+    <script type="module" src="/js/app.js?v=20260217"></script>
 </body>
 </html>

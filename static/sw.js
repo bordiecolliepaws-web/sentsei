@@ -1,5 +1,5 @@
 // SentSay Service Worker — Offline/PWA support
-const CACHE_NAME = 'sentsay-v4';
+const CACHE_NAME = 'sentsay-v20260217';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -61,7 +61,24 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Static assets: cache-first
+  // JS/CSS files: network-first (so updates are always picked up)
+  const isJSorCSS = url.pathname.endsWith('.js') || url.pathname.endsWith('.css');
+  if (isJSorCSS && url.origin === self.location.origin) {
+    event.respondWith(
+      fetch(event.request).then(response => {
+        if (response.ok) {
+          const cloned = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, cloned));
+        }
+        return response;
+      }).catch(() => {
+        return caches.match(event.request);
+      })
+    );
+    return;
+  }
+
+  // Other static assets: cache-first
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;

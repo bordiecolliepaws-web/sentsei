@@ -10,6 +10,8 @@ from typing import Optional
 from pathlib import Path
 from collections import defaultdict
 
+from fastapi import Header, HTTPException
+
 # --- Config ---
 APP_PASSWORD = os.environ.get("SENTSEI_PASSWORD", "sentsei2026")
 SESSION_TTL = 30 * 24 * 3600  # 30 days
@@ -139,3 +141,9 @@ def extract_bearer_token(authorization: Optional[str]) -> Optional[str]:
     if authorization.startswith("Bearer "):
         return authorization[7:]
     return None
+
+
+async def require_password(x_app_password: Optional[str] = Header(default=None)):
+    """FastAPI dependency that validates the X-App-Password header."""
+    if x_app_password != APP_PASSWORD:
+        raise HTTPException(401, "Unauthorized")

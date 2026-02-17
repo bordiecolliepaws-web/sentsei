@@ -14,7 +14,7 @@ from log import get_logger
 
 logger = get_logger("sentsei.routes")
 
-from fastapi import APIRouter, HTTPException, Header, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Header, Request, Response
 from fastapi.responses import StreamingResponse
 import httpx
 
@@ -33,6 +33,7 @@ from auth import (
     APP_PASSWORD, rate_limit_check, rate_limit_cleanup,
     get_db, init_user_db, hash_password, verify_password,
     create_session, get_user_from_token, extract_bearer_token,
+    require_password,
 )
 from llm import (
     OLLAMA_URL, OLLAMA_MODEL,
@@ -88,11 +89,13 @@ def _detect_input_language(sentence: str, input_lang: str = "auto"):
 async def learn_sentence(
     request: Request,
     req: SentenceRequest,
-    x_app_password: Optional[str] = Header(default=None),
+    _pw=Depends(require_password),
 ):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
+    return await _learn_sentence_impl(request, req)
 
+
+async def _learn_sentence_impl(request: Request, req: SentenceRequest):
+    """Core learn logic — no auth check, used by endpoint and internal callers."""
     client_ip = request.client.host if request.client else "unknown"
     rate_limit_cleanup()
     if not rate_limit_check(client_ip):
@@ -178,7 +181,7 @@ Respond with ONLY valid JSON (no markdown, no code fences) in this exact structu
   ],
   "cultural_note": "optional cultural context or usage tip (in the detected source language), null if none",
   "formality": "casual|polite|formal — what register this translation uses",
-  "alternative": "an alternative way to say this (different formality or phrasing), or null",
+  "alternative": "an alternative way to say this (different formality or phrasing) with pronunciation. Format: 'alternative sentence | PRONUNCIATION'. Example: '請講得比較慢一點 | qǐng jiǎng de bǐjiào màn yīdiǎn'. Null if none.",
   "native_expression": "ALWAYS provide this. This is how a native {lang_name} speaker would NATURALLY rephrase this — more colloquial, idiomatic, or restructured compared to the direct translation above. Format: 'native sentence | FULL PRONUNCIATION | EXPLANATION IN {source_lang_short}'. Example for Chinese: '這咖啡也太好喝了吧 | zhè kāfēi yě tài hǎo hē le ba | Uses 也太...了吧 (yě tài...le ba), a common exclamation pattern meaning \"this is way too [good]\"'. When mentioning {lang_name} words in the explanation, always add pronunciation and meaning in parentheses. CRITICAL: The native expression must preserve the SAME MEANING as the input. Do NOT change key concepts (e.g. if the input says 'confident', the native expression must also be about confidence, NOT progress or something else). You can change structure, formality, and phrasing, but the core meaning must stay the same. If the native expression uses different vocabulary, explain WHY in the explanation. Only null if the direct translation is already exactly how a native would say it."
 }}"""
 
@@ -427,10 +430,8 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
 async def learn_fast(
     request: Request,
     req: SentenceRequest,
-    x_app_password: Optional[str] = Header(default=None),
+    _pw=Depends(require_password),
 ):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
 
     client_ip = request.client.host if request.client else "unknown"
     rate_limit_cleanup()
@@ -515,11 +516,9 @@ Return ONLY valid JSON (no markdown):
 async def segment_sentence(
     request: Request,
     req: BreakdownRequest,
-    x_app_password: Optional[str] = Header(default=None),
+    _pw=Depends(require_password),
 ):
     """Fast word segmentation using jieba + cedict. No LLM needed."""
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
 
     if len(req.sentence) > MAX_INPUT_LEN or len(req.translation) > MAX_INPUT_LEN:
         raise HTTPException(400, f"Input too long (max {MAX_INPUT_LEN} characters)")
@@ -576,10 +575,8 @@ async def segment_sentence(
 async def get_breakdown(
     request: Request,
     req: BreakdownRequest,
-    x_app_password: Optional[str] = Header(default=None),
+    _pw=Depends(require_password),
 ):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
 
     client_ip = request.client.host if request.client else "unknown"
     rate_limit_cleanup()
@@ -609,7 +606,7 @@ Return ONLY valid JSON:
   ],
   "grammar_notes": ["1-3 key grammar patterns in {source_lang_short}"],
   "cultural_note": "optional cultural context in {source_lang_short}, or null",
-  "alternative": "alternative phrasing in {lang_name}, or null"
+  "alternative": "alternative phrasing with pronunciation. Format: 'sentence | PRONUNCIATION'. Null if none"
 }}
 
 Rules:
@@ -663,10 +660,8 @@ Rules:
 async def learn_sentence_stream(
     request: Request,
     req: SentenceRequest,
-    x_app_password: Optional[str] = Header(default=None),
+    _pw=Depends(require_password),
 ):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
 
     client_ip = request.client.host if request.client else "unknown"
     rate_limit_cleanup()
@@ -695,7 +690,7 @@ async def learn_sentence_stream(
             yield f"data: {json.dumps({'type': 'progress', 'tokens': 0, 'status': 'generating'})}\n\n"
 
             learn_task = asyncio.create_task(
-                learn_sentence(request, req, x_app_password)
+                _learn_sentence_impl(request, req)
             )
 
             tokens_est = 0
@@ -723,10 +718,8 @@ async def learn_sentence_stream(
 async def learn_multi(
     request: Request,
     req: MultiSentenceRequest,
-    x_app_password: Optional[str] = Header(default=None),
+    _pw=Depends(require_password),
 ):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
 
     if len(req.sentences) > MAX_INPUT_LEN * 5:
         raise HTTPException(400, f"Input too long (max {MAX_INPUT_LEN * 5} characters)")
@@ -742,7 +735,7 @@ async def learn_multi(
             speaker_gender=req.speaker_gender,
             speaker_formality=req.speaker_formality,
         )
-        result = await learn_sentence(request, single_req, x_app_password)
+        result = await _learn_sentence_impl(request, single_req)
         return {"mode": "single", "results": [{"sentence": parts[0], "result": result}]}
 
     results = []
@@ -754,7 +747,7 @@ async def learn_multi(
             speaker_formality=req.speaker_formality,
         )
         try:
-            result = await learn_sentence(request, single_req, x_app_password)
+            result = await _learn_sentence_impl(request, single_req)
             results.append({"sentence": sentence, "result": result})
         except HTTPException as e:
             results.append({"sentence": sentence, "error": e.detail})
@@ -766,10 +759,8 @@ async def learn_multi(
 async def word_detail(
     request: Request,
     req: WordDetailRequest,
-    x_app_password: Optional[str] = Header(default=None),
+    _pw=Depends(require_password),
 ):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
 
     client_ip = request.client.host if request.client else "unknown"
     rate_limit_cleanup()
@@ -834,10 +825,8 @@ Rules:
 async def context_examples(
     request: Request,
     req: ContextExamplesRequest,
-    x_app_password: Optional[str] = Header(default=None),
+    _pw=Depends(require_password),
 ):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
 
     client_ip = request.client.host if request.client else "unknown"
     rate_limit_cleanup()
@@ -917,10 +906,8 @@ async def get_languages():
 @router.post("/api/export-anki")
 async def export_anki(
     entries: List[AnkiExportEntry],
-    x_app_password: Optional[str] = Header(default=None),
+    _pw=Depends(require_password),
 ):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
 
     rows: List[str] = []
     for entry in entries:
@@ -966,10 +953,8 @@ async def health_check():
 async def compare_sentence(
     request: Request,
     req: CompareRequest,
-    x_app_password: Optional[str] = Header(default=None),
+    _pw=Depends(require_password),
 ):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
 
     client_ip = request.client.host if request.client else "unknown"
     rate_limit_cleanup()
@@ -996,7 +981,7 @@ async def compare_sentence(
             speaker_formality=req.speaker_formality,
         )
         try:
-            result = await learn_sentence(request, single_req, x_app_password)
+            result = await _learn_sentence_impl(request, single_req)
             if hasattr(result, 'body'):
                 result = json.loads(result.body)
             results.append({
@@ -1035,9 +1020,7 @@ async def get_story(story_id: str):
 
 
 @router.get("/api/grammar-patterns")
-async def list_grammar_patterns(lang: Optional[str] = None, x_app_password: Optional[str] = Header(default=None)):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
+async def list_grammar_patterns(lang: Optional[str] = None, _pw=Depends(require_password)):
     patterns = list(get_grammar_patterns().values())
     if lang:
         patterns = [p for p in patterns if p.get("lang") == lang]
@@ -1049,9 +1032,7 @@ async def list_grammar_patterns(lang: Optional[str] = None, x_app_password: Opti
 
 
 @router.get("/api/grammar-patterns/{pattern_id}")
-async def get_grammar_pattern(pattern_id: str, x_app_password: Optional[str] = Header(default=None)):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
+async def get_grammar_pattern(pattern_id: str, _pw=Depends(require_password)):
     pattern = get_grammar_patterns().get(pattern_id)
     if not pattern:
         raise HTTPException(404, "Pattern not found")
