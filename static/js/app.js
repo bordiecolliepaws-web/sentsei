@@ -1021,8 +1021,14 @@ function init() {
     initFeedback();
 
     // Theme
-    const saved = localStorage.getItem(KEYS.THEME) || 'dark';
-    applyTheme(saved);
+    const explicitTheme = localStorage.getItem(KEYS.THEME);
+    const osPrefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+    const initialTheme = explicitTheme || (osPrefersDark === false ? 'light' : 'dark');
+    applyTheme(initialTheme);
+    // Listen for OS theme changes (only when user hasn't explicitly chosen)
+    window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        if (!localStorage.getItem(KEYS.THEME)) applyTheme(e.matches ? 'dark' : 'light');
+    });
     const themeToggleBtn = document.getElementById('theme-toggle');
     if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
 

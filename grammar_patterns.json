@@ -463,7 +463,7 @@
     "id": "ad5ceb50ac901499",
     "name": "しい",
     "lang": "ja",
-    "explanation": "美しい (うつくしい) is used as an adjective to describe 太陽花 (たいようか).",
+    "explanation": "美しい is an i-adjective that means 'beautiful'. It modifies 太陽花.",
     "examples": [
       {
         "source": "My neighbor grows beautiful sunflowers",
@@ -476,7 +476,7 @@
         "timestamp": 1771293844.9122512
       }
     ],
-    "count": 2
+    "count": 3
   },
   "5eb2f611b6ee5784": {
     "id": "5eb2f611b6ee5784",
@@ -3823,6 +3823,20 @@
         "source": "越練習就越有自信",
         "translation": "練習するほど自信が増す",
         "timestamp": 1771355356.490317
+      }
+    ],
+    "count": 1
+  },
+  "f7dde20fd7a06406": {
+    "id": "f7dde20fd7a06406",
+    "name": "てています",
+    "lang": "ja",
+    "explanation": "育てています uses the polite form of the verb to indicate ongoing action.",
+    "examples": [
+      {
+        "source": "My neighbor grows beautiful sunflowers",
+        "translation": "近所の人が美しい太陽花を育てています。",
+        "timestamp": 1771361873.447943
       }
     ],
     "count": 1

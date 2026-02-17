@@ -166,6 +166,14 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Learn endpoint returns empty `words` field** ✅ 2026-02-18 — Non-issue: field doesn't exist in current codebase, already clean.
 - [ ] **Frontend smoke tests** — Playwright or Puppeteer headless tests: load page, enter sentence, get result, check word chips expand, verify history saves. Run in CI alongside backend tests.
 
+## P12 — Polish & Developer Experience (from 2026-02-18 reflection #2)
+- [x] **Auto dark/light theme from OS** ✅ 2026-02-18 — Detect `prefers-color-scheme` media query on load and on change. Only apply if user hasn't explicitly toggled (check localStorage). Saves one click for most users.
+- [ ] **Split app.js further** — Still 1099 lines. Extract: `onboarding.js` (first-visit overlay), `speculative.js` (typing-ahead translation), `offline.js` (health polling, offline banner). Target <600 lines for app.js.
+- [ ] **Split learn_routes.py** — 761 lines with 12 functions. Extract `stream_routes.py` (learn-stream + SSE helpers) and `segment_routes.py` (segment + breakdown). Target <400 lines.
+- [ ] **Improve LLM response time** — `/api/learn` p99 is 33s. Investigate: shorter prompts, smaller model for simple sentences, or parallel breakdown + translation calls. Target p99 <15s.
+- [ ] **Frontend smoke tests** — (moved from P11) Playwright headless: load page, enter sentence, get result, verify word chips expand, check history saves. Run alongside backend tests.
+- [ ] **Server-side SRS for multi-user** — (moved from P10) Migrate SRS deck to SQLite `user_data`. Sync endpoints. Add backend test coverage.
+
 ## Cron Test Matrix
 Each iteration should run these checks:
 1. English → Korean: explanations in English? Translation in 한글?
