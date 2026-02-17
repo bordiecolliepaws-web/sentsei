@@ -154,14 +154,14 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Graceful degradation when Ollama is down** ✅ 2026-02-17 — Backend serves cached results (any gender/formality match) with `from_cache`+`ollama_offline` flags when Ollama unreachable. Frontend polls `/api/health` every 30s, shows warning banner, dims learn button, displays "📦 cached" badge on offline-served results. Auto-recovers when Ollama comes back.
 - [x] **Frontend JS module consolidation** ✅ 2026-02-17 — Extracted `story.js` (119 lines), `compare.js` (72 lines), `grammar.js` (92 lines) from app.js. Reduced from 1305→1040 lines.
 - [x] **Translation quality feedback loop** ✅ 2026-02-17 — Feedback now optionally includes sentence/translation/target language. Negative feedback messages ("👎", "translation is wrong", etc.) mark that translation as low-quality, evict it from the cache, and prevent it from being cached again. Low-quality combos are tracked in bad_translations.json for future prompt tuning.
-- [ ] **Batch SRS review** — Currently reviews one card at a time. Add a "Review 10" mode that queues up due cards and shows stats at the end (correct %, time per card).
+- [x] **Batch SRS review** ✅ 2026-02-18 — "Review 10" mode with progress bar, stats summary (correct %, avg time, streak, grade).
 - [ ] **Server-side SRS for multi-user** — SRS is currently frontend-only localStorage. For multi-user to be meaningful, migrate SRS deck to SQLite user_data with sync. Then add backend test coverage (currently deferred in P6).
 - [x] **API documentation** ✅ 2026-02-17 — OpenAPI metadata (title, description, version), all 29 endpoints tagged and summarized, /docs (Swagger UI) + /redoc endpoints, API Docs link in side menu.
 
 ## P11 — Polish & Robustness (from 2026-02-18 reflection)
 - [x] **Split style.css (2672 lines)** ✅ 2026-02-18 — Extracted into `variables.css` (38 lines, custom properties/themes), `components.css` (2446 lines, all component styles), `responsive.css` (196 lines, media queries). Main `style.css` is now 3 @import statements.
 - [x] **Rate limit visibility** ✅ 2026-02-18 — X-RateLimit-Limit/Remaining/Window headers on all API responses. Frontend counter appears near input when ≤10 remaining, amber at ≤10, red at ≤3. CORS expose_headers, aria-live for accessibility.
-- [ ] **Batch SRS review mode** — Queue up 10 due cards, show progress bar, stats at end (correct %, avg time per card, streak). More engaging than one-at-a-time.
+- [x] **Batch SRS review mode** ✅ 2026-02-18 — Queue up to 10 due cards, progress bar, summary with correct %, score, avg time, best streak, grade system.
 - [x] **Sentence favorites / bookmarks** ✅ 2026-02-18 — Star button on results, separate from history. localStorage + server sync for logged-in users. Favorites panel in side menu, Anki TSV export. No entry limit.
 - [x] **Learn endpoint returns empty `words` field** ✅ 2026-02-18 — Non-issue: field doesn't exist in current codebase, already clean.
 - [ ] **Frontend smoke tests** — Playwright or Puppeteer headless tests: load page, enter sentence, get result, check word chips expand, verify history saves. Run in CI alongside backend tests.
