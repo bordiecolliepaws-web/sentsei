@@ -280,9 +280,14 @@
         "source": "This is a simple sentence",
         "translation": "これは単純な文です。",
         "timestamp": 1771271826.4332979
+      },
+      {
+        "source": "The weather is nice today",
+        "translation": "今日は天気が良いです",
+        "timestamp": 1771293513.0185044
       }
     ],
-    "count": 1
+    "count": 2
   },
   "4e51b0f1d2037a69": {
     "id": "4e51b0f1d2037a69",
@@ -868,6 +873,76 @@
         "source": "what does romanization mean?",
         "translation": "羅馬拼音是什麼意思？",
         "timestamp": 1771275557.0808132
+      }
+    ],
+    "count": 1
+  },
+  "636c22e47fe3b304": {
+    "id": "636c22e47fe3b304",
+    "name": "The word '把' is used here to indicate that the obj",
+    "lang": "zh",
+    "explanation": "The word '把' is used here to indicate that the object of the sentence ('東西') is directly affected by the action of the verb ('拿').",
+    "examples": [
+      {
+        "source": "I want to do back to",
+        "translation": "我想把東西拿回去",
+        "timestamp": 1771290838.2914095
+      }
+    ],
+    "count": 1
+  },
+  "17177c94ece86f91": {
+    "id": "17177c94ece86f91",
+    "name": "'回' in this context means going back somewhere, of",
+    "lang": "zh",
+    "explanation": "'回' in this context means going back somewhere, often with something taken from another place.",
+    "examples": [
+      {
+        "source": "I want to do back to",
+        "translation": "我想把東西拿回去",
+        "timestamp": 1771290838.2914171
+      }
+    ],
+    "count": 1
+  },
+  "f53c7e5035264da3": {
+    "id": "f53c7e5035264da3",
+    "name": "使用了'בצורה בלתי נסבלת'來表達無法忍受的美麗，這是一種誇張的說法。",
+    "lang": "he",
+    "explanation": "使用了'בצורה בלתי נסבלת'來表達無法忍受的美麗，這是一種誇張的說法。",
+    "examples": [
+      {
+        "source": "海邊的夕陽真的美到不行",
+        "translation": "ה(setting) השמש על החוף הוא באמת יפה בצורה בלתי נסבלת",
+        "timestamp": 1771293488.8196564
+      }
+    ],
+    "count": 1
+  },
+  "b3fc9a4e6d1215a4": {
+    "id": "b3fc9a4e6d1215a4",
+    "name": "The particle は (wa) is used to mark the topic of t",
+    "lang": "ja",
+    "explanation": "The particle は (wa) is used to mark the topic of the sentence.",
+    "examples": [
+      {
+        "source": "The weather is nice today",
+        "translation": "今日は天気が良いです",
+        "timestamp": 1771293513.01849
+      }
+    ],
+    "count": 1
+  },
+  "89acf5540e9a799d": {
+    "id": "89acf5540e9a799d",
+    "name": "The subject marker が (ga) is used before the adjec",
+    "lang": "ja",
+    "explanation": "The subject marker が (ga) is used before the adjective 天気が良い (tenki ga yoi).",
+    "examples": [
+      {
+        "source": "The weather is nice today",
+        "translation": "今日は天気が良いです",
+        "timestamp": 1771293513.0184975
       }
     ],
     "count": 1

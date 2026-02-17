@@ -13,6 +13,7 @@ from log import get_logger
 logger = get_logger("sentsei.llm")
 
 import httpx
+import MeCab
 import pykakasi
 from pypinyin import pinyin, Style as PinyinStyle
 from korean_romanizer.romanizer import Romanizer
@@ -27,13 +28,103 @@ TAIDE_MODEL = "jcai/llama3-taide-lx-8b-chat-alpha1:Q4_K_M"
 
 # --- Pronunciation ---
 _kakasi = pykakasi.kakasi()
+_mecab_tagger = MeCab.Tagger()
 _s2twp = OpenCC('s2twp')
+
+# Common reading overrides (MeCab/unidic sometimes gives formal readings)
+_JA_READING_OVERRIDES = {
+    "私": "watashi",      # unidic gives watakushi (formal)
+    "俺": "ore",
+    "僕": "boku",
+}
+
+# Japanese punctuation to strip from romaji output
+_JA_PUNCT = set("、。！？「」『』（）…—·〜～，")
+
+
+def _katakana_to_romaji(kata: str) -> str:
+    """Convert katakana string to Hepburn romaji via pykakasi."""
+    conv = _kakasi.convert(kata)
+    return "".join(item["hepburn"] for item in conv)
+
+
+def _clean_long_vowels(romaji: str) -> str:
+    """Convert doubled vowels to macron notation (standard Hepburn)."""
+    romaji = _re.sub(r"aa", "ā", romaji)
+    romaji = _re.sub(r"ii", "ī", romaji)
+    romaji = _re.sub(r"uu", "ū", romaji)
+    romaji = _re.sub(r"ee", "ē", romaji)
+    romaji = _re.sub(r"ou", "ō", romaji)
+    romaji = _re.sub(r"oo", "ō", romaji)
+    return romaji
+
+
+def _japanese_pronunciation(text: str) -> str:
+    """High-quality Japanese romanization using MeCab tokenization + pykakasi conversion.
+    
+    Improvements over raw pykakasi:
+    - Correct particle pronunciation (は→wa, を→o, へ→e)
+    - Proper long vowel macrons (ā, ī, ū, ē, ō)
+    - Better tokenization (食べたいです → tabe tai desu, not tabeta idesu)
+    - Common reading overrides (私→watashi, not watakushi)
+    - Punctuation stripped from output
+    """
+    node = _mecab_tagger.parseToNode(text)
+    parts = []
+    while node:
+        surface = node.surface
+        if not surface:
+            node = node.next
+            continue
+        
+        # Skip punctuation
+        if all(c in _JA_PUNCT for c in surface):
+            node = node.next
+            continue
+        
+        features = node.feature.split(",")
+        pos = features[0] if features else ""
+        
+        # Check overrides first
+        if surface in _JA_READING_OVERRIDES:
+            parts.append(_JA_READING_OVERRIDES[surface])
+            node = node.next
+            continue
+        
+        # Particle corrections
+        if "助詞" in pos:
+            if surface == "は":
+                parts.append("wa")
+                node = node.next
+                continue
+            elif surface == "を":
+                parts.append("o")
+                node = node.next
+                continue
+            elif surface == "へ":
+                parts.append("e")
+                node = node.next
+                continue
+        
+        # Use MeCab pronunciation field (index 9 in unidic) if available
+        pronunciation_kata = features[9] if len(features) > 9 and features[9] != "*" else None
+        if pronunciation_kata:
+            romaji = _katakana_to_romaji(pronunciation_kata)
+        else:
+            romaji = _katakana_to_romaji(surface)
+        
+        if romaji.strip():
+            parts.append(romaji)
+        
+        node = node.next
+    
+    raw = " ".join(parts)
+    return _clean_long_vowels(raw)
 
 
 def deterministic_pronunciation(text: str, lang_code: str) -> Optional[str]:
     if lang_code == "ja":
-        result = _kakasi.convert(text)
-        return " ".join(item["hepburn"] for item in result if item["hepburn"].strip())
+        return _japanese_pronunciation(text)
     elif lang_code == "zh":
         result = pinyin(text, style=PinyinStyle.TONE)
         return " ".join(p[0] for p in result)
