@@ -15,7 +15,8 @@ from fastapi.staticfiles import StaticFiles
 from cache import load_cache, save_cache, is_cache_dirty, load_grammar_patterns, save_grammar_patterns, is_grammar_dirty
 from auth import init_user_db, cleanup_expired_sessions
 from llm import check_ollama_connectivity
-from routes import router, load_surprise_bank, fill_surprise_bank_task, refill_surprise_bank_task, get_surprise_bank
+from routes import router
+from surprise import load_surprise_bank, fill_surprise_bank_task, refill_surprise_bank_task, get_surprise_bank
 
 app = FastAPI()
 

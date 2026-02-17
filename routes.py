@@ -8,7 +8,7 @@ import time
 import asyncio
 from typing import Optional, List
 from pathlib import Path
-from collections import defaultdict
+from collections import defaultdict  # kept for potential use
 
 from log import get_logger
 
@@ -22,13 +22,12 @@ from models import (
     SUPPORTED_LANGUAGES, ALLOWED_DATA_KEYS,
     SentenceRequest, BreakdownRequest, MultiSentenceRequest,
     WordDetailRequest, ContextExamplesRequest, AnkiExportEntry,
-    QuizCheckRequest, CompareRequest, FeedbackRequest, AuthRequest,
-    CURATED_SENTENCES, STORIES, SURPRISE_SENTENCES_EN, SURPRISE_SENTENCES_ZH,
+    CompareRequest, AuthRequest,
+    STORIES,
 )
 from cache import (
     cache_key, cache_get, cache_put,
     extract_and_store_grammar_patterns, get_grammar_patterns,
-    get_quiz_answers, cleanup_quiz_answers,
 )
 from auth import (
     APP_PASSWORD, rate_limit_check, rate_limit_cleanup,
@@ -40,30 +39,24 @@ from llm import (
     deterministic_pronunciation, deterministic_word_pronunciation,
     ensure_traditional_chinese, detect_sentence_difficulty,
     cedict_lookup, parse_json_object, split_sentences,
-    new_quiz_id, translation_hint, sanitize_tsv_cell, anki_language_label,
+    sanitize_tsv_cell, anki_language_label,
     ollama_chat, check_ollama_connectivity,
 )
 
+from surprise import (
+    router as surprise_router,
+    _surprise_bank, _surprise_bank_filling,
+    increment_user_request, decrement_user_request,
+    load_surprise_bank, fill_surprise_bank_task, refill_surprise_bank_task,
+    save_surprise_bank, get_surprise_bank,
+)
+from feedback import router as feedback_router
+from quiz_routes import router as quiz_router
+
 router = APIRouter()
-
-# --- Surprise Bank State ---
-_surprise_bank: dict = defaultdict(list)
-_surprise_bank_filling = False
-_user_request_active: Optional[asyncio.Event] = None
-_user_request_count = 0
-SURPRISE_BANK_TARGET = 6
-
-
-def _get_user_event() -> asyncio.Event:
-    global _user_request_active
-    if _user_request_active is None:
-        _user_request_active = asyncio.Event()
-        _user_request_active.set()
-    return _user_request_active
-
-
-# --- Feedback ---
-FEEDBACK_FILE = Path(__file__).parent / "feedback.jsonl"
+router.include_router(surprise_router)
+router.include_router(feedback_router)
+router.include_router(quiz_router)
 
 
 # --- Injection check ---
@@ -108,9 +101,7 @@ async def learn_sentence(
     if not req.sentence or not req.sentence.strip():
         raise HTTPException(400, "Sentence cannot be empty")
 
-    global _user_request_count
-    _user_request_count += 1
-    _get_user_event().clear()
+    increment_user_request()
 
     if len(req.sentence) > MAX_INPUT_LEN:
         raise HTTPException(400, f"Input too long (max {MAX_INPUT_LEN} characters)")
@@ -124,10 +115,7 @@ async def learn_sentence(
     ck = cache_key(req.sentence, req.target_language, gender, formality)
     cached = cache_get(ck)
     if cached:
-        _user_request_count -= 1
-        if _user_request_count <= 0:
-            _user_request_count = 0
-            _get_user_event().set()
+        decrement_user_request()
         if "difficulty" not in cached or cached.get("difficulty") is None:
             sd = detect_sentence_difficulty(req.sentence, cached.get("breakdown", []))
             cached["sentence_difficulty"] = sd
@@ -430,10 +418,7 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
     except Exception:
         logger.exception("Grammar extraction error", extra={"component": "grammar"})
 
-    _user_request_count -= 1
-    if _user_request_count <= 0:
-        _user_request_count = 0
-        _get_user_event().set()
+    decrement_user_request()
 
     return result
 
@@ -705,9 +690,7 @@ async def learn_sentence_stream(
 
     async def _generate():
         try:
-            global _user_request_count
-            _user_request_count += 1
-            _get_user_event().clear()
+            increment_user_request()
 
             yield f"data: {json.dumps({'type': 'progress', 'tokens': 0, 'status': 'generating'})}\n\n"
 
@@ -730,10 +713,7 @@ async def learn_sentence_stream(
         except Exception as e:
             yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
         finally:
-            _user_request_count -= 1
-            if _user_request_count <= 0:
-                _user_request_count = 0
-                _get_user_event().set()
+            decrement_user_request()
 
     return StreamingResponse(_generate(), media_type="text/event-stream",
                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
@@ -965,42 +945,6 @@ async def export_anki(
     return Response(content=content, media_type="text/tab-separated-values", headers=headers)
 
 
-@router.get("/api/surprise")
-async def get_surprise_sentence(lang: str, input_lang: str = "en"):
-    if lang not in SUPPORTED_LANGUAGES:
-        raise HTTPException(400, "Unsupported language")
-
-    bank_key = f"{lang}_{input_lang}"
-    if _surprise_bank[bank_key]:
-        idx = random.randrange(len(_surprise_bank[bank_key]))
-        entry = _surprise_bank[bank_key].pop(idx)
-        return {
-            "language": lang,
-            "sentence": entry["sentence"],
-            "difficulty": entry["difficulty"],
-            "category": entry["category"],
-            "precomputed": True,
-            "result": entry["result"],
-        }
-
-    pool = SURPRISE_SENTENCES_ZH if input_lang == "zh" else SURPRISE_SENTENCES_EN
-    picked = random.choice(pool)
-    return {
-        "language": lang,
-        "sentence": picked["sentence"],
-        "difficulty": picked["difficulty"],
-        "category": picked["category"],
-    }
-
-
-@router.get("/api/surprise-bank-status")
-async def surprise_bank_status():
-    status = {}
-    for key, items in _surprise_bank.items():
-        status[key] = len(items)
-    return {"filling": _surprise_bank_filling, "banks": status}
-
-
 @router.get("/api/health")
 async def health_check():
     from cache import _translation_cache, CACHE_MAX, CACHE_TTL
@@ -1017,193 +961,6 @@ async def health_check():
         "surprise_bank": {"total_entries": bank_total, "languages": bank_langs, "filling": _surprise_bank_filling},
         "latency": get_latency_stats(),
     }
-
-
-@router.api_route("/api/quiz", methods=["GET", "POST"])
-async def get_quiz(
-    request: Request,
-    lang: str,
-    gender: str = "neutral",
-    formality: str = "polite",
-    x_app_password: Optional[str] = Header(default=None),
-):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
-
-    if lang not in SUPPORTED_LANGUAGES:
-        raise HTTPException(400, "Unsupported language")
-
-    lang_name = SUPPORTED_LANGUAGES[lang]
-    quiz_answers = get_quiz_answers()
-
-    history_items = []
-    if request.method == "POST":
-        try:
-            body = await request.json()
-            history_items = body.get("history", [])
-        except Exception:
-            pass
-
-    if history_items:
-        picked = random.choice(history_items)
-        sentence = picked["translation"]
-        source_sentence = picked["sentence"]
-        pronunciation = picked.get("pronunciation", "")
-        quiz_id = new_quiz_id(lang, sentence)
-        cleanup_quiz_answers()
-        quiz_answers[quiz_id] = {
-            "answer_en": source_sentence,
-            "answer_zh": source_sentence,
-            "sentence": sentence,
-            "created_at": time.time(),
-        }
-        return {
-            "quiz_id": quiz_id,
-            "sentence": sentence,
-            "pronunciation": pronunciation,
-            "source": "Your history",
-            "hint": source_sentence[:3] + "..." if len(source_sentence) > 3 else source_sentence,
-            "language": lang,
-        }
-
-    sentence_pool = CURATED_SENTENCES.get(lang, [])
-    if not sentence_pool:
-        raise HTTPException(404, "No curated sentences found for this language")
-
-    picked = random.choice(sentence_pool)
-    sentence = picked["sentence"]
-
-    prompt = f"""Translate this {lang_name} sentence into both English and Traditional Chinese (Taiwan usage).
-
-Sentence: "{sentence}"
-Context:
-- Speaker gender: {gender}
-- Formality: {formality}
-
-Return ONLY valid JSON:
-{{
-  "translation_en": "Natural English meaning",
-  "translation_zh": "Natural Traditional Chinese meaning (Taiwan usage)"
-}}"""
-
-    system_msg = "You are a translation assistant. Return valid JSON only."
-
-    text = await ollama_chat(
-        [{"role": "system", "content": system_msg}, {"role": "user", "content": prompt}],
-        model=OLLAMA_MODEL, temperature=0.2, num_predict=256, timeout=60
-    )
-
-    if text is None:
-        raise HTTPException(502, "LLM API error")
-
-    parsed = parse_json_object(text) or {}
-    translation_en = (parsed.get("translation_en") or "").strip()
-    translation_zh = (parsed.get("translation_zh") or "").strip()
-
-    if not translation_en and not translation_zh:
-        raise HTTPException(502, "Failed to generate quiz answer")
-    if not translation_en:
-        translation_en = translation_zh
-    if not translation_zh:
-        translation_zh = translation_en
-
-    quiz_id = new_quiz_id(lang, sentence)
-    cleanup_quiz_answers()
-    quiz_answers[quiz_id] = {
-        "created_at": time.time(),
-        "sentence": sentence,
-        "language": lang,
-        "source": picked.get("source", ""),
-        "answer_en": translation_en,
-        "answer_zh": translation_zh,
-    }
-
-    return {
-        "quiz_id": quiz_id,
-        "sentence": sentence,
-        "source": picked.get("source", ""),
-        "language": lang,
-        "hint": translation_hint(translation_en),
-        "pronunciation": deterministic_pronunciation(sentence, lang),
-    }
-
-
-@router.post("/api/quiz-check")
-async def quiz_check(
-    request: Request,
-    req: QuizCheckRequest,
-    x_app_password: Optional[str] = Header(default=None),
-):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
-
-    client_ip = request.client.host if request.client else "unknown"
-    rate_limit_cleanup()
-    if not rate_limit_check(client_ip):
-        raise HTTPException(429, "Too many requests. Please wait a minute.")
-
-    answer = req.answer.strip()
-    if not answer:
-        raise HTTPException(400, "Answer is required")
-
-    cleanup_quiz_answers()
-    quiz_answers = get_quiz_answers()
-    quiz = quiz_answers.get(req.quiz_id)
-    if not quiz:
-        raise HTTPException(404, "Quiz not found or expired")
-
-    if req.target_language != quiz.get("language"):
-        raise HTTPException(400, "Quiz language mismatch")
-
-    lang_name = SUPPORTED_LANGUAGES.get(quiz["language"], quiz["language"])
-
-    prompt = f"""Evaluate whether the learner answer captures the MEANING of the target sentence.
-Do not require exact wording.
-
-Target sentence ({lang_name}): "{quiz['sentence']}"
-Reference English meaning: "{quiz['answer_en']}"
-Reference Traditional Chinese meaning: "{quiz['answer_zh']}"
-Learner answer: "{answer}"
-
-Scoring rubric:
-- perfect: meaning is fully accurate and complete
-- good: meaning is correct with minor wording differences
-- partial: some meaning is correct but key details are missing or off
-- wrong: meaning is mostly incorrect
-
-Return JSON only in this format:
-{{"score": "perfect|good|partial|wrong", "feedback": "brief explanation"}}"""
-
-    system_msg = "You are a translation quiz grader. Grade semantic equivalence only. Return strict JSON only."
-
-    text = await ollama_chat(
-        [{"role": "system", "content": system_msg}, {"role": "user", "content": prompt}],
-        model=OLLAMA_MODEL, temperature=0.1, num_predict=196, timeout=60
-    )
-
-    if text is None:
-        raise HTTPException(502, "LLM API error")
-
-    parsed = parse_json_object(text) or {}
-    score = str(parsed.get("score", "")).strip().lower()
-    if score not in {"perfect", "good", "partial", "wrong"}:
-        score = "wrong"
-    feedback = str(parsed.get("feedback", "")).strip() or "Meaning does not match closely enough."
-
-    answer_en = quiz.get("answer_en", "").strip()
-    answer_zh = quiz.get("answer_zh", "").strip()
-    if answer_en and answer_zh and answer_zh != answer_en:
-        correct_answer = f"{answer_en} / {answer_zh}"
-    else:
-        correct_answer = answer_en or answer_zh
-
-    return {
-        "correct": score in {"perfect", "good"},
-        "score": score,
-        "correct_answer": correct_answer,
-        "feedback": feedback,
-    }
-
 
 @router.post("/api/compare")
 async def compare_sentence(
@@ -1275,59 +1032,6 @@ async def get_story(story_id: str):
     if not story:
         raise HTTPException(404, "Story not found")
     return story
-
-
-@router.post("/api/feedback")
-async def submit_feedback(req: FeedbackRequest, x_app_password: Optional[str] = Header(default=None)):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
-    if not req.message or not req.message.strip():
-        raise HTTPException(400, "Feedback cannot be empty")
-    if len(req.message) > 1000:
-        raise HTTPException(400, "Feedback too long")
-
-    import datetime
-    entry = {
-        "timestamp": datetime.datetime.utcnow().isoformat(),
-        "message": req.message.strip(),
-        "sentence": req.sentence,
-        "translation": req.translation,
-        "target_language": req.target_language,
-    }
-    with open(FEEDBACK_FILE, "a") as f:
-        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
-    return {"ok": True}
-
-
-@router.get("/api/feedback-list")
-async def list_feedback(x_app_password: Optional[str] = Header(default=None), limit: int = 50, offset: int = 0):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
-    entries = []
-    if FEEDBACK_FILE.exists():
-        for line in FEEDBACK_FILE.read_text().strip().splitlines():
-            if line.strip():
-                try:
-                    entries.append(json.loads(line))
-                except json.JSONDecodeError:
-                    pass
-    entries.reverse()
-    return {"total": len(entries), "entries": entries[offset:offset + limit]}
-
-
-@router.delete("/api/feedback/{index}")
-async def delete_feedback(index: int, x_app_password: Optional[str] = Header(default=None)):
-    if x_app_password != APP_PASSWORD:
-        raise HTTPException(401, "Unauthorized")
-    if not FEEDBACK_FILE.exists():
-        raise HTTPException(404, "No feedback file")
-    lines = [l for l in FEEDBACK_FILE.read_text().strip().splitlines() if l.strip()]
-    file_index = len(lines) - 1 - index
-    if file_index < 0 or file_index >= len(lines):
-        raise HTTPException(404, "Index out of range")
-    lines.pop(file_index)
-    FEEDBACK_FILE.write_text("\n".join(lines) + "\n" if lines else "")
-    return {"ok": True}
 
 
 @router.get("/api/grammar-patterns")
@@ -1472,105 +1176,3 @@ async def put_user_data(key: str, request: Request, authorization: Optional[str]
 
 
 # --- Surprise Bank Background Tasks ---
-
-async def _precompute_one(sentence: str, lang: str, input_lang: str):
-    try:
-        async with httpx.AsyncClient(timeout=180) as client:
-            resp = await client.post(
-                "http://127.0.0.1:8847/api/learn",
-                json={
-                    "sentence": sentence,
-                    "target_language": lang,
-                    "input_language": input_lang,
-                    "speaker_gender": "neutral",
-                    "speaker_formality": "polite",
-                },
-                headers={"X-App-Password": APP_PASSWORD},
-            )
-            if resp.status_code == 200:
-                return resp.json()
-    except Exception:
-        logger.exception("Surprise bank precompute error", extra={"component": "surprise-bank"})
-    return None
-
-
-async def fill_surprise_bank_task():
-    global _surprise_bank_filling
-    await asyncio.sleep(10)
-    _surprise_bank_filling = True
-    logger.info("Starting surprise bank pre-computation", extra={"component": "surprise-bank"})
-    count = 0
-    for lang in SUPPORTED_LANGUAGES:
-        for input_lang, pool in [("en", SURPRISE_SENTENCES_EN), ("zh", SURPRISE_SENTENCES_ZH)]:
-            if lang == "en" and input_lang == "en": continue
-            if lang == "zh" and input_lang == "zh": continue
-            bank_key = f"{lang}_{input_lang}"
-            samples = random.sample(pool, min(SURPRISE_BANK_TARGET, len(pool)))
-            for s in samples:
-                if len(_surprise_bank[bank_key]) >= SURPRISE_BANK_TARGET: break
-                await _get_user_event().wait()
-                result = await _precompute_one(s["sentence"], lang, input_lang)
-                if result:
-                    _surprise_bank[bank_key].append({
-                        "sentence": s["sentence"],
-                        "difficulty": s.get("difficulty", "medium"),
-                        "category": s.get("category", "general"),
-                        "result": result,
-                    })
-                    count += 1
-                    if count % 10 == 0:
-                        save_surprise_bank()
-                await asyncio.sleep(0.5)
-    _surprise_bank_filling = False
-    logger.info("Surprise bank pre-computation complete", extra={"component": "surprise-bank", "count": count})
-    save_surprise_bank()
-
-
-async def refill_surprise_bank_task():
-    while True:
-        await asyncio.sleep(600)
-        for lang in SUPPORTED_LANGUAGES:
-            for input_lang, pool in [("en", SURPRISE_SENTENCES_EN), ("zh", SURPRISE_SENTENCES_ZH)]:
-                if lang == "en" and input_lang == "en": continue
-                if lang == "zh" and input_lang == "zh": continue
-                bank_key = f"{lang}_{input_lang}"
-                if len(_surprise_bank[bank_key]) < 2:
-                    samples = random.sample(pool, min(4, len(pool)))
-                    for s in samples:
-                        await _get_user_event().wait()
-                        result = await _precompute_one(s["sentence"], lang, input_lang)
-                        if result:
-                            _surprise_bank[bank_key].append({
-                                "sentence": s["sentence"],
-                                "difficulty": s.get("difficulty", "medium"),
-                                "category": s.get("category", "general"),
-                                "result": result,
-                            })
-                        await asyncio.sleep(1)
-        save_surprise_bank()
-
-
-def save_surprise_bank():
-    try:
-        bank_file = Path(__file__).parent / "surprise_bank.json"
-        data = {k: v for k, v in _surprise_bank.items() if v}
-        bank_file.write_text(json.dumps(data, ensure_ascii=False))
-        logger.info("Surprise bank saved to disk", extra={"component": "surprise-bank", "count": sum(len(v) for v in data.values())})
-    except Exception:
-        logger.exception("Failed to save surprise bank", extra={"component": "surprise-bank"})
-
-
-def load_surprise_bank():
-    bank_file = Path(__file__).parent / "surprise_bank.json"
-    if bank_file.exists():
-        try:
-            data = json.loads(bank_file.read_text())
-            for key, items in data.items():
-                _surprise_bank[key] = items
-            logger.info("Loaded surprise bank from disk", extra={"component": "surprise-bank", "count": sum(len(v) for v in data.values())})
-        except Exception:
-            logger.exception("Failed to load surprise bank", extra={"component": "surprise-bank"})
-
-
-def get_surprise_bank():
-    return _surprise_bank
