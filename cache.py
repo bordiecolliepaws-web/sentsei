@@ -82,6 +82,80 @@ def _maybe_save_cache():
         save_cache()
 
 
+# --- Word Detail Cache ---
+WORD_CACHE_MAX = 300
+WORD_CACHE_TTL = 3600 * 72  # 72h — word details change less often
+WORD_CACHE_FILE = Path(__file__).parent / "word_detail_cache.json"
+
+_word_cache: OrderedDict = OrderedDict()
+_word_cache_dirty = False
+_word_cache_last_save = 0.0
+
+
+def word_cache_key(word: str, target: str, meaning: str = "") -> str:
+    raw = f"{word.strip().lower()}|{target}|{meaning.strip().lower()}"
+    return hashlib.sha256(raw.encode()).hexdigest()
+
+
+def word_cache_get(key: str):
+    entry = _word_cache.get(key)
+    if entry is None:
+        return None
+    ts, result = entry
+    if time.time() - ts > WORD_CACHE_TTL:
+        _word_cache.pop(key, None)
+        return None
+    _word_cache.move_to_end(key)
+    return result
+
+
+def word_cache_put(key: str, result: dict):
+    global _word_cache_dirty
+    _word_cache[key] = (time.time(), result)
+    if len(_word_cache) > WORD_CACHE_MAX:
+        _word_cache.popitem(last=False)
+    _word_cache_dirty = True
+    _maybe_save_word_cache()
+
+
+def load_word_cache():
+    global _word_cache_last_save
+    if WORD_CACHE_FILE.exists():
+        try:
+            data = json.loads(WORD_CACHE_FILE.read_text())
+            now = time.time()
+            loaded = 0
+            for key, (ts, result) in data.items():
+                if now - ts < WORD_CACHE_TTL:
+                    _word_cache[key] = (ts, result)
+                    loaded += 1
+                if loaded >= WORD_CACHE_MAX:
+                    break
+            logger.info("Loaded word cache from disk", extra={"component": "cache", "count": loaded})
+        except Exception:
+            logger.exception("Failed to load word cache file", extra={"component": "cache"})
+    _word_cache_last_save = time.time()
+
+
+def save_word_cache():
+    global _word_cache_dirty, _word_cache_last_save
+    try:
+        WORD_CACHE_FILE.write_text(json.dumps(dict(_word_cache), ensure_ascii=False))
+        _word_cache_dirty = False
+        _word_cache_last_save = time.time()
+    except Exception:
+        logger.exception("Failed to save word cache", extra={"component": "cache"})
+
+
+def _maybe_save_word_cache():
+    if _word_cache_dirty and (time.time() - _word_cache_last_save) >= CACHE_SAVE_INTERVAL:
+        save_word_cache()
+
+
+def word_cache_stats() -> dict:
+    return {"entries": len(_word_cache), "max": WORD_CACHE_MAX, "ttl_hours": WORD_CACHE_TTL / 3600}
+
+
 def is_cache_dirty():
     return _cache_dirty
 

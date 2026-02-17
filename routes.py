@@ -27,6 +27,7 @@ from models import (
 from cache import (
     cache_key, cache_get, cache_put,
     get_grammar_patterns,
+    word_cache_key, word_cache_get, word_cache_put, word_cache_stats,
 )
 from auth import (
     APP_PASSWORD, rate_limit_check, rate_limit_cleanup,
@@ -86,39 +87,25 @@ async def word_detail(
     if req.target_language not in SUPPORTED_LANGUAGES:
         raise HTTPException(400, "Unsupported language")
 
+    # Check word-detail cache first
+    wc_key = word_cache_key(req.word, req.target_language, req.meaning)
+    cached = word_cache_get(wc_key)
+    if cached is not None:
+        logger.info("word-detail cache hit", extra={"word": req.word, "lang": req.target_language})
+        return cached
+
     lang_name = SUPPORTED_LANGUAGES[req.target_language]
     meaning_is_chinese = any('\u4e00' <= c <= '\u9fff' for c in req.meaning)
-    explain_lang = "繁體中文 (Traditional Chinese, Taiwan usage)" if meaning_is_chinese else "English"
+    explain_lang = "繁體中文" if meaning_is_chinese else "English"
 
-    context_line = f'\nThe word appeared in this sentence: "{req.sentence_context}"' if req.sentence_context else ""
-
-    prompt = f"""Give details about the {lang_name} word "{req.word}" (meaning: {req.meaning}).{context_line}
-
-Respond with ONLY valid JSON (no markdown, no code fences):
-{{
-  "examples": [
-    {{"sentence": "example sentence using the word in {lang_name}", "pronunciation": "romanized", "meaning": "translation in {explain_lang}"}},
-    {{"sentence": "another example", "pronunciation": "romanized", "meaning": "translation in {explain_lang}"}}
-  ],
-  "conjugations": [
-    {{"form": "conjugated/inflected form in {lang_name}", "label": "tense/form name in {explain_lang}"}}
-  ],
-  "related": [
-    {{"word": "related word in {lang_name}", "meaning": "meaning in {explain_lang}"}}
-  ]
-}}
-
-Rules:
-- Give 2-3 example sentences, 2-4 conjugations/forms (if applicable), 2-3 related words
-- If the word doesn't conjugate (particles, nouns), return empty conjugations array
-- All explanations in {explain_lang}
-- Examples should be simple, practical sentences"""
-
-    system_msg = f"You are a {lang_name} vocabulary teacher. Respond with valid JSON only."
+    prompt = f"""Word: "{req.word}" ({lang_name}, meaning: {req.meaning}).
+Return JSON only: {{"examples":[{{"sentence":"..","pronunciation":"..","meaning":".."}}],"conjugations":[{{"form":"..","label":".."}}],"related":[{{"word":"..","meaning":".."}}]}}
+2 examples, 2-3 conjugations ([] if none), 2 related words. Explanations in {explain_lang}. Simple sentences."""
 
     text = await ollama_chat(
-        [{"role": "system", "content": system_msg}, {"role": "user", "content": prompt}],
-        model=OLLAMA_MODEL, temperature=0.3, num_predict=1024, timeout=60
+        [{"role": "system", "content": f"{lang_name} vocab teacher. JSON only."},
+         {"role": "user", "content": prompt}],
+        model=OLLAMA_MODEL, temperature=0.3, num_predict=512, timeout=45
     )
 
     if text is None:
@@ -129,6 +116,7 @@ Rules:
         return {"examples": [], "conjugations": [], "related": []}
 
     result = ensure_traditional_chinese(result)
+    word_cache_put(wc_key, result)
     return result
 
 
@@ -153,43 +141,33 @@ async def word_detail_stream(
     if req.target_language not in SUPPORTED_LANGUAGES:
         raise HTTPException(400, "Unsupported language")
 
+    # Check word-detail cache first — return instant JSON if cached
+    wc_key = word_cache_key(req.word, req.target_language, req.meaning)
+    cached = word_cache_get(wc_key)
+    if cached is not None:
+        logger.info("word-detail-stream cache hit", extra={"word": req.word, "lang": req.target_language})
+        async def _cached():
+            yield f"data: {json.dumps({'type': 'result', 'data': cached}, ensure_ascii=False)}\n\n"
+        return StreamingResponse(_cached(), media_type="text/event-stream",
+                                headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
     async def _generate():
         try:
             yield f"data: {json.dumps({'type': 'progress', 'status': 'Looking up word details...'})}\n\n"
 
             lang_name = SUPPORTED_LANGUAGES[req.target_language]
             meaning_is_chinese = any('\u4e00' <= c <= '\u9fff' for c in req.meaning)
-            explain_lang = "繁體中文 (Traditional Chinese, Taiwan usage)" if meaning_is_chinese else "English"
-            context_line = f'\nThe word appeared in this sentence: "{req.sentence_context}"' if req.sentence_context else ""
+            explain_lang = "繁體中文" if meaning_is_chinese else "English"
 
-            prompt = f"""Give details about the {lang_name} word "{req.word}" (meaning: {req.meaning}).{context_line}
-
-Respond with ONLY valid JSON (no markdown, no code fences):
-{{
-  "examples": [
-    {{"sentence": "example sentence using the word in {lang_name}", "pronunciation": "romanized", "meaning": "translation in {explain_lang}"}},
-    {{"sentence": "another example", "pronunciation": "romanized", "meaning": "translation in {explain_lang}"}}
-  ],
-  "conjugations": [
-    {{"form": "conjugated/inflected form in {lang_name}", "label": "tense/form name in {explain_lang}"}}
-  ],
-  "related": [
-    {{"word": "related word in {lang_name}", "meaning": "meaning in {explain_lang}"}}
-  ]
-}}
-
-Rules:
-- Give 2-3 example sentences, 2-4 conjugations/forms (if applicable), 2-3 related words
-- If the word doesn't conjugate (particles, nouns), return empty conjugations array
-- All explanations in {explain_lang}
-- Examples should be simple, practical sentences"""
-
-            system_msg = f"You are a {lang_name} vocabulary teacher. Respond with valid JSON only."
+            prompt = f"""Word: "{req.word}" ({lang_name}, meaning: {req.meaning}).
+Return JSON only: {{"examples":[{{"sentence":"..","pronunciation":"..","meaning":".."}}],"conjugations":[{{"form":"..","label":".."}}],"related":[{{"word":"..","meaning":".."}}]}}
+2 examples, 2-3 conjugations ([] if none), 2 related words. Explanations in {explain_lang}. Simple sentences."""
 
             # Run LLM call as a task so we can send progress heartbeats
             llm_task = asyncio.create_task(ollama_chat(
-                [{"role": "system", "content": system_msg}, {"role": "user", "content": prompt}],
-                model=OLLAMA_MODEL, temperature=0.3, num_predict=1024, timeout=60
+                [{"role": "system", "content": f"{lang_name} vocab teacher. JSON only."},
+                 {"role": "user", "content": prompt}],
+                model=OLLAMA_MODEL, temperature=0.3, num_predict=512, timeout=45
             ))
 
             elapsed = 0
@@ -219,6 +197,7 @@ Rules:
                 result = {"examples": [], "conjugations": [], "related": []}
             else:
                 result = ensure_traditional_chinese(result)
+                word_cache_put(wc_key, result)
 
             yield f"data: {json.dumps({'type': 'result', 'data': result}, ensure_ascii=False)}\n\n"
         except Exception as e:
@@ -353,6 +332,7 @@ async def health_check():
         "status": "ok" if ollama_ok else "degraded",
         "ollama": {"reachable": ollama_ok, "url": OLLAMA_URL, "model": OLLAMA_MODEL},
         "cache": {"entries": cache_size, "max": CACHE_MAX, "ttl_hours": CACHE_TTL / 3600},
+        "word_cache": word_cache_stats(),
         "surprise_bank": {"total_entries": bank_total, "languages": bank_langs, "filling": _surprise_bank_filling},
         "latency": get_latency_stats(),
     }

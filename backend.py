@@ -12,7 +12,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from cache import load_cache, save_cache, is_cache_dirty, load_grammar_patterns, save_grammar_patterns, is_grammar_dirty
+from cache import (load_cache, save_cache, is_cache_dirty, load_grammar_patterns,
+                   save_grammar_patterns, is_grammar_dirty, load_word_cache,
+                   save_word_cache, _word_cache_dirty)
 from auth import init_user_db, cleanup_expired_sessions
 from llm import check_ollama_connectivity
 from routes import router
@@ -93,6 +95,7 @@ async def log_requests(request, call_next):
 async def _startup_cache():
     load_cache()
     load_grammar_patterns()
+    load_word_cache()
 
 
 @app.on_event("shutdown")
@@ -103,6 +106,9 @@ async def _shutdown_cache():
     if is_grammar_dirty():
         save_grammar_patterns()
         logger.info("Grammar patterns saved on shutdown", extra={"component": "grammar"})
+    if _word_cache_dirty:
+        save_word_cache()
+        logger.info("Word cache saved on shutdown", extra={"component": "cache"})
 
 
 @app.on_event("startup")
