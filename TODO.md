@@ -137,9 +137,9 @@ _Items for cron iterations to work through, in priority order._
 - [ ] **Split app.js into modules** — 3109 lines, single file. Split into: `ui.js` (DOM helpers, rendering), `api.js` (fetch wrappers), `srs.js` (spaced repetition logic), `quiz.js` (quiz mode), `history.js` (history panel), `shortcuts.js` (keyboard shortcuts). Use ES modules with `<script type="module">`.
 - [ ] **Split routes.py further** — 1563 lines. Extract surprise bank logic into `surprise.py`, feedback into `feedback.py`, quiz endpoints into `quiz_routes.py`. Keep `routes.py` as the main router that includes sub-routers.
 - [x] **Pronunciation quality** ✅ 2026-02-17 — Replaced raw pykakasi with MeCab (unidic) tokenization + pykakasi romaji conversion. Fixes: particles は→wa/を→o/へ→e via POS tagging, long vowel macrons (ā/ī/ū/ē/ō), reading overrides (私→watashi), punctuation stripping. "raamen wo tabeta idesu" → "rāmen o tabe tai desu".
-- [ ] **Frontend error recovery** — if Ollama is down (502), show a friendly "translation engine is warming up" message with auto-retry instead of requiring manual retry.
+- [x] **Frontend error recovery** ✅ 2026-02-17 — auto-retries up to 3× on 502 with "Translation engine warming up..." message and 4s delay. Falls back to error message after max retries.
 - [x] **Surprise bank persistence bug** ✅ 2026-02-17 — saves every 10 entries during fill, not just on completion.
-- [ ] **API response time tracking** — add p50/p95/p99 latency stats to /api/health. The structured logging already captures timing; aggregate it.
+- [x] **API response time tracking** ✅ 2026-02-17 — rolling latency tracker (last 500 per endpoint) with p50/p95/p99/count stats exposed in `/api/health` response.
 - [x] **Missing `difficulty` field in response** ✅ 2026-02-17 — backfills difficulty on cached results missing it (learn + learn-fast), added to compare endpoint response.
 
 ## Cron Test Matrix
