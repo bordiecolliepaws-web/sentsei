@@ -129,7 +129,7 @@ _Items for cron iterations to work through, in priority order._
 - [x] **routes.py still 1178 lines** ✅ 2026-02-17 — Extracted learn/learn-fast/learn-multi/learn-stream/segment/breakdown into `learn_routes.py` (744 lines), compare into `compare_routes.py` (63 lines). routes.py now 417 lines.
 - [x] **Streaming response for word-detail** ✅ 2026-02-17 — SSE endpoint `/api/word-detail-stream` with progress heartbeats + live status messages. Frontend updated to use streaming with progressive feedback.
 - [x] **E2E smoke test script** ✅ 2026-02-17 — `test_smoke.py` with 8 tests covering health, languages, learn, learn-stream, surprise, word-detail-stream, anki export, rate limits.
-- [ ] **Rate limiting per-user (not just IP)** — Logged-in users should have their own rate limit bucket, not share with other users behind the same IP/NAT.
+- [x] **Rate limiting per-user (not just IP)** ✅ 2026-02-17 — `get_rate_limit_key()` returns `user:<id>` for authenticated users, IP for anonymous. All route files updated. Unit tested.
 
 ## P7 — Code Health & Security (from 2026-02-17 reflection)
 - [x] **Use bcrypt for password hashing** ✅ 2026-02-17 — Switched from SHA-256+salt to bcrypt (cost 12). Legacy hashes verified via fallback and auto-rehashed to bcrypt on next login.
@@ -149,6 +149,14 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Surprise bank persistence bug** ✅ 2026-02-17 — saves every 10 entries during fill, not just on completion.
 - [x] **API response time tracking** ✅ 2026-02-17 — rolling latency tracker (last 500 per endpoint) with p50/p95/p99/count stats exposed in `/api/health` response.
 - [x] **Missing `difficulty` field in response** ✅ 2026-02-17 — backfills difficulty on cached results missing it (learn + learn-fast), added to compare endpoint response.
+
+## P10 — Next Wave (from 2026-02-17 reflection #3)
+- [ ] **Graceful degradation when Ollama is down** — Currently returns 502; should show cached results prominently, disable learn button with "Translation engine offline" message, and queue requests for retry when it comes back.
+- [ ] **Frontend JS module consolidation** — `static/js/app.js` is still 1257 lines. Extract story mode, compare mode, and context examples into separate modules.
+- [ ] **Translation quality feedback loop** — Track which translations get thumbs-down feedback and exclude them from cache. Feed patterns back into prompt tuning.
+- [ ] **Batch SRS review** — Currently reviews one card at a time. Add a "Review 10" mode that queues up due cards and shows stats at the end (correct %, time per card).
+- [ ] **Server-side SRS for multi-user** — SRS is currently frontend-only localStorage. For multi-user to be meaningful, migrate SRS deck to SQLite user_data with sync. Then add backend test coverage (currently deferred in P6).
+- [ ] **API documentation** — Auto-generate OpenAPI docs from FastAPI (already built-in at /docs). Add a user-facing API reference page for power users who want to integrate.
 
 ## Cron Test Matrix
 Each iteration should run these checks:
