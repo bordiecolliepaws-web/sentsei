@@ -450,10 +450,34 @@ function initFeedback() {
         send.disabled = true; send.textContent = 'Sending...';
         try {
             const pw = localStorage.getItem(KEYS.PASSWORD_STORAGE) || '';
+
+            // Best-effort: attach the most recent sentence/translation context
+            // so backend can tie feedback to a specific cached result.
+            let sentence = '';
+            let translation = '';
+            let targetLang = '';
+            try {
+                const latestCard = DOM.results?.querySelector('.result-card');
+                if (latestCard) {
+                    const srcEl = latestCard.querySelector('.result-source');
+                    const transEl = latestCard.querySelector('.result-translation');
+                    sentence = (srcEl?.textContent || '').replace(/^"|"$/g, '').trim();
+                    translation = (transEl?.textContent || '').trim();
+                    targetLang = latestCard.dataset.lang || DOM.langSelect?.value || '';
+                }
+            } catch (_) {
+                // Ignore — context is optional.
+            }
+
             await fetch('/api/feedback', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-App-Password': pw },
-                body: JSON.stringify({ message: text.value.trim() })
+                body: JSON.stringify({
+                    message: text.value.trim(),
+                    sentence,
+                    translation,
+                    target_language: targetLang || undefined,
+                })
             });
             status.textContent = '✅ Thanks for your feedback!'; status.style.display = 'block';
             text.value = '';

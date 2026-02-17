@@ -1,4 +1,9 @@
-"""LRU translation cache, grammar pattern library, and quiz answer storage."""
+"""LRU translation cache, grammar pattern library, and quiz answer storage.
+
+Also tracks low-quality translations reported via feedback so we can:
+- evict them from the cache immediately
+- avoid re-caching the exact same sentence+translation+language combo later
+"""
 import json
 import time
 import hashlib
@@ -20,6 +25,85 @@ CACHE_SAVE_INTERVAL = 60
 _translation_cache: OrderedDict = OrderedDict()
 _cache_dirty = False
 _cache_last_save = 0.0
+
+# --- Low-quality translation tracking ---
+BAD_TRANSLATIONS_FILE = Path(__file__).parent / "bad_translations.json"
+_bad_translations: dict = {}
+
+
+def _bad_translation_key(sentence: str, translation: str, target_language: str) -> str:
+    raw = f"{sentence.strip().lower()}|{translation.strip().lower()}|{target_language.strip().lower()}"
+    return hashlib.sha256(raw.encode()).hexdigest()
+
+
+def load_bad_translations():
+    """Load bad-translation metadata from disk into memory.
+
+    Format: {"hash": {"count": int, "last_ts": float}}
+    """
+    global _bad_translations
+    if _bad_translations:
+        return
+    if BAD_TRANSLATIONS_FILE.exists():
+        try:
+            data = json.loads(BAD_TRANSLATIONS_FILE.read_text())
+            if isinstance(data, dict):
+                _bad_translations = data
+        except Exception:
+            logger.exception("Failed to load bad translations file", extra={"component": "cache"})
+            _bad_translations = {}
+
+
+def save_bad_translations():
+    global _bad_translations
+    try:
+        BAD_TRANSLATIONS_FILE.write_text(json.dumps(_bad_translations, ensure_ascii=False, indent=2))
+    except Exception:
+        logger.exception("Failed to save bad translations file", extra={"component": "cache"})
+
+
+def mark_translation_bad(sentence: str, translation: str, target_language: str):
+    """Mark a translation as low quality.
+
+    - Records it in bad_translations.json
+    - Evicts any matching entries from the in-memory translation cache
+    """
+    if not sentence or not translation or not target_language:
+        return
+
+    load_bad_translations()
+    key = _bad_translation_key(sentence, translation, target_language)
+    entry = _bad_translations.get(key, {"count": 0, "last_ts": 0})
+    entry["count"] = int(entry.get("count", 0)) + 1
+    entry["last_ts"] = time.time()
+    _bad_translations[key] = entry
+    save_bad_translations()
+
+    # Evict any cached results that match this sentence+translation+lang combo
+    to_delete = []
+    for ck, (ts, result) in list(_translation_cache.items()):
+        try:
+            if (
+                str(result.get("original_sentence", "")).strip() == sentence.strip()
+                and str(result.get("translation", "")).strip() == translation.strip()
+                and str(result.get("target_language", "")).strip() == target_language.strip()
+            ):
+                to_delete.append(ck)
+        except Exception:
+            continue
+
+    for ck in to_delete:
+        _translation_cache.pop(ck, None)
+        logger.info(
+            "Evicted low-quality translation from cache",
+            extra={
+                "component": "cache",
+                "key": ck,
+                "sentence": sentence,
+                "target_language": target_language,
+            },
+        )
+
 
 
 def cache_key(sentence: str, target: str, gender: str, formality: str) -> str:
@@ -54,7 +138,34 @@ def cache_scan_prefix(sentence: str, target_lang: str):
 
 
 def cache_put(key: str, result: dict):
+    """Insert a translation into the cache.
+
+    If the exact sentence+translation+language combo has been flagged as
+    low quality via feedback, we skip caching it again.
+    """
     global _cache_dirty
+
+    try:
+        sentence = (result.get("original_sentence") or "").strip()
+        translation = (result.get("translation") or "").strip()
+        target_language = (result.get("target_language") or "").strip()
+        if sentence and translation and target_language:
+            load_bad_translations()
+            h = _bad_translation_key(sentence, translation, target_language)
+            if h in _bad_translations:
+                logger.info(
+                    "Skipping cache for translation previously marked low-quality",
+                    extra={
+                        "component": "cache",
+                        "sentence": sentence,
+                        "target_language": target_language,
+                    },
+                )
+                return
+    except Exception:
+        # Never let cache failures break the main code path
+        logger.exception("Error checking bad translation list", extra={"component": "cache"})
+
     _translation_cache[key] = (time.time(), result)
     if len(_translation_cache) > CACHE_MAX:
         _translation_cache.popitem(last=False)

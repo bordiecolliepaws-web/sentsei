@@ -406,6 +406,9 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
 
     result["sentence_difficulty"] = detect_sentence_difficulty(req.sentence, result.get("breakdown", []))
     result["difficulty"] = result.get("sentence_difficulty", {}).get("level")
+    # Attach minimal context so feedback-based cache invalidation can work
+    result.setdefault("original_sentence", req.sentence)
+    result.setdefault("target_language", req.target_language)
     result = ensure_traditional_chinese(result)
     cache_put(ck, result)
 

@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Header
 
 from models import FeedbackRequest
 from auth import APP_PASSWORD, require_password
+from cache import mark_translation_bad
 
 router = APIRouter()
 
@@ -20,13 +21,42 @@ async def submit_feedback(req: FeedbackRequest, _pw=Depends(require_password)):
     if len(req.message) > 1000:
         raise HTTPException(400, "Feedback too long")
 
+    msg = req.message.strip()
+    msg_lower = msg.lower()
+
+    # Heuristic: treat feedback as a "thumbs down" / low-quality flag when
+    # the message clearly indicates the translation was wrong or unnatural.
+    negative_markers = [
+        "👎",
+        "thumbs down",
+        "translation is wrong",
+        "translation was wrong",
+        "wrong translation",
+        "bad translation",
+        "not natural",
+        "unnatural",
+        "sounds weird",
+        "does not sound right",
+    ]
+    is_negative = any(tok in msg_lower for tok in negative_markers)
+
+    # If user provided full context with negative feedback, mark the
+    # corresponding cache entry as low quality so it won't be reused.
+    if is_negative and req.sentence and req.translation and req.target_language:
+        try:
+            mark_translation_bad(req.sentence, req.translation, req.target_language)
+        except Exception:
+            # Feedback should never fail because cache invalidation did
+            pass
+
     import datetime
     entry = {
         "timestamp": datetime.datetime.utcnow().isoformat(),
-        "message": req.message.strip(),
+        "message": msg,
         "sentence": req.sentence,
         "translation": req.translation,
         "target_language": req.target_language,
+        "quality": "negative" if is_negative else "neutral",
     }
     with open(FEEDBACK_FILE, "a") as f:
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
