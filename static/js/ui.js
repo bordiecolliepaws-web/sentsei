@@ -2,6 +2,7 @@
 import { state, DOM, LANG_FLAGS, KEYS, LANGUAGE_TIPS, MS_PER_DAY, LOADING_PHASES, DAY_MS, hooks } from './state.js';
 import { friendlyError, copyTextToClipboard, syncModalOpenState } from './api.js';
 import { getDueItems } from './srs.js';
+import { createFavoriteButton } from './favorites.js';
 
 // === Progress Stats ===
 
@@ -534,6 +535,13 @@ export function renderResult(data, original, reqCtx) {
             copyBtn.classList.remove('copied');
         }, 1200);
     });
+
+    // Favorite button
+    const resultActions = card.querySelector('.result-actions');
+    if (resultActions) {
+        const favBtn = createFavoriteButton(original, data.translation, activeReqCtx.target_language, data.pronunciation);
+        resultActions.appendChild(favBtn);
+    }
 
     // Share button
     const shareBtn = card.querySelector('.share-btn');

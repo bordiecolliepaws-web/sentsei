@@ -197,6 +197,10 @@
                 <span class="menu-icon">📜</span> History
                 <span id="menu-history-badge" class="menu-badge" style="display:none">0</span>
             </button>
+            <button class="side-menu-item" id="menu-favorites">
+                <span class="menu-icon">⭐</span> Favorites
+                <span id="menu-favorites-badge" class="menu-badge" style="display:none">0</span>
+            </button>
             <button class="side-menu-item" id="menu-quiz">
                 <span class="menu-icon">🧠</span> Quiz
             </button>
@@ -283,6 +287,24 @@
                 <button id="history-copy-all-btn" type="button" class="toggle-pill">📋 Copy All</button>
             </div>
             <button id="history-clear-btn">Clear All History</button>
+        </div>
+    </div>
+
+    <!-- Favorites Panel -->
+    <div id="favorites-overlay" class="history-overlay"></div>
+    <div id="favorites-panel" class="history-panel" role="dialog" aria-label="Favorites">
+        <div class="history-panel-header">
+            <h3>⭐ Favorites</h3>
+            <button id="favorites-panel-close" class="history-panel-close" aria-label="Close favorites">✕</button>
+        </div>
+        <div id="favorites-lang-filter" class="history-lang-filter"></div>
+        <div id="favorites-panel-list" class="history-panel-list">
+            <div class="history-panel-empty">No favorites yet. Tap ☆ on any result to save it.</div>
+        </div>
+        <div class="history-panel-clear">
+            <div class="history-panel-export">
+                <button id="favorites-export-anki-btn" type="button" class="toggle-pill">📥 Anki</button>
+            </div>
         </div>
     </div>
 

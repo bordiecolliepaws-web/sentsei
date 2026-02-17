@@ -30,6 +30,7 @@ import {
     exportHistoryAsAnki, copyAllHistoryToClipboard, setHistoryDeps,
     setHistoryFilterLang, normalizeSentenceHistoryEntries
 } from './history.js';
+import { loadFavorites, updateFavoriteBadge, renderFavoritesPanel, exportFavoritesAsAnki, loadFavoritesFromServer } from './favorites.js';
 import { initShortcuts, setShortcutDeps } from './shortcuts.js';
 import {
     loadStoryProgress, saveStoryProgress, getStoryProgress, setStoryProgress,
@@ -601,6 +602,8 @@ function initAuth() {
             closeAuthModal();
             updateAuthUI();
             await pullAllFromServer();
+            await loadFavoritesFromServer();
+            updateFavoriteBadge();
         } catch(err) {
             authErrorEl.textContent = err.message;
             authErrorEl.classList.remove('hidden');
@@ -663,6 +666,20 @@ async function pullAllFromServer() {
     }
 }
 
+// === Favorites Panel ===
+let _favoritesPanelOpen = false;
+function toggleFavoritesPanel() {
+    _favoritesPanelOpen = !_favoritesPanelOpen;
+    document.getElementById('favorites-panel').classList.toggle('open', _favoritesPanelOpen);
+    document.getElementById('favorites-overlay').classList.toggle('open', _favoritesPanelOpen);
+    if (_favoritesPanelOpen) renderFavoritesPanel();
+}
+function closeFavoritesPanel() {
+    _favoritesPanelOpen = false;
+    document.getElementById('favorites-panel').classList.remove('open');
+    document.getElementById('favorites-overlay').classList.remove('open');
+}
+
 // === Hamburger Menu ===
 function initSideMenu() {
     const hamburgerBtn = document.getElementById('hamburger-btn');
@@ -687,6 +704,7 @@ function initSideMenu() {
     sideMenuClose.addEventListener('click', closeSideMenu);
 
     document.getElementById('menu-history').addEventListener('click', () => { closeSideMenu(); toggleHistoryPanel(); });
+    document.getElementById('menu-favorites').addEventListener('click', () => { closeSideMenu(); toggleFavoritesPanel(); });
     document.getElementById('menu-quiz').addEventListener('click', () => { closeSideMenu(); toggleQuizMode(); });
     document.getElementById('menu-review').addEventListener('click', () => { closeSideMenu(); toggleReviewMode(); });
     document.getElementById('menu-stories').addEventListener('click', () => { closeSideMenu(); toggleStoriesPanel(); });
@@ -870,6 +888,17 @@ function init() {
     DOM.historyPanelClose.addEventListener('click', closeHistoryPanel);
     DOM.historyExportAnki.addEventListener('click', exportHistoryAsAnki);
     DOM.historyCopyAll.addEventListener('click', copyAllHistoryToClipboard);
+
+    // Favorites panel events
+    const favPanel = document.getElementById('favorites-panel');
+    const favOverlay = document.getElementById('favorites-overlay');
+    const favClose = document.getElementById('favorites-panel-close');
+    const favExportAnki = document.getElementById('favorites-export-anki-btn');
+    if (favOverlay) favOverlay.addEventListener('click', () => closeFavoritesPanel());
+    if (favClose) favClose.addEventListener('click', () => closeFavoritesPanel());
+    if (favExportAnki) favExportAnki.addEventListener('click', exportFavoritesAsAnki);
+    updateFavoriteBadge();
+
     DOM.statsToggle.addEventListener('click', openStatsModal);
     DOM.statsModalClose.addEventListener('click', closeStatsModal);
     DOM.statsModal.addEventListener('click', (e) => { if (e.target === DOM.statsModal) closeStatsModal(); });

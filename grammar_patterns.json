@@ -234,9 +234,14 @@
         "source": "The more I practice, the more confident I feel",
         "translation": "練習するほど、自信が増してきます",
         "timestamp": 1771266688.3388367
+      },
+      {
+        "source": "越練習就越有自信",
+        "translation": "練習するほど自信が増す",
+        "timestamp": 1771355356.4903142
       }
     ],
-    "count": 1
+    "count": 2
   },
   "105ffb54c2c820f6": {
     "id": "105ffb54c2c820f6",
@@ -721,9 +726,14 @@
         "source": "If I had known earlier, I would have come sooner",
         "translation": "もしあの時知っていたら、もっと早く來たでしょう",
         "timestamp": 1771274984.4377553
+      },
+      {
+        "source": "如果我早點知道的話，我就會早點來",
+        "translation": "もしあの時早く知っていたら、もっと早く來ていた。",
+        "timestamp": 1771355325.9214876
       }
     ],
-    "count": 1
+    "count": 2
   },
   "63b6418eab787121": {
     "id": "63b6418eab787121",
@@ -3729,6 +3739,90 @@
         "source": "今天晚上我想吃拉麵",
         "translation": "今晩はラーメンを食べたいです。",
         "timestamp": 1771330142.053084
+      }
+    ],
+    "count": 1
+  },
+  "056d8c43dd2e4620": {
+    "id": "056d8c43dd2e4620",
+    "name": "〜たら",
+    "lang": "ja",
+    "explanation": "もし〜たら (moshi〜ittara) 表示假定條件。",
+    "examples": [
+      {
+        "source": "如果我早點知道的話，我就會早點來",
+        "translation": "もしあの時早く知っていたら、もっと早く來ていた。",
+        "timestamp": 1771355325.9214916
+      }
+    ],
+    "count": 1
+  },
+  "612311fb5bac03c2": {
+    "id": "612311fb5bac03c2",
+    "name": "〜ていた",
+    "lang": "ja",
+    "explanation": "〜ていた (〜itteita) 表示過去假定或持續狀態。",
+    "examples": [
+      {
+        "source": "如果我早點知道的話，我就會早點來",
+        "translation": "もしあの時早く知っていたら、もっと早く來ていた。",
+        "timestamp": 1771355325.9214964
+      }
+    ],
+    "count": 1
+  },
+  "1ea7143c7ebc8c30": {
+    "id": "1ea7143c7ebc8c30",
+    "name": "〜itteita)",
+    "lang": "ja",
+    "explanation": "〜ていた (〜itteita) 表示過去假定或持續狀態。",
+    "examples": [
+      {
+        "source": "如果我早點知道的話，我就會早點來",
+        "translation": "もしあの時早く知っていたら、もっと早く來ていた。",
+        "timestamp": 1771355325.9214988
+      }
+    ],
+    "count": 1
+  },
+  "8320738dc9540ebe": {
+    "id": "8320738dc9540ebe",
+    "name": "くて",
+    "lang": "ja",
+    "explanation": "早くて (hayaku te) 形容詞的副詞形，表示程度。",
+    "examples": [
+      {
+        "source": "如果我早點知道的話，我就會早點來",
+        "translation": "もしあの時早く知っていたら、もっと早く來ていた。",
+        "timestamp": 1771355325.9215028
+      }
+    ],
+    "count": 1
+  },
+  "d2e09fae36828cc9": {
+    "id": "d2e09fae36828cc9",
+    "name": "するほど",
+    "lang": "ja",
+    "explanation": "練習するほど自信が増す：表示隨著練習的進行，自信逐漸增加。",
+    "examples": [
+      {
+        "source": "越練習就越有自信",
+        "translation": "練習するほど自信が増す",
+        "timestamp": 1771355356.4903073
+      }
+    ],
+    "count": 1
+  },
+  "2220529ec2f3c18b": {
+    "id": "2220529ec2f3c18b",
+    "name": "より",
+    "lang": "ja",
+    "explanation": "ほど：表示程度或量的增加，常與越...越多（より...多い）結構相似。",
+    "examples": [
+      {
+        "source": "越練習就越有自信",
+        "translation": "練習するほど自信が増す",
+        "timestamp": 1771355356.490317
       }
     ],
     "count": 1
