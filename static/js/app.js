@@ -40,6 +40,9 @@ import {
 } from './story.js';
 import { compareSentence } from './compare.js';
 import { toggleGrammarPanel, closeGrammarPanel, loadGrammarPatterns } from './grammar.js';
+import { getSpeculativeKey, showSpeculativeIndicator, hideSpeculativeIndicator, cancelSpeculative, startSpeculative } from './speculative.js';
+import { initOnboarding, setOnboardingDeps } from './onboarding.js';
+import { pollOllamaHealth, updateOfflineBanner, startHealthPolling } from './offline.js';
 
 // === Populate DOM refs ===
 function initDOM() {
@@ -172,78 +175,6 @@ async function loadLanguages() {
     renderHistoryPanel();
     renderProgressStats();
     await loadStories();
-}
-
-// === Speculative Typing ===
-function getSpeculativeKey() {
-    const sentence = DOM.sentenceInput.value.trim();
-    if (!sentence || sentence.length < 3) return null;
-    return `${sentence}|${DOM.langSelect.value}|${state.selectedInputLang}|${state.selectedGender}|${state.selectedFormality}`;
-}
-
-function showSpeculativeIndicator() {
-    let indicator = document.getElementById('speculative-indicator');
-    if (!indicator) {
-        indicator = document.createElement('div');
-        indicator.id = 'speculative-indicator';
-        indicator.style.cssText = 'font-size:0.72rem;color:var(--accent);margin-top:0.4rem;opacity:0.8;display:flex;align-items:center;gap:0.35rem;';
-        indicator.innerHTML = '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);animation:specPulse 1.2s ease-in-out infinite;"></span> Preparing translation...';
-        const inputArea = document.querySelector('.sentence-input');
-        inputArea.parentNode.insertBefore(indicator, inputArea.nextSibling);
-    }
-    indicator.style.display = 'flex';
-}
-
-function hideSpeculativeIndicator() {
-    const indicator = document.getElementById('speculative-indicator');
-    if (indicator) indicator.style.display = 'none';
-}
-
-function cancelSpeculative() {
-    if (state.speculativeTimer) { clearTimeout(state.speculativeTimer); state.speculativeTimer = null; }
-    if (state.speculativeController) { state.speculativeController.abort(); state.speculativeController = null; }
-    state.speculativePending = false;
-    hideSpeculativeIndicator();
-}
-
-async function startSpeculative() {
-    const key = getSpeculativeKey();
-    if (!key || state.appPassword !== KEYS.APP_PASSWORD) return;
-    if (state.speculativeCache[key]) return;
-
-    state.speculativePending = true;
-    state.speculativeController = new AbortController();
-    showSpeculativeIndicator();
-
-    const sentence = DOM.sentenceInput.value.trim();
-    try {
-        const resp = await fetch('/api/learn', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-App-Password': state.appPassword },
-            body: JSON.stringify({
-                sentence,
-                target_language: DOM.langSelect.value,
-                input_language: state.selectedInputLang,
-                speaker_gender: state.selectedGender,
-                speaker_formality: state.selectedFormality,
-            }),
-            signal: state.speculativeController.signal,
-        });
-        if (resp.ok) {
-            const data = await resp.json();
-            state.speculativeCache[key] = { data, sentence };
-            const indicator = document.getElementById('speculative-indicator');
-            if (indicator && DOM.sentenceInput.value.trim() === sentence) {
-                indicator.innerHTML = '<span style="color:var(--easy);">✓</span> Ready — press Learn';
-                setTimeout(() => hideSpeculativeIndicator(), 3000);
-            }
-        }
-    } catch (e) {
-        // aborted or error
-    } finally {
-        state.speculativePending = false;
-        if (!state.speculativeCache[getSpeculativeKey()]) hideSpeculativeIndicator();
-    }
 }
 
 // === Multi-sentence detection ===
@@ -724,107 +655,11 @@ function initSideMenu() {
     return { closeSideMenu };
 }
 
-// === Onboarding ===
-function initOnboarding() {
-    const onboardingOverlay = document.getElementById('onboarding-overlay');
-
-    function showOnboarding() {
-        if (localStorage.getItem(KEYS.ONBOARDED)) return;
-        if (state.richHistory.length > 0 || state.sentenceHistory.length > 0) {
-            localStorage.setItem(KEYS.ONBOARDED, '1');
-            return;
-        }
-        onboardingOverlay.classList.remove('hidden');
-    }
-
-    function dismissOnboarding() {
-        onboardingOverlay.classList.add('hidden');
-        localStorage.setItem(KEYS.ONBOARDED, '1');
-    }
-
-    document.querySelectorAll('.onboarding-suggestion').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const sentence = btn.dataset.sentence;
-            const lang = btn.dataset.lang;
-            dismissOnboarding();
-            const tryFill = () => {
-                if (state.languagesLoaded) {
-                    if (lang) selectLangPill(lang);
-                    DOM.sentenceInput.value = sentence;
-                    DOM.sentenceInput.style.height = 'auto';
-                    DOM.sentenceInput.style.height = DOM.sentenceInput.scrollHeight + 'px';
-                    learn();
-                } else {
-                    setTimeout(tryFill, 200);
-                }
-            };
-            tryFill();
-        });
-    });
-
-    document.getElementById('onboarding-skip').addEventListener('click', () => {
-        dismissOnboarding();
-        DOM.sentenceInput.focus();
-    });
-
-    if (state.appPassword === KEYS.APP_PASSWORD) {
-        showOnboarding();
-    }
-
-    hooks.afterClosePasswordModal.push(() => {
-        setTimeout(showOnboarding, 300);
-    });
-}
-
 // === Sync hooks ===
 function initSyncHooks() {
     hooks.afterSaveRichHistory.push(() => syncToServer('rich_history', state.richHistory));
     hooks.afterSaveSRSDeck.push(() => syncToServer('srs_deck', state.srsDeck));
     hooks.afterSaveProgressStats.push(() => syncToServer('progress', state.progressStats));
-}
-
-// === Ollama Health Polling ===
-async function pollOllamaHealth() {
-    try {
-        const resp = await fetch('/api/health');
-        if (!resp.ok) return;
-        const data = await resp.json();
-        const wasOnline = state.ollamaOnline;
-        state.ollamaOnline = data.ollama?.reachable ?? true;
-        updateOfflineBanner();
-        if (!wasOnline && state.ollamaOnline) {
-            if (state.appPassword === KEYS.APP_PASSWORD) unlockApp();
-        }
-    } catch { /* network error — don't change state */ }
-}
-
-function updateOfflineBanner() {
-    let banner = document.getElementById('ollama-offline-banner');
-    if (!state.ollamaOnline) {
-        if (!banner) {
-            banner = document.createElement('div');
-            banner.id = 'ollama-offline-banner';
-            banner.className = 'ollama-offline-banner';
-            banner.innerHTML = '⚠️ Translation engine offline — cached results still available';
-            document.querySelector('.app-header')?.after(banner) || document.body.prepend(banner);
-        }
-        banner.classList.remove('hidden');
-        if (DOM.learnBtn) {
-            DOM.learnBtn.classList.add('offline-disabled');
-            DOM.learnBtn.title = 'Translation engine offline — cached results may still work';
-        }
-    } else {
-        if (banner) banner.classList.add('hidden');
-        if (DOM.learnBtn) {
-            DOM.learnBtn.classList.remove('offline-disabled');
-            DOM.learnBtn.title = '';
-        }
-    }
-}
-
-function startHealthPolling() {
-    pollOllamaHealth();
-    state._healthPollTimer = setInterval(pollOllamaHealth, 30000);
 }
 
 // === Main initialization ===
@@ -835,6 +670,7 @@ function init() {
     // Set dependency injections
     setSRSDeps({ ensurePassword });
     setHistoryDeps({ selectLangPill });
+    setOnboardingDeps({ learn, selectLangPill });
 
     // Init toggles
     initToggle(DOM.genderPills, state.selectedGender, KEYS.GENDER, v => state.selectedGender = v);

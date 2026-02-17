@@ -3579,15 +3579,20 @@
     "id": "593446bbe538600d",
     "name": "たら",
     "lang": "ja",
-    "explanation": "たら (tara) is used here to express a conditional action, meaning 'if/when something happens'.",
+    "explanation": "The sentence uses the potential form of 知る (to know) with the conditional たら to express a hypothetical past action.",
     "examples": [
       {
         "source": "Let's grab a beer after work",
         "translation": "仕事が終わったらビールを飲もう",
         "timestamp": 1771329998.366513
+      },
+      {
+        "source": "If I had known earlier, I would have come sooner",
+        "translation": "もしあの頃知っていたら、もっと早く來たでしょう。",
+        "timestamp": 1771365591.525265
       }
     ],
-    "count": 1
+    "count": 2
   },
   "5538b29499890c16": {
     "id": "5538b29499890c16",
@@ -3837,6 +3842,62 @@
         "source": "My neighbor grows beautiful sunflowers",
         "translation": "近所の人が美しい太陽花を育てています。",
         "timestamp": 1771361873.447943
+      }
+    ],
+    "count": 1
+  },
+  "19d6c064aab0b8bd": {
+    "id": "19d6c064aab0b8bd",
+    "name": "でしょう",
+    "lang": "ja",
+    "explanation": "でしょう is attached at the end to indicate that something would have been the case if the condition were true.",
+    "examples": [
+      {
+        "source": "If I had known earlier, I would have come sooner",
+        "translation": "もしあの頃知っていたら、もっと早く來たでしょう。",
+        "timestamp": 1771365591.5252736
+      }
+    ],
+    "count": 1
+  },
+  "176a24bb9f928899": {
+    "id": "176a24bb9f928899",
+    "name": "むほど",
+    "lang": "ja",
+    "explanation": "The phrase 息を吞むほど is used to describe something that is so amazing it takes one's breath away.",
+    "examples": [
+      {
+        "source": "The sunset over the ocean was breathtaking",
+        "translation": "海の夕日は息を吞むほど美しかった",
+        "timestamp": 1771365629.3606517
+      }
+    ],
+    "count": 1
+  },
+  "850d92aca17eacbe": {
+    "id": "850d92aca17eacbe",
+    "name": "しいかった",
+    "lang": "ja",
+    "explanation": "美しいかった is the polite form of 美しかった, indicating a beautiful state in the past.",
+    "examples": [
+      {
+        "source": "The sunset over the ocean was breathtaking",
+        "translation": "海の夕日は息を吞むほど美しかった",
+        "timestamp": 1771365629.360659
+      }
+    ],
+    "count": 1
+  },
+  "a0cf9ef1f0927bfb": {
+    "id": "a0cf9ef1f0927bfb",
+    "name": "しかった",
+    "lang": "ja",
+    "explanation": "美しいかった is the polite form of 美しかった, indicating a beautiful state in the past.",
+    "examples": [
+      {
+        "source": "The sunset over the ocean was breathtaking",
+        "translation": "海の夕日は息を吞むほど美しかった",
+        "timestamp": 1771365629.3606615
       }
     ],
     "count": 1
