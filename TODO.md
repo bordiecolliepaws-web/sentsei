@@ -124,7 +124,7 @@ _Items for cron iterations to work through, in priority order._
 - [ ] **Backend test coverage for SRS/review** — Currently no backend tests needed (SRS is frontend-only), but if SRS moves server-side for multi-user, add comprehensive tests.
 
 ## P9 — Code Health & UX (from 2026-02-17 reflection #2)
-- [ ] **DRY auth checks with FastAPI Depends** — 17 endpoints manually check `x_app_password != APP_PASSWORD`. Extract to `require_password` dependency. (In progress)
+- [x] **DRY auth checks with FastAPI Depends** ✅ 2026-02-17 — 17 endpoints refactored to use `require_password` FastAPI dependency. Zero manual password checks remaining.
 - [ ] **Word-detail latency** — p50 is 21s, way too slow. Options: simpler LLM prompt, pre-cache common words, or serve from a dictionary DB first and only hit LLM for unknowns.
 - [ ] **routes.py still 1178 lines** — Extract learn/learn-fast/learn-multi/learn-stream into `learn_routes.py`, compare into `compare_routes.py`. Target <400 lines per file.
 - [ ] **Streaming response for word-detail** — 21s wait with no feedback is bad UX. Stream partial results like learn-stream does.
