@@ -136,7 +136,7 @@ _Items for cron iterations to work through, in priority order._
 ## P8 — Next Wave (from 2026-02-17 reflection)
 - [ ] **Split app.js into modules** — 3109 lines, single file. Split into: `ui.js` (DOM helpers, rendering), `api.js` (fetch wrappers), `srs.js` (spaced repetition logic), `quiz.js` (quiz mode), `history.js` (history panel), `shortcuts.js` (keyboard shortcuts). Use ES modules with `<script type="module">`.
 - [ ] **Split routes.py further** — 1563 lines. Extract surprise bank logic into `surprise.py`, feedback into `feedback.py`, quiz endpoints into `quiz_routes.py`. Keep `routes.py` as the main router that includes sub-routers.
-- [ ] **Pronunciation quality** — "raamen wo tabeta idesu" should be "rāmen o tabetai desu". The deterministic pronunciation post-processing may not be running on all paths, or pykakasi output needs cleanup (particle を→o, たい→tai not "ta i").
+- [x] **Pronunciation quality** ✅ 2026-02-17 — Replaced raw pykakasi with MeCab (unidic) tokenization + pykakasi romaji conversion. Fixes: particles は→wa/を→o/へ→e via POS tagging, long vowel macrons (ā/ī/ū/ē/ō), reading overrides (私→watashi), punctuation stripping. "raamen wo tabeta idesu" → "rāmen o tabe tai desu".
 - [ ] **Frontend error recovery** — if Ollama is down (502), show a friendly "translation engine is warming up" message with auto-retry instead of requiring manual retry.
 - [ ] **Surprise bank persistence bug** — bank never saves if fill is still in progress and server restarts. Add periodic save during fill (every 10 entries) instead of only on completion.
 - [ ] **API response time tracking** — add p50/p95/p99 latency stats to /api/health. The structured logging already captures timing; aggregate it.
