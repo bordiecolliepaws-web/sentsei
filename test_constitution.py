@@ -90,10 +90,19 @@ def test_japanese_romaji_not_garbage(api_learn):
 
 # ── Rule 8: Layout Order ─────────────────────────────────
 
+def _fetch_all_js(base_url):
+    """Fetch all JS content from both legacy app.js and ES module files."""
+    js = ""
+    for path in ["/app.js", "/js/app.js", "/js/ui.js", "/js/api.js", "/js/state.js",
+                 "/js/srs.js", "/js/quiz.js", "/js/history.js", "/js/shortcuts.js"]:
+        r = requests.get(f"{base_url}{path}")
+        if r.ok:
+            js += r.text + "\n"
+    return js
+
 def test_source_before_translation_in_html(base_url):
     html = requests.get(f"{base_url}/").text
-    app_js_r = requests.get(f"{base_url}/app.js")
-    app_js = app_js_r.text if app_js_r.ok else ""
+    app_js = _fetch_all_js(base_url)
     all_content = html + app_js
     source_pos = all_content.find('result-source')
     trans_pos = all_content.find('result-translation')
@@ -111,8 +120,7 @@ def test_favicon_traditional(base_url):
 
 def test_ime_composition_guard(base_url):
     html = requests.get(f"{base_url}/").text
-    app_js_r = requests.get(f"{base_url}/app.js")
-    app_js = app_js_r.text if app_js_r.ok else ""
+    app_js = _fetch_all_js(base_url)
     all_content = html + app_js
     assert 'compositionstart' in all_content
     assert 'compositionend' in all_content
