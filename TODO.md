@@ -151,7 +151,7 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Missing `difficulty` field in response** ✅ 2026-02-17 — backfills difficulty on cached results missing it (learn + learn-fast), added to compare endpoint response.
 
 ## P10 — Next Wave (from 2026-02-17 reflection #3)
-- [ ] **Graceful degradation when Ollama is down** — Currently returns 502; should show cached results prominently, disable learn button with "Translation engine offline" message, and queue requests for retry when it comes back.
+- [x] **Graceful degradation when Ollama is down** ✅ 2026-02-17 — Backend serves cached results (any gender/formality match) with `from_cache`+`ollama_offline` flags when Ollama unreachable. Frontend polls `/api/health` every 30s, shows warning banner, dims learn button, displays "📦 cached" badge on offline-served results. Auto-recovers when Ollama comes back.
 - [ ] **Frontend JS module consolidation** — `static/js/app.js` is still 1257 lines. Extract story mode, compare mode, and context examples into separate modules.
 - [ ] **Translation quality feedback loop** — Track which translations get thumbs-down feedback and exclude them from cache. Feed patterns back into prompt tuning.
 - [ ] **Batch SRS review** — Currently reviews one card at a time. Add a "Review 10" mode that queues up due cards and shows stats at the end (correct %, time per card).
