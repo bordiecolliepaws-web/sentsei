@@ -127,8 +127,8 @@ _Items for cron iterations to work through, in priority order._
 - [x] **DRY auth checks with FastAPI Depends** ✅ 2026-02-17 — 17 endpoints refactored to use `require_password` FastAPI dependency. Zero manual password checks remaining.
 - [ ] **Word-detail latency** — p50 is 21s, way too slow. Options: simpler LLM prompt, pre-cache common words, or serve from a dictionary DB first and only hit LLM for unknowns.
 - [x] **routes.py still 1178 lines** ✅ 2026-02-17 — Extracted learn/learn-fast/learn-multi/learn-stream/segment/breakdown into `learn_routes.py` (744 lines), compare into `compare_routes.py` (63 lines). routes.py now 417 lines.
-- [ ] **Streaming response for word-detail** — 21s wait with no feedback is bad UX. Stream partial results like learn-stream does.
-- [ ] **E2E smoke test script** — A simple bash/pytest script that hits the main user flow (learn, surprise, quiz, history export) and checks responses. Good for catching regressions after refactors.
+- [x] **Streaming response for word-detail** ✅ 2026-02-17 — SSE endpoint `/api/word-detail-stream` with progress heartbeats + live status messages. Frontend updated to use streaming with progressive feedback.
+- [x] **E2E smoke test script** ✅ 2026-02-17 — `test_smoke.py` with 8 tests covering health, languages, learn, learn-stream, surprise, word-detail-stream, anki export, rate limits.
 - [ ] **Rate limiting per-user (not just IP)** — Logged-in users should have their own rate limit bucket, not share with other users behind the same IP/NAT.
 
 ## P7 — Code Health & Security (from 2026-02-17 reflection)
