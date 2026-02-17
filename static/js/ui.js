@@ -771,11 +771,11 @@ async function handleWordChipClick(chip, wordData, fullData, reqCtx) {
 
     const detailDiv = document.createElement('div');
     detailDiv.className = 'word-detail';
-    detailDiv.innerHTML = '<div class="word-detail-loading">Loading details...</div>';
+    detailDiv.innerHTML = '<div class="word-detail-loading">Looking up word details...</div>';
     chip.appendChild(detailDiv);
 
     try {
-        const resp = await fetch('/api/word-detail', {
+        const resp = await fetch('/api/word-detail-stream', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -790,7 +790,39 @@ async function handleWordChipClick(chip, wordData, fullData, reqCtx) {
         });
 
         if (!resp.ok) throw new Error(await friendlyError(resp));
-        const detail = await resp.json();
+
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let detail = null;
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+
+            const lines = buffer.split('\n');
+            buffer = lines.pop();
+
+            for (const line of lines) {
+                if (!line.startsWith('data: ')) continue;
+                try {
+                    const evt = JSON.parse(line.slice(6));
+                    if (evt.type === 'progress') {
+                        const loadingEl = detailDiv.querySelector('.word-detail-loading');
+                        if (loadingEl) loadingEl.textContent = evt.status;
+                    } else if (evt.type === 'result') {
+                        detail = evt.data;
+                    } else if (evt.type === 'error') {
+                        throw new Error(evt.message);
+                    }
+                } catch (parseErr) {
+                    if (parseErr.message && !parseErr.message.includes('JSON')) throw parseErr;
+                }
+            }
+        }
+
+        if (!detail) detail = { examples: [], conjugations: [], related: [] };
 
         let html = '';
         if (detail.examples && detail.examples.length) {

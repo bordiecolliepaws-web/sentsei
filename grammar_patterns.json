@@ -131,9 +131,14 @@
         "source": "我明天早上要早起",
         "translation": "私は明日の朝早く起きるつもりです。",
         "timestamp": 1771293745.195889
+      },
+      {
+        "source": "我覺得我們迷路了，讓我看一下地圖",
+        "translation": "私たちが迷子になったと思います、地図を見せてください",
+        "timestamp": 1771315553.1516297
       }
     ],
-    "count": 3
+    "count": 4
   },
   "044a22341c34145f": {
     "id": "044a22341c34145f",
@@ -1275,15 +1280,20 @@
     "id": "c4d46a8339515641",
     "name": "りの",
     "lang": "ja",
-    "explanation": "最寄りの駅はどこですか。：使用「最寄り」表示最近的捷運站，「です」用於禮貌詢問。",
+    "explanation": "最寄りの駅 (chisokori no eki) is a common phrase to refer to the nearest train station.",
     "examples": [
       {
         "source": "請問最近的捷運站在哪裡？",
         "translation": "最寄りの駅はどこですか。",
         "timestamp": 1771293913.6278617
+      },
+      {
+        "source": "Where is the nearest train station?",
+        "translation": "最寄りの駅はどこですか。",
+        "timestamp": 1771315443.375951
       }
     ],
-    "count": 1
+    "count": 2
   },
   "df23fb88f2ccbe73": {
     "id": "df23fb88f2ccbe73",
@@ -3382,6 +3392,160 @@
         "source": "Information technology is developing rapidly",
         "translation": "資訊科技正在快速發展",
         "timestamp": 1771308026.5650325
+      }
+    ],
+    "count": 1
+  },
+  "722d46f3bb4c4349": {
+    "id": "722d46f3bb4c4349",
+    "name": "ある",
+    "lang": "ja",
+    "explanation": "The sentence uses the polite form of 'ある' (to be/exist) which is 'あります' in its interrogative form 'ありますか?' to ask if something exists or is available.",
+    "examples": [
+      {
+        "source": "What do you recommend from the menu?",
+        "translation": "メニューからおすすめはありますか？",
+        "timestamp": 1771315411.4945526
+      }
+    ],
+    "count": 1
+  },
+  "2c287c8199db9aa7": {
+    "id": "2c287c8199db9aa7",
+    "name": "あります",
+    "lang": "ja",
+    "explanation": "The sentence uses the polite form of 'ある' (to be/exist) which is 'あります' in its interrogative form 'ありますか?' to ask if something exists or is available.",
+    "examples": [
+      {
+        "source": "What do you recommend from the menu?",
+        "translation": "メニューからおすすめはありますか？",
+        "timestamp": 1771315411.4945562
+      }
+    ],
+    "count": 1
+  },
+  "c256998ae3dd8f8e": {
+    "id": "c256998ae3dd8f8e",
+    "name": "Note: The original grammar notes were in the targe",
+    "lang": "ja",
+    "explanation": "Note: The original grammar notes were in the target language. Review the breakdown for word-by-word details.",
+    "examples": [
+      {
+        "source": "Can I get the bill please?",
+        "translation": "お會計をお願いします。",
+        "timestamp": 1771315466.9723616
+      }
+    ],
+    "count": 1
+  },
+  "437c40ccc72c68ac": {
+    "id": "437c40ccc72c68ac",
+    "name": "使用了て形連線動詞和禮貌表達，表現出一種請求的語氣。",
+    "lang": "ja",
+    "explanation": "使用了て形連線動詞和禮貌表達，表現出一種請求的語氣。",
+    "examples": [
+      {
+        "source": "你可以講慢一點嗎？",
+        "translation": "ゆっくり話していただけますか？",
+        "timestamp": 1771315499.322148
+      }
+    ],
+    "count": 1
+  },
+  "e659e0fc4d29abcf": {
+    "id": "e659e0fc4d29abcf",
+    "name": "か結尾表示疑問，用於詢問。",
+    "lang": "ja",
+    "explanation": "か結尾表示疑問，用於詢問。",
+    "examples": [
+      {
+        "source": "你可以講慢一點嗎？",
+        "translation": "ゆっくり話していただけますか？",
+        "timestamp": 1771315499.3221536
+      }
+    ],
+    "count": 1
+  },
+  "97b8ec848f8c8948": {
+    "id": "97b8ec848f8c8948",
+    "name": "いただきます",
+    "lang": "ja",
+    "explanation": "いただきます是一種非常禮貌的說法，用來提出請求或建議。",
+    "examples": [
+      {
+        "source": "你可以講慢一點嗎？",
+        "translation": "ゆっくり話していただけますか？",
+        "timestamp": 1771315499.3221576
+      }
+    ],
+    "count": 1
+  },
+  "480861f266b5aa6b": {
+    "id": "480861f266b5aa6b",
+    "name": "〜になった",
+    "lang": "ja",
+    "explanation": "使用了「〜になった」と表示狀態的變化。",
+    "examples": [
+      {
+        "source": "我覺得我們迷路了，讓我看一下地圖",
+        "translation": "私たちが迷子になったと思います、地図を見せてください",
+        "timestamp": 1771315553.151636
+      }
+    ],
+    "count": 1
+  },
+  "e9741b722f922e0f": {
+    "id": "e9741b722f922e0f",
+    "name": "〜と思います",
+    "lang": "ja",
+    "explanation": "使用了「〜と思います」來表示主觀想法。",
+    "examples": [
+      {
+        "source": "我覺得我們迷路了，讓我看一下地圖",
+        "translation": "私たちが迷子になったと思います、地図を見せてください",
+        "timestamp": 1771315553.1516397
+      }
+    ],
+    "count": 1
+  },
+  "fdd4152c71b5ca1f": {
+    "id": "fdd4152c71b5ca1f",
+    "name": "〜させてください",
+    "lang": "ja",
+    "explanation": "使用了「〜させてください」來表達禮貌的請求。",
+    "examples": [
+      {
+        "source": "我覺得我們迷路了，讓我看一下地圖",
+        "translation": "私たちが迷子になったと思います、地図を見せてください",
+        "timestamp": 1771315553.1516433
+      }
+    ],
+    "count": 1
+  },
+  "047d891d6fa101a9": {
+    "id": "047d891d6fa101a9",
+    "name": "세요",
+    "lang": "ko",
+    "explanation": "세요 is added to the end of 안녕 as a polite form. It's used in formal and polite situations.",
+    "examples": [
+      {
+        "source": "Hello world",
+        "translation": "안녕하세요",
+        "timestamp": 1771318688.4997354
+      }
+    ],
+    "count": 1
+  },
+  "56adba14b2f30ce3": {
+    "id": "56adba14b2f30ce3",
+    "name": "안녕",
+    "lang": "ko",
+    "explanation": "세요 is added to the end of 안녕 as a polite form. It's used in formal and polite situations.",
+    "examples": [
+      {
+        "source": "Hello world",
+        "translation": "안녕하세요",
+        "timestamp": 1771318688.499739
       }
     ],
     "count": 1

@@ -132,6 +132,103 @@ Rules:
     return result
 
 
+@router.post("/api/word-detail-stream")
+async def word_detail_stream(
+    request: Request,
+    req: WordDetailRequest,
+    _pw=Depends(require_password),
+):
+    """SSE streaming version of word-detail — sends progress while LLM works."""
+
+    client_ip = request.client.host if request.client else "unknown"
+    rate_limit_cleanup()
+    if not rate_limit_check(client_ip):
+        raise HTTPException(429, "Too many requests. Please wait a minute.")
+
+    if len(req.word) > MAX_INPUT_LEN or len(req.meaning) > MAX_INPUT_LEN:
+        raise HTTPException(400, f"Input too long (max {MAX_INPUT_LEN} characters)")
+    if req.sentence_context and len(req.sentence_context) > MAX_INPUT_LEN:
+        raise HTTPException(400, f"Input too long (max {MAX_INPUT_LEN} characters)")
+
+    if req.target_language not in SUPPORTED_LANGUAGES:
+        raise HTTPException(400, "Unsupported language")
+
+    async def _generate():
+        try:
+            yield f"data: {json.dumps({'type': 'progress', 'status': 'Looking up word details...'})}\n\n"
+
+            lang_name = SUPPORTED_LANGUAGES[req.target_language]
+            meaning_is_chinese = any('\u4e00' <= c <= '\u9fff' for c in req.meaning)
+            explain_lang = "繁體中文 (Traditional Chinese, Taiwan usage)" if meaning_is_chinese else "English"
+            context_line = f'\nThe word appeared in this sentence: "{req.sentence_context}"' if req.sentence_context else ""
+
+            prompt = f"""Give details about the {lang_name} word "{req.word}" (meaning: {req.meaning}).{context_line}
+
+Respond with ONLY valid JSON (no markdown, no code fences):
+{{
+  "examples": [
+    {{"sentence": "example sentence using the word in {lang_name}", "pronunciation": "romanized", "meaning": "translation in {explain_lang}"}},
+    {{"sentence": "another example", "pronunciation": "romanized", "meaning": "translation in {explain_lang}"}}
+  ],
+  "conjugations": [
+    {{"form": "conjugated/inflected form in {lang_name}", "label": "tense/form name in {explain_lang}"}}
+  ],
+  "related": [
+    {{"word": "related word in {lang_name}", "meaning": "meaning in {explain_lang}"}}
+  ]
+}}
+
+Rules:
+- Give 2-3 example sentences, 2-4 conjugations/forms (if applicable), 2-3 related words
+- If the word doesn't conjugate (particles, nouns), return empty conjugations array
+- All explanations in {explain_lang}
+- Examples should be simple, practical sentences"""
+
+            system_msg = f"You are a {lang_name} vocabulary teacher. Respond with valid JSON only."
+
+            # Run LLM call as a task so we can send progress heartbeats
+            llm_task = asyncio.create_task(ollama_chat(
+                [{"role": "system", "content": system_msg}, {"role": "user", "content": prompt}],
+                model=OLLAMA_MODEL, temperature=0.3, num_predict=1024, timeout=60
+            ))
+
+            elapsed = 0
+            messages = [
+                (3, "Generating examples..."),
+                (8, "Building conjugations..."),
+                (15, "Finding related words..."),
+                (22, "Almost there..."),
+            ]
+            msg_idx = 0
+            while not llm_task.done():
+                await asyncio.sleep(1.5)
+                elapsed += 1.5
+                while msg_idx < len(messages) and elapsed >= messages[msg_idx][0]:
+                    yield f"data: {json.dumps({'type': 'progress', 'status': messages[msg_idx][1]})}\n\n"
+                    msg_idx += 1
+                # Heartbeat to keep connection alive
+                yield f"data: {json.dumps({'type': 'heartbeat', 'elapsed': round(elapsed, 1)})}\n\n"
+
+            text = llm_task.result()
+            if text is None:
+                yield f"data: {json.dumps({'type': 'error', 'message': 'Translation engine unavailable'})}\n\n"
+                return
+
+            result = parse_json_object(text)
+            if not result:
+                result = {"examples": [], "conjugations": [], "related": []}
+            else:
+                result = ensure_traditional_chinese(result)
+
+            yield f"data: {json.dumps({'type': 'result', 'data': result}, ensure_ascii=False)}\n\n"
+        except Exception as e:
+            logger.exception("word-detail-stream error")
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+
+    return StreamingResponse(_generate(), media_type="text/event-stream",
+                            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
 @router.post("/api/context-examples")
 async def context_examples(
     request: Request,
