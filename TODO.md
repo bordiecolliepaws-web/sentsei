@@ -158,6 +158,14 @@ _Items for cron iterations to work through, in priority order._
 - [ ] **Server-side SRS for multi-user** — SRS is currently frontend-only localStorage. For multi-user to be meaningful, migrate SRS deck to SQLite user_data with sync. Then add backend test coverage (currently deferred in P6).
 - [x] **API documentation** ✅ 2026-02-17 — OpenAPI metadata (title, description, version), all 29 endpoints tagged and summarized, /docs (Swagger UI) + /redoc endpoints, API Docs link in side menu.
 
+## P11 — Polish & Robustness (from 2026-02-18 reflection)
+- [ ] **Split style.css (2672 lines)** — Extract into `variables.css` (custom properties/themes), `components.css` (pills, cards, chips, modals), `responsive.css` (media queries). Main `style.css` becomes imports only. Easier to maintain/debug.
+- [ ] **Rate limit visibility** — Show remaining requests (X-RateLimit-Remaining header) in the UI. Subtle counter near input, turns amber at 10, red at 3. Prevents surprise 429s.
+- [ ] **Batch SRS review mode** — Queue up 10 due cards, show progress bar, stats at end (correct %, avg time per card, streak). More engaging than one-at-a-time.
+- [ ] **Sentence favorites / bookmarks** — Star button on results, separate from history. Favorites don't get pushed out by the 50-entry history limit. Exportable. Syncs to server for logged-in users.
+- [ ] **Learn endpoint returns empty `words` field** — The response has both `breakdown` (populated) and `words` (empty array). Remove the dead `words` field or alias it to `breakdown` for API consistency.
+- [ ] **Frontend smoke tests** — Playwright or Puppeteer headless tests: load page, enter sentence, get result, check word chips expand, verify history saves. Run in CI alongside backend tests.
+
 ## Cron Test Matrix
 Each iteration should run these checks:
 1. English → Korean: explanations in English? Translation in 한글?
