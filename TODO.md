@@ -126,7 +126,7 @@ _Items for cron iterations to work through, in priority order._
 ## P9 — Code Health & UX (from 2026-02-17 reflection #2)
 - [x] **DRY auth checks with FastAPI Depends** ✅ 2026-02-17 — 17 endpoints refactored to use `require_password` FastAPI dependency. Zero manual password checks remaining.
 - [ ] **Word-detail latency** — p50 is 21s, way too slow. Options: simpler LLM prompt, pre-cache common words, or serve from a dictionary DB first and only hit LLM for unknowns.
-- [ ] **routes.py still 1178 lines** — Extract learn/learn-fast/learn-multi/learn-stream into `learn_routes.py`, compare into `compare_routes.py`. Target <400 lines per file.
+- [x] **routes.py still 1178 lines** ✅ 2026-02-17 — Extracted learn/learn-fast/learn-multi/learn-stream/segment/breakdown into `learn_routes.py` (744 lines), compare into `compare_routes.py` (63 lines). routes.py now 417 lines.
 - [ ] **Streaming response for word-detail** — 21s wait with no feedback is bad UX. Stream partial results like learn-stream does.
 - [ ] **E2E smoke test script** — A simple bash/pytest script that hits the main user flow (learn, surprise, quiz, history export) and checks responses. Good for catching regressions after refactors.
 - [ ] **Rate limiting per-user (not just IP)** — Logged-in users should have their own rate limit bucket, not share with other users behind the same IP/NAT.
