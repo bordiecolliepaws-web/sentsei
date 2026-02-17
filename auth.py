@@ -33,6 +33,21 @@ def rate_limit_check(ip: str) -> bool:
     return True
 
 
+def get_rate_limit_key(request) -> str:
+    """Return a per-user rate limit key if logged in, else fall back to IP.
+
+    Logged-in users get their own bucket (``user:<id>``) so they aren't
+    penalised by other users behind the same NAT/IP.
+    """
+    auth_header = request.headers.get("authorization")
+    token = extract_bearer_token(auth_header)
+    if token:
+        user = get_user_from_token(token)
+        if user:
+            return f"user:{user['id']}"
+    return request.client.host if request.client else "unknown"
+
+
 def rate_limit_cleanup():
     global _rate_check_counter
     _rate_check_counter += 1

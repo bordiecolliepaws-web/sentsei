@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Header, Request
 
 from models import SUPPORTED_LANGUAGES, CURATED_SENTENCES, QuizCheckRequest
 from cache import get_quiz_answers, cleanup_quiz_answers
-from auth import APP_PASSWORD, rate_limit_check, rate_limit_cleanup, require_password
+from auth import APP_PASSWORD, rate_limit_check, rate_limit_cleanup, get_rate_limit_key, require_password
 from llm import (
     OLLAMA_MODEL, deterministic_pronunciation, parse_json_object,
     new_quiz_id, translation_hint, ollama_chat,
@@ -131,9 +131,9 @@ async def quiz_check(
     _pw=Depends(require_password),
 ):
 
-    client_ip = request.client.host if request.client else "unknown"
+    rate_key = get_rate_limit_key(request)
     rate_limit_cleanup()
-    if not rate_limit_check(client_ip):
+    if not rate_limit_check(rate_key):
         raise HTTPException(429, "Too many requests. Please wait a minute.")
 
     answer = req.answer.strip()

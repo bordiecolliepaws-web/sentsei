@@ -27,7 +27,7 @@ from cache import (
     extract_and_store_grammar_patterns, get_grammar_patterns,
 )
 from auth import (
-    APP_PASSWORD, rate_limit_check, rate_limit_cleanup,
+    APP_PASSWORD, rate_limit_check, rate_limit_cleanup, get_rate_limit_key,
     require_password,
 )
 from llm import (
@@ -81,9 +81,9 @@ async def learn_sentence(
 
 async def _learn_sentence_impl(request: Request, req: SentenceRequest):
     """Core learn logic — no auth check, used by endpoint and internal callers."""
-    client_ip = request.client.host if request.client else "unknown"
+    rate_key = get_rate_limit_key(request)
     rate_limit_cleanup()
-    if not rate_limit_check(client_ip):
+    if not rate_limit_check(rate_key):
         raise HTTPException(429, "Too many requests. Please wait a minute.")
 
     if not req.sentence or not req.sentence.strip():
@@ -418,9 +418,9 @@ async def learn_fast(
     _pw=Depends(require_password),
 ):
 
-    client_ip = request.client.host if request.client else "unknown"
+    rate_key = get_rate_limit_key(request)
     rate_limit_cleanup()
-    if not rate_limit_check(client_ip):
+    if not rate_limit_check(rate_key):
         raise HTTPException(429, "Too many requests. Please wait a minute.")
 
     if not req.sentence or not req.sentence.strip():
@@ -567,9 +567,9 @@ async def get_breakdown(
     _pw=Depends(require_password),
 ):
 
-    client_ip = request.client.host if request.client else "unknown"
+    rate_key = get_rate_limit_key(request)
     rate_limit_cleanup()
-    if not rate_limit_check(client_ip):
+    if not rate_limit_check(rate_key):
         raise HTTPException(429, "Too many requests. Please wait a minute.")
 
     if len(req.sentence) > MAX_INPUT_LEN or len(req.translation) > MAX_INPUT_LEN:
@@ -652,9 +652,9 @@ async def learn_sentence_stream(
     _pw=Depends(require_password),
 ):
 
-    client_ip = request.client.host if request.client else "unknown"
+    rate_key = get_rate_limit_key(request)
     rate_limit_cleanup()
-    if not rate_limit_check(client_ip):
+    if not rate_limit_check(rate_key):
         raise HTTPException(429, "Too many requests. Please wait a minute.")
 
     if not req.sentence or not req.sentence.strip():

@@ -30,7 +30,7 @@ from cache import (
     word_cache_key, word_cache_get, word_cache_put, word_cache_stats,
 )
 from auth import (
-    APP_PASSWORD, rate_limit_check, rate_limit_cleanup,
+    APP_PASSWORD, rate_limit_check, rate_limit_cleanup, get_rate_limit_key,
     get_db, init_user_db, hash_password, verify_password,
     create_session, get_user_from_token, extract_bearer_token,
     require_password,
@@ -74,9 +74,9 @@ async def word_detail(
     _pw=Depends(require_password),
 ):
 
-    client_ip = request.client.host if request.client else "unknown"
+    rate_key = get_rate_limit_key(request)
     rate_limit_cleanup()
-    if not rate_limit_check(client_ip):
+    if not rate_limit_check(rate_key):
         raise HTTPException(429, "Too many requests. Please wait a minute.")
 
     if len(req.word) > MAX_INPUT_LEN or len(req.meaning) > MAX_INPUT_LEN:
@@ -128,9 +128,9 @@ async def word_detail_stream(
 ):
     """SSE streaming version of word-detail — sends progress while LLM works."""
 
-    client_ip = request.client.host if request.client else "unknown"
+    rate_key = get_rate_limit_key(request)
     rate_limit_cleanup()
-    if not rate_limit_check(client_ip):
+    if not rate_limit_check(rate_key):
         raise HTTPException(429, "Too many requests. Please wait a minute.")
 
     if len(req.word) > MAX_INPUT_LEN or len(req.meaning) > MAX_INPUT_LEN:
@@ -215,9 +215,9 @@ async def context_examples(
     _pw=Depends(require_password),
 ):
 
-    client_ip = request.client.host if request.client else "unknown"
+    rate_key = get_rate_limit_key(request)
     rate_limit_cleanup()
-    if not rate_limit_check(client_ip):
+    if not rate_limit_check(rate_key):
         raise HTTPException(429, "Too many requests. Please wait a minute.")
 
     if len(req.translation) > MAX_INPUT_LEN or len(req.source_sentence) > MAX_INPUT_LEN:

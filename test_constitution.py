@@ -313,3 +313,41 @@ def test_cleanup_expired_sessions():
     conn.execute("DELETE FROM users WHERE username = '_test_cleanup_user'")
     conn.commit()
     conn.close()
+
+
+def test_per_user_rate_limit_key():
+    """Logged-in users get a user-specific rate limit bucket, not IP-based."""
+    from auth import get_rate_limit_key, get_db, hash_password, create_session
+    import time
+
+    # Create a test user + session
+    conn = get_db()
+    pw_hash = hash_password("testpass")
+    conn.execute("INSERT OR IGNORE INTO users (username, password_hash, created_at) VALUES (?, ?, ?)",
+                 ("_test_rl_user", pw_hash, time.time()))
+    conn.commit()
+    row = conn.execute("SELECT id FROM users WHERE username = '_test_rl_user'").fetchone()
+    user_id = row["id"]
+    token = create_session(user_id)
+    conn.close()
+
+    # Mock request with auth header
+    class FakeRequest:
+        def __init__(self, auth=None, ip="1.2.3.4"):
+            self.headers = {"authorization": f"Bearer {auth}"} if auth else {}
+            self.client = type("C", (), {"host": ip})()
+
+    # Without auth → IP-based key
+    key_no_auth = get_rate_limit_key(FakeRequest(ip="9.9.9.9"))
+    assert key_no_auth == "9.9.9.9"
+
+    # With auth → user-based key
+    key_auth = get_rate_limit_key(FakeRequest(auth=token, ip="9.9.9.9"))
+    assert key_auth == f"user:{user_id}"
+
+    # Cleanup
+    conn = get_db()
+    conn.execute("DELETE FROM sessions WHERE user_id = ?", (user_id,))
+    conn.execute("DELETE FROM users WHERE username = '_test_rl_user'")
+    conn.commit()
+    conn.close()

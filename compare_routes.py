@@ -3,7 +3,7 @@ import json
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from models import SUPPORTED_LANGUAGES, SentenceRequest, CompareRequest
-from auth import rate_limit_check, rate_limit_cleanup, require_password
+from auth import rate_limit_check, rate_limit_cleanup, get_rate_limit_key, require_password
 from learn_routes import _learn_sentence_impl, _detect_input_language, MAX_INPUT_LEN
 
 router = APIRouter()
@@ -16,9 +16,9 @@ async def compare_sentence(
     _pw=Depends(require_password),
 ):
 
-    client_ip = request.client.host if request.client else "unknown"
+    rate_key = get_rate_limit_key(request)
     rate_limit_cleanup()
-    if not rate_limit_check(client_ip):
+    if not rate_limit_check(rate_key):
         raise HTTPException(429, "Too many requests. Please wait a minute.")
 
     if not req.sentence.strip():
