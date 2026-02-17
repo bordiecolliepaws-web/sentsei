@@ -16,7 +16,8 @@ import {
 import {
     loadSRSDeck, saveSRSDeck, addToSRS, getDueItems, updateSRSItem,
     updateReviewBadge, formatTimeUntil, enterReviewMode, exitReviewMode,
-    toggleReviewMode, loadReviewQuestion, setSRSDeps
+    toggleReviewMode, loadReviewQuestion, setSRSDeps,
+    enterBatchReview, handleReviewNext
 } from './srs.js';
 import {
     loadQuizQuestion, checkQuizAnswer, enterQuizMode, exitQuizMode,
@@ -997,7 +998,9 @@ function init() {
     const reviewNextBtn = document.getElementById('review-next-btn');
     const reviewExitBtn = document.getElementById('review-exit-btn');
     if (reviewToggleBtn) reviewToggleBtn.addEventListener('click', toggleReviewMode);
-    if (reviewNextBtn) reviewNextBtn.addEventListener('click', loadReviewQuestion);
+    if (reviewNextBtn) reviewNextBtn.addEventListener('click', handleReviewNext);
+    const batchReviewBtn = document.getElementById('batch-review-btn');
+    if (batchReviewBtn) batchReviewBtn.addEventListener('click', enterBatchReview);
     if (reviewExitBtn) reviewExitBtn.addEventListener('click', exitReviewMode);
     updateReviewBadge();
 

@@ -146,6 +146,14 @@ export const state = {
     quizTotal: 0,
     ollamaOnline: true,
     _healthPollTimer: null,
+    // Batch SRS review
+    batchReview: false,
+    batchQueue: [],
+    batchIndex: 0,
+    batchStartTime: 0,
+    batchCardStart: 0,
+    batchCardTimes: [],
+    batchResults: [], // {correct: bool, item, timeMs}
 };
 
 // Hook registry for monkey-patch replacements

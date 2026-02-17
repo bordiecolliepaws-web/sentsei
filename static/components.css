@@ -2504,3 +2504,68 @@ body.hide-romanization .ctx-pron {
     color: #e84838;
     background: rgba(232, 72, 56, 0.15);
 }
+
+/* === Batch Review === */
+.batch-progress {
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+}
+.batch-progress.hidden { display: none; }
+.batch-progress-text {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+    text-align: center;
+}
+.batch-progress-bar {
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.batch-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+.batch-start-row {
+    display: flex;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+}
+.batch-start-row.hidden { display: none; }
+.batch-review-btn {
+    padding: 0.5rem 1.2rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.batch-review-btn:hover {
+    background: var(--accent);
+    color: var(--bg);
+}
+.batch-summary-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+.batch-stat {
+    text-align: center;
+}
+.batch-stat-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+.batch-stat-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+}

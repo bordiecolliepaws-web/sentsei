@@ -105,15 +105,32 @@ export function enterReviewMode() {
     }
 
     document.getElementById('review-meta').textContent = `${dueItems.length} item${dueItems.length === 1 ? '' : 's'} due for review`;
+
+    // Show batch review button if enough items
+    const batchStartRow = document.getElementById('batch-start-row');
+    if (batchStartRow) {
+        batchStartRow.classList.toggle('hidden', dueItems.length < 2);
+        const batchBtn = document.getElementById('batch-review-btn');
+        if (batchBtn) batchBtn.textContent = `⚡ Review ${Math.min(10, dueItems.length)}`;
+    }
+    // Hide batch progress
+    const progressEl = document.getElementById('batch-progress');
+    if (progressEl) progressEl.classList.add('hidden');
+
     loadReviewQuestion();
 }
 
 export function exitReviewMode() {
     state.reviewMode = false;
+    state.batchReview = false;
     state.currentReview = null;
     document.body.classList.remove('review-mode');
     document.getElementById('review-area').classList.add('hidden');
     document.getElementById('review-toggle').classList.remove('active');
+    const progressEl = document.getElementById('batch-progress');
+    if (progressEl) progressEl.classList.add('hidden');
+    const batchStartRow = document.getElementById('batch-start-row');
+    if (batchStartRow) batchStartRow.classList.add('hidden');
 }
 
 export function toggleReviewMode() {
@@ -233,6 +250,239 @@ export function loadReviewQuestion() {
         });
         choicesEl.appendChild(btn);
     });
+}
+
+// === Batch Review Mode ===
+
+export function enterBatchReview() {
+    const { ensurePassword } = _deps;
+    if (!ensurePassword()) return;
+    const dueItems = getDueItems();
+    if (dueItems.length === 0) {
+        enterReviewMode(); // falls through to "all caught up"
+        return;
+    }
+
+    // Shuffle and take up to 10
+    const shuffled = [...dueItems].sort(() => Math.random() - 0.5);
+    const batchSize = Math.min(10, shuffled.length);
+    state.batchReview = true;
+    state.batchQueue = shuffled.slice(0, batchSize);
+    state.batchIndex = 0;
+    state.batchStartTime = Date.now();
+    state.batchCardTimes = [];
+    state.batchResults = [];
+    state.reviewMode = true;
+    state.reviewCorrect = 0;
+    state.reviewTotal = 0;
+    state.currentReview = null;
+
+    document.body.classList.add('review-mode');
+    const reviewArea = document.getElementById('review-area');
+    reviewArea.classList.remove('hidden');
+    document.getElementById('review-toggle').classList.add('active');
+
+    // Show batch progress bar
+    const progressEl = document.getElementById('batch-progress');
+    if (progressEl) {
+        progressEl.classList.remove('hidden');
+        updateBatchProgress();
+    }
+
+    // Hide batch start button row if present
+    const batchStartRow = document.getElementById('batch-start-row');
+    if (batchStartRow) batchStartRow.classList.add('hidden');
+
+    loadBatchCard();
+}
+
+function updateBatchProgress() {
+    const progressEl = document.getElementById('batch-progress');
+    if (!progressEl) return;
+    const total = state.batchQueue.length;
+    const current = state.batchIndex + 1;
+    const pct = Math.round((state.batchIndex / total) * 100);
+    progressEl.innerHTML = `
+        <div class="batch-progress-text">${current} of ${total}</div>
+        <div class="batch-progress-bar"><div class="batch-progress-fill" style="width:${pct}%"></div></div>
+    `;
+}
+
+function loadBatchCard() {
+    if (state.batchIndex >= state.batchQueue.length) {
+        showBatchSummary();
+        return;
+    }
+
+    updateBatchProgress();
+    state.batchCardStart = Date.now();
+    const question = state.batchQueue[state.batchIndex];
+
+    const choicesEl = document.getElementById('review-choices');
+    choicesEl.innerHTML = '';
+    const sentenceEl = document.getElementById('review-sentence');
+    const pronunciationEl = document.getElementById('review-pronunciation');
+    const labelEl = document.getElementById('review-label');
+    const sourceEl = document.getElementById('review-source');
+    const nextBtn = document.getElementById('review-next-btn');
+    nextBtn.disabled = true;
+
+    document.getElementById('review-meta').textContent =
+        `Batch review: ${state.batchIndex + 1}/${state.batchQueue.length}`;
+
+    const sameLang = state.srsDeck.filter(item => item.lang === question.lang);
+    const showTranslation = Math.random() > 0.5;
+    let correctAnswer;
+
+    if (showTranslation) {
+        labelEl.textContent = 'What does this mean?';
+        sentenceEl.textContent = question.translation;
+        pronunciationEl.textContent = question.pronunciation || '';
+        correctAnswer = question.sentence;
+        const wrongItems = sameLang.filter(w => w.sentence !== question.sentence).sort(() => Math.random() - 0.5).slice(0, 3);
+        const choices = wrongItems.map(w => ({ text: w.sentence, correct: false }));
+        choices.push({ text: question.sentence, correct: true });
+        choices.sort(() => Math.random() - 0.5);
+        state.currentReview = { item: question, correctAnswer, choices };
+    } else {
+        labelEl.textContent = 'How do you say this?';
+        sentenceEl.textContent = question.sentence;
+        pronunciationEl.textContent = '';
+        correctAnswer = question.translation;
+        const wrongItems = sameLang.filter(w => w.sentence !== question.sentence).sort(() => Math.random() - 0.5).slice(0, 3);
+        const choices = wrongItems.map(w => ({ text: w.translation, correct: false }));
+        choices.push({ text: question.translation, correct: true });
+        choices.sort(() => Math.random() - 0.5);
+        state.currentReview = { item: question, correctAnswer, choices };
+    }
+
+    sourceEl.textContent = `Interval: ${formatTimeUntil(question.interval)}`;
+
+    state.currentReview.choices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = choice.text;
+        btn.style.cssText = 'padding:0.75rem 1rem;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.95rem;cursor:pointer;text-align:left;transition:all 0.2s;';
+        btn.addEventListener('click', () => {
+            const cardTime = Date.now() - state.batchCardStart;
+            choicesEl.querySelectorAll('button').forEach(b => { b.disabled = true; b.style.cursor = 'default'; });
+
+            const correct = choice.correct;
+            if (correct) {
+                btn.style.background = '#1a4a2a';
+                btn.style.borderColor = 'var(--easy)';
+                btn.style.color = 'var(--easy)';
+                state.reviewCorrect++;
+                updateSRSItem(state.currentReview.item, true);
+            } else {
+                btn.style.background = '#4a1a1a';
+                btn.style.borderColor = 'var(--hard)';
+                btn.style.color = 'var(--hard)';
+                choicesEl.querySelectorAll('button').forEach(b => {
+                    if (b.textContent === state.currentReview.correctAnswer) {
+                        b.style.background = '#1a4a2a';
+                        b.style.borderColor = 'var(--easy)';
+                        b.style.color = 'var(--easy)';
+                    }
+                });
+                updateSRSItem(state.currentReview.item, false);
+            }
+            state.reviewTotal++;
+            state.batchCardTimes.push(cardTime);
+            state.batchResults.push({ correct, item: state.currentReview.item, timeMs: cardTime });
+            document.getElementById('review-score').textContent = `${state.reviewCorrect}/${state.reviewTotal}`;
+            nextBtn.disabled = false;
+        });
+        choicesEl.appendChild(btn);
+    });
+}
+
+export function nextBatchCard() {
+    state.batchIndex++;
+    loadBatchCard();
+}
+
+function showBatchSummary() {
+    const totalTime = Date.now() - state.batchStartTime;
+    const total = state.batchResults.length;
+    const correct = state.batchResults.filter(r => r.correct).length;
+    const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+    const avgTime = total > 0 ? Math.round(state.batchCardTimes.reduce((a, b) => a + b, 0) / total / 1000 * 10) / 10 : 0;
+
+    // Calculate streak (longest consecutive correct)
+    let maxStreak = 0, streak = 0;
+    state.batchResults.forEach(r => {
+        if (r.correct) { streak++; maxStreak = Math.max(maxStreak, streak); }
+        else { streak = 0; }
+    });
+
+    const choicesEl = document.getElementById('review-choices');
+    choicesEl.innerHTML = '';
+    const labelEl = document.getElementById('review-label');
+    const sentenceEl = document.getElementById('review-sentence');
+    const pronunciationEl = document.getElementById('review-pronunciation');
+    const sourceEl = document.getElementById('review-source');
+    const nextBtn = document.getElementById('review-next-btn');
+    nextBtn.disabled = true;
+
+    // Update progress bar to 100%
+    const progressEl = document.getElementById('batch-progress');
+    if (progressEl) {
+        progressEl.innerHTML = `
+            <div class="batch-progress-text">Complete!</div>
+            <div class="batch-progress-bar"><div class="batch-progress-fill" style="width:100%"></div></div>
+        `;
+    }
+
+    labelEl.textContent = '';
+    pronunciationEl.textContent = '';
+    sourceEl.textContent = '';
+
+    // Grade
+    let grade, gradeEmoji;
+    if (pct === 100) { grade = 'Perfect'; gradeEmoji = '🏆'; }
+    else if (pct >= 80) { grade = 'Great'; gradeEmoji = '⚡'; }
+    else if (pct >= 60) { grade = 'Good'; gradeEmoji = '👍'; }
+    else if (pct >= 40) { grade = 'Keep going'; gradeEmoji = '💪'; }
+    else { grade = 'Needs practice'; gradeEmoji = '📚'; }
+
+    sentenceEl.innerHTML = `
+        <div style="text-align:center;">
+            <div style="font-size:2rem;margin-bottom:0.5rem;">${gradeEmoji}</div>
+            <div style="font-size:1.3rem;font-weight:600;margin-bottom:1rem;">${grade}!</div>
+            <div class="batch-summary-stats">
+                <div class="batch-stat">
+                    <div class="batch-stat-value">${pct}%</div>
+                    <div class="batch-stat-label">Correct</div>
+                </div>
+                <div class="batch-stat">
+                    <div class="batch-stat-value">${correct}/${total}</div>
+                    <div class="batch-stat-label">Score</div>
+                </div>
+                <div class="batch-stat">
+                    <div class="batch-stat-value">${avgTime}s</div>
+                    <div class="batch-stat-label">Avg time</div>
+                </div>
+                <div class="batch-stat">
+                    <div class="batch-stat-value">${maxStreak}</div>
+                    <div class="batch-stat-label">Best streak</div>
+                </div>
+            </div>
+            <div style="margin-top:1rem;font-size:0.85rem;color:var(--muted);">
+                Total time: ${Math.round(totalTime / 1000)}s
+            </div>
+        </div>
+    `;
+
+    state.batchReview = false;
+}
+
+export function handleReviewNext() {
+    if (state.batchReview) {
+        nextBatchCard();
+    } else {
+        loadReviewQuestion();
+    }
 }
 
 // Dependency injection for circular deps
