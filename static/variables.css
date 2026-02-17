@@ -1,0 +1,38 @@
+/* === Theme Variables & Custom Properties === */
+
+:root {
+            --bg: #0c0c0c;
+            --surface: #161616;
+            --surface2: #1e1e1e;
+            --border: #2a2a2a;
+            --text: #f0ece4;
+            --text-dim: #908a7e;
+            --accent: #e8a838;
+            --accent-glow: rgba(232, 168, 56, 0.12);
+            --easy: #6dcf8c;
+            --medium: #e8a838;
+            --hard: #e85d5d;
+            --radius: 14px;
+            --overlay: rgba(6, 6, 10, 0.55);
+            --shadow: rgba(0, 0, 0, 0.45);
+            --accent-on-btn: #111;
+            color-scheme: dark;
+        }
+
+        [data-theme="light"] {
+            --bg: #f5f3ee;
+            --surface: #ffffff;
+            --surface2: #f0ece4;
+            --border: #ddd6c8;
+            --text: #1a1a1a;
+            --text-dim: #6b6560;
+            --accent: #c8872a;
+            --accent-glow: rgba(200, 135, 42, 0.10);
+            --easy: #2e8b4a;
+            --medium: #c8872a;
+            --hard: #c44040;
+            --overlay: rgba(0, 0, 0, 0.35);
+            --shadow: rgba(0, 0, 0, 0.12);
+            --accent-on-btn: #fff;
+            color-scheme: light;
+        }

@@ -1,0 +1,196 @@
+/* === Responsive & Media Queries === */
+
+@media (max-width: 600px) {
+
+            .quiz-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.4rem;
+            }
+
+            .quiz-answer-row {
+                flex-direction: column;
+            }
+
+            .quiz-check-btn,
+            .quiz-answer-input {
+                width: 100%;
+            }
+
+            .history-panel {
+                top: auto;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                height: 60vh;
+                max-height: 60vh;
+                border-left: none;
+                border-top: 1px solid var(--border);
+                border-radius: 16px 16px 0 0;
+                transform: translateY(100%);
+            }
+
+            .history-panel.open {
+                transform: translateY(0);
+            }
+
+            .stories-panel {
+                top: auto;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                height: 62vh;
+                max-height: 62vh;
+                border-right: none;
+                border-top: 1px solid var(--border);
+                border-radius: 16px 16px 0 0;
+                transform: translateY(100%);
+            }
+
+            .stories-panel.open {
+                transform: translateY(0);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .word-chips {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .container {
+                max-width: 1100px;
+            }
+            .word-chips {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            }
+            /* Desktop: single column, just wider with better word chip grid */
+            .result-card {
+                display: block;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+
+            .container {
+                padding: 1rem 0.75rem;
+            }
+
+            header {
+                margin-bottom: 1.25rem;
+            }
+
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            .header-title-row {
+                gap: 0.45rem;
+            }
+
+            .stats-btn {
+                font-size: 0.7rem;
+                padding: 0.26rem 0.54rem;
+            }
+
+            header p {
+                font-size: 0.85rem;
+                margin-top: 0.25rem;
+            }
+
+            .input-area {
+                padding: 1rem;
+                margin-bottom: 1rem;
+                position: static;
+            }
+
+            .language-select {
+                margin-bottom: 0.65rem;
+            }
+
+            .sentence-input {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .sentence-input-actions {
+                flex-direction: row;
+                min-width: 0;
+                width: 100%;
+            }
+
+            .sentence-input button {
+                flex: 1;
+                padding: 0.75rem;
+                font-size: 0.95rem;
+                min-height: 46px;
+            }
+
+            .sentence-input textarea {
+                font-size: 1rem;
+            }
+
+            .result-translation {
+                font-size: 1.3rem;
+            }
+
+            .result-head {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .copy-btn {
+                align-self: flex-start;
+            }
+
+            .word-chips {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.5rem;
+            }
+
+            .word-chip {
+                min-width: unset;
+            }
+
+            .result-main,
+            .breakdown-section,
+            .notes-section {
+                padding: 1rem;
+            }
+
+            .compare-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .password-form {
+                flex-direction: column;
+            }
+
+            .progress-modal {
+                max-width: 100%;
+            }
+
+            .input-hint {
+                display: none; /* redundant on mobile — button is full-width and obvious */
+            }
+        }
+
+        @media (max-width: 360px) {
+            .container { padding: 0.75rem 0.5rem; }
+            .word-chips { grid-template-columns: 1fr; }
+            header h1 { font-size: 1.3rem; }
+        }
+
+@media (max-width: 600px) {
+    .grammar-panel {
+        width: 100%;
+    }
+}
