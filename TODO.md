@@ -156,7 +156,7 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Translation quality feedback loop** ✅ 2026-02-17 — Feedback now optionally includes sentence/translation/target language. Negative feedback messages ("👎", "translation is wrong", etc.) mark that translation as low-quality, evict it from the cache, and prevent it from being cached again. Low-quality combos are tracked in bad_translations.json for future prompt tuning.
 - [ ] **Batch SRS review** — Currently reviews one card at a time. Add a "Review 10" mode that queues up due cards and shows stats at the end (correct %, time per card).
 - [ ] **Server-side SRS for multi-user** — SRS is currently frontend-only localStorage. For multi-user to be meaningful, migrate SRS deck to SQLite user_data with sync. Then add backend test coverage (currently deferred in P6).
-- [ ] **API documentation** — Auto-generate OpenAPI docs from FastAPI (already built-in at /docs). Add a user-facing API reference page for power users who want to integrate.
+- [x] **API documentation** ✅ 2026-02-17 — OpenAPI metadata (title, description, version), all 29 endpoints tagged and summarized, /docs (Swagger UI) + /redoc endpoints, API Docs link in side menu.
 
 ## Cron Test Matrix
 Each iteration should run these checks:
