@@ -134,7 +134,7 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Input validation hardening** ✅ 2026-02-17 — Added MAX_INPUT_LEN (500) checks to all endpoints: segment, breakdown, learn-stream, learn-multi (2500 for paragraphs), word-detail, context-examples, compare.
 
 ## P8 — Next Wave (from 2026-02-17 reflection)
-- [ ] **Split app.js into modules** — 3109 lines, single file. Split into: `ui.js` (DOM helpers, rendering), `api.js` (fetch wrappers), `srs.js` (spaced repetition logic), `quiz.js` (quiz mode), `history.js` (history panel), `shortcuts.js` (keyboard shortcuts). Use ES modules with `<script type="module">`.
+- [x] **Split app.js into modules** — 3109 lines, single file. Split into: `ui.js` (DOM helpers, rendering), `api.js` (fetch wrappers), `srs.js` (spaced repetition logic), `quiz.js` (quiz mode), `history.js` (history panel), `shortcuts.js` (keyboard shortcuts). Use ES modules with `<script type="module">`. ✅ 2026-02-17
 - [ ] **Split routes.py further** — 1563 lines. Extract surprise bank logic into `surprise.py`, feedback into `feedback.py`, quiz endpoints into `quiz_routes.py`. Keep `routes.py` as the main router that includes sub-routers.
 - [x] **Pronunciation quality** ✅ 2026-02-17 — Replaced raw pykakasi with MeCab (unidic) tokenization + pykakasi romaji conversion. Fixes: particles は→wa/を→o/へ→e via POS tagging, long vowel macrons (ā/ī/ū/ē/ō), reading overrides (私→watashi), punctuation stripping. "raamen wo tabeta idesu" → "rāmen o tabe tai desu".
 - [x] **Frontend error recovery** ✅ 2026-02-17 — auto-retries up to 3× on 502 with "Translation engine warming up..." message and 4s delay. Falls back to error message after max retries.

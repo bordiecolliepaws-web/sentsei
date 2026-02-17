@@ -126,9 +126,14 @@
         "source": "My cat enjoys sleeping on warm blankets",
         "translation": "私の貓は暖かい毛布で寢るのが好きです。",
         "timestamp": 1771271875.4324398
+      },
+      {
+        "source": "我明天早上要早起",
+        "translation": "私は明日の朝早く起きるつもりです。",
+        "timestamp": 1771293745.195889
       }
     ],
-    "count": 2
+    "count": 3
   },
   "044a22341c34145f": {
     "id": "044a22341c34145f",
@@ -285,9 +290,19 @@
         "source": "The weather is nice today",
         "translation": "今日は天気が良いです",
         "timestamp": 1771293513.0185044
+      },
+      {
+        "source": "This coffee tastes absolutely amazing",
+        "translation": "このコーヒーは絶対的に素晴らしい味です",
+        "timestamp": 1771293622.7871273
+      },
+      {
+        "source": "這杯咖啡真的超好喝",
+        "translation": "このコーヒー本當に美味しいです。",
+        "timestamp": 1771293844.9122567
       }
     ],
-    "count": 2
+    "count": 4
   },
   "4e51b0f1d2037a69": {
     "id": "4e51b0f1d2037a69",
@@ -439,9 +454,14 @@
         "source": "My neighbor grows beautiful sunflowers",
         "translation": "近所の人が美しい太陽花を育てています。",
         "timestamp": 1771272199.7678678
+      },
+      {
+        "source": "這杯咖啡真的超好喝",
+        "translation": "このコーヒー本當に美味しいです。",
+        "timestamp": 1771293844.9122512
       }
     ],
-    "count": 1
+    "count": 2
   },
   "5eb2f611b6ee5784": {
     "id": "5eb2f611b6ee5784",
@@ -943,6 +963,2350 @@
         "source": "The weather is nice today",
         "translation": "今日は天気が良いです",
         "timestamp": 1771293513.0184975
+      }
+    ],
+    "count": 1
+  },
+  "626365e17e42238e": {
+    "id": "626365e17e42238e",
+    "name": "使用了希伯來語的詢問方式，將問題轉換為希伯來語。",
+    "lang": "he",
+    "explanation": "使用了希伯來語的詢問方式，將問題轉換為希伯來語。",
+    "examples": [
+      {
+        "source": "你可以講慢一點嗎？",
+        "translation": "אתה יכול לדבר איטי יותר?",
+        "timestamp": 1771293538.2757366
+      }
+    ],
+    "count": 1
+  },
+  "66a10e94652c7304": {
+    "id": "66a10e94652c7304",
+    "name": "אניrotzeh לדבר איתך is a common way to say 'I want",
+    "lang": "he",
+    "explanation": "אניrotzeh לדבר איתך is a common way to say 'I want to talk with you' in Hebrew.",
+    "examples": [
+      {
+        "source": "我一直想跟你說一件很重要的事",
+        "translation": "אני רוצה לדבר איתך על משהו מאוד חשוב",
+        "timestamp": 1771293578.4015448
+      }
+    ],
+    "count": 1
+  },
+  "0f5572d60a089efc": {
+    "id": "0f5572d60a089efc",
+    "name": "על משהו מאוד חַשּׁוּב is used to emphasize that so",
+    "lang": "he",
+    "explanation": "על משהו מאוד חַשּׁוּב is used to emphasize that something is very important.",
+    "examples": [
+      {
+        "source": "我一直想跟你說一件很重要的事",
+        "translation": "אני רוצה לדבר איתך על משהו מאוד חשוב",
+        "timestamp": 1771293578.401558
+      }
+    ],
+    "count": 1
+  },
+  "87c3581c29816a65": {
+    "id": "87c3581c29816a65",
+    "name": "Use of the particle は (wa) as a topic marker, indi",
+    "lang": "ja",
+    "explanation": "Use of the particle は (wa) as a topic marker, indicating what is being discussed.",
+    "examples": [
+      {
+        "source": "This coffee tastes absolutely amazing",
+        "translation": "このコーヒーは絶対的に素晴らしい味です",
+        "timestamp": 1771293622.787112
+      }
+    ],
+    "count": 1
+  },
+  "49d033a6b65f495a": {
+    "id": "49d033a6b65f495a",
+    "name": "The adverbial form 絶対的に (zettai-teki ni) derived f",
+    "lang": "ja",
+    "explanation": "The adverbial form 絶対的に (zettai-teki ni) derived from the noun 絶対 (zettaiteki).",
+    "examples": [
+      {
+        "source": "This coffee tastes absolutely amazing",
+        "translation": "このコーヒーは絶対的に素晴らしい味です",
+        "timestamp": 1771293622.7871203
+      }
+    ],
+    "count": 1
+  },
+  "53f12e51a241e164": {
+    "id": "53f12e51a241e164",
+    "name": "われわれは)",
+    "lang": "ja",
+    "explanation": "The sentence uses the polite form of 'we' (われわれは) which includes the listener, indicating a respectful and inclusive tone.",
+    "examples": [
+      {
+        "source": "I think we're lost, let me check the map",
+        "translation": "道に迷っていると思います、地図を確認しましょう",
+        "timestamp": 1771293673.1435988
+      }
+    ],
+    "count": 1
+  },
+  "6947c6704382768f": {
+    "id": "6947c6704382768f",
+    "name": "える",
+    "lang": "ja",
+    "explanation": "The sentence uses the verb stem form 伝える followed by the noun つもり to express intention or plan.",
+    "examples": [
+      {
+        "source": "I've been meaning to tell you something important",
+        "translation": "重要なことを伝えるつもりでした",
+        "timestamp": 1771293702.085342
+      }
+    ],
+    "count": 1
+  },
+  "300945c3bafd005f": {
+    "id": "300945c3bafd005f",
+    "name": "つもり",
+    "lang": "ja",
+    "explanation": "The sentence uses the verb stem form 伝える followed by the noun つもり to express intention or plan.",
+    "examples": [
+      {
+        "source": "I've been meaning to tell you something important",
+        "translation": "重要なことを伝えるつもりでした",
+        "timestamp": 1771293702.0853457
+      },
+      {
+        "source": "我明天早上要早起",
+        "translation": "私は明日の朝早く起きるつもりです。",
+        "timestamp": 1771293745.1958976
+      }
+    ],
+    "count": 2
+  },
+  "060d54ce1e547413": {
+    "id": "060d54ce1e547413",
+    "name": "でした",
+    "lang": "ja",
+    "explanation": "でした is used here as a polite past tense form.",
+    "examples": [
+      {
+        "source": "I've been meaning to tell you something important",
+        "translation": "重要なことを伝えるつもりでした",
+        "timestamp": 1771293702.0853515
+      }
+    ],
+    "count": 1
+  },
+  "28ee63a7220f493f": {
+    "id": "28ee63a7220f493f",
+    "name": "「私」用於正式場合的第一人稱。",
+    "lang": "ja",
+    "explanation": "「私」用於正式場合的第一人稱。",
+    "examples": [
+      {
+        "source": "我明天早上要早起",
+        "translation": "私は明日の朝早く起きるつもりです。",
+        "timestamp": 1771293745.195905
+      }
+    ],
+    "count": 1
+  },
+  "c2f508cb7a85f775": {
+    "id": "c2f508cb7a85f775",
+    "name": "きる",
+    "lang": "ja",
+    "explanation": "「朝早く起きる」表示早起的動作。",
+    "examples": [
+      {
+        "source": "我明天早上要早起",
+        "translation": "私は明日の朝早く起きるつもりです。",
+        "timestamp": 1771293745.1959107
+      }
+    ],
+    "count": 1
+  },
+  "9c7fb46d962be423": {
+    "id": "9c7fb46d962be423",
+    "name": "「を」用於標示動作的物件。",
+    "lang": "ja",
+    "explanation": "「を」用於標示動作的物件。",
+    "examples": [
+      {
+        "source": "我學這個語言已經三個月了",
+        "translation": "この言語を勉強して三ヶ月になります。",
+        "timestamp": 1771293786.5518332
+      }
+    ],
+    "count": 1
+  },
+  "7f6fea7e960fc6c1": {
+    "id": "7f6fea7e960fc6c1",
+    "name": "して",
+    "lang": "ja",
+    "explanation": "「して」表示動作的完成。",
+    "examples": [
+      {
+        "source": "我學這個語言已經三個月了",
+        "translation": "この言語を勉強して三ヶ月になります。",
+        "timestamp": 1771293786.5518389
+      }
+    ],
+    "count": 1
+  },
+  "bda10361a8723f87": {
+    "id": "bda10361a8723f87",
+    "name": "になります",
+    "lang": "ja",
+    "explanation": "「になります」表示狀態的變化或持續。",
+    "examples": [
+      {
+        "source": "我學這個語言已經三個月了",
+        "translation": "この言語を勉強して三ヶ月になります。",
+        "timestamp": 1771293786.5518432
+      }
+    ],
+    "count": 1
+  },
+  "303858e78f16e93e": {
+    "id": "303858e78f16e93e",
+    "name": "かりません",
+    "lang": "ja",
+    "explanation": "使用\"分かりません\"來表達不理解。",
+    "examples": [
+      {
+        "source": "不好意思，我聽不懂你在說什麼",
+        "translation": "すみません、あなたの話が分かりません",
+        "timestamp": 1771293816.5540817
+      }
+    ],
+    "count": 1
+  },
+  "1a844240d1ca26fd": {
+    "id": "1a844240d1ca26fd",
+    "name": "あなたの",
+    "lang": "ja",
+    "explanation": "使用\"あなたの\"來指代對方，比中文的\"你\"更正式。",
+    "examples": [
+      {
+        "source": "不好意思，我聽不懂你在說什麼",
+        "translation": "すみません、あなたの話が分かりません",
+        "timestamp": 1771293816.5540874
+      }
+    ],
+    "count": 1
+  },
+  "5cd7e3dec047d688": {
+    "id": "5cd7e3dec047d688",
+    "name": "すみません",
+    "lang": "ja",
+    "explanation": "在日語中，\"すみません\"用於道歉或表示不好意思的情況。",
+    "examples": [
+      {
+        "source": "不好意思，我聽不懂你在說什麼",
+        "translation": "すみません、あなたの話が分かりません",
+        "timestamp": 1771293816.5540912
+      }
+    ],
+    "count": 1
+  },
+  "b1ccb32a76195f99": {
+    "id": "b1ccb32a76195f99",
+    "name": "本當に (jittsu ni) 是一個副詞，強調真的意思。",
+    "lang": "ja",
+    "explanation": "本當に (jittsu ni) 是一個副詞，強調真的意思。",
+    "examples": [
+      {
+        "source": "這杯咖啡真的超好喝",
+        "translation": "このコーヒー本當に美味しいです。",
+        "timestamp": 1771293844.9122443
+      }
+    ],
+    "count": 1
+  },
+  "1e8c4b90afe4bd24": {
+    "id": "1e8c4b90afe4bd24",
+    "name": "で (de) 在此用於表示在選單中的推薦。",
+    "lang": "ja",
+    "explanation": "で (de) 在此用於表示在選單中的推薦。",
+    "examples": [
+      {
+        "source": "你們推薦菜單上的什麼？",
+        "translation": "メニューでおすすめは何ですか。",
+        "timestamp": 1771293880.2660103
+      }
+    ],
+    "count": 1
+  },
+  "279d66ff2beffffc": {
+    "id": "279d66ff2beffffc",
+    "name": "は (wa) 為主題標示助詞，標示話題。",
+    "lang": "ja",
+    "explanation": "は (wa) 為主題標示助詞，標示話題。",
+    "examples": [
+      {
+        "source": "你們推薦菜單上的什麼？",
+        "translation": "メニューでおすすめは何ですか。",
+        "timestamp": 1771293880.2660162
+      }
+    ],
+    "count": 1
+  },
+  "2a767fddb8117620": {
+    "id": "2a767fddb8117620",
+    "name": "ですか",
+    "lang": "ja",
+    "explanation": "ですか (desu ka) 表示疑問句，詢問推薦的內容。",
+    "examples": [
+      {
+        "source": "你們推薦菜單上的什麼？",
+        "translation": "メニューでおすすめは何ですか。",
+        "timestamp": 1771293880.266021
+      }
+    ],
+    "count": 1
+  },
+  "c4d46a8339515641": {
+    "id": "c4d46a8339515641",
+    "name": "りの",
+    "lang": "ja",
+    "explanation": "最寄りの駅はどこですか。：使用「最寄り」表示最近的捷運站，「です」用於禮貌詢問。",
+    "examples": [
+      {
+        "source": "請問最近的捷運站在哪裡？",
+        "translation": "最寄りの駅はどこですか。",
+        "timestamp": 1771293913.6278617
+      }
+    ],
+    "count": 1
+  },
+  "df23fb88f2ccbe73": {
+    "id": "df23fb88f2ccbe73",
+    "name": "はどこですか",
+    "lang": "ja",
+    "explanation": "最寄りの駅はどこですか。：使用「最寄り」表示最近的捷運站，「です」用於禮貌詢問。",
+    "examples": [
+      {
+        "source": "請問最近的捷運站在哪裡？",
+        "translation": "最寄りの駅はどこですか。",
+        "timestamp": 1771293913.6278653
+      }
+    ],
+    "count": 1
+  },
+  "98a6a72f13452b66": {
+    "id": "98a6a72f13452b66",
+    "name": "か：疑問句尾，用來提出問題或尋求資訊。",
+    "lang": "ja",
+    "explanation": "か：疑問句尾，用來提出問題或尋求資訊。",
+    "examples": [
+      {
+        "source": "請問最近的捷運站在哪裡？",
+        "translation": "最寄りの駅はどこですか。",
+        "timestamp": 1771293913.627871
+      }
+    ],
+    "count": 1
+  },
+  "88b10b03056b6810": {
+    "id": "88b10b03056b6810",
+    "name": "대단해요",
+    "lang": "ko",
+    "explanation": "대단해요 is used in polite speech to convey a high level of praise or admiration.",
+    "examples": [
+      {
+        "source": "This coffee tastes absolutely amazing",
+        "translation": "이 커피 맛이 정말 대단해요",
+        "timestamp": 1771293940.2427008
+      }
+    ],
+    "count": 1
+  },
+  "6c03071e1897f7af": {
+    "id": "6c03071e1897f7af",
+    "name": "죄송합니다",
+    "lang": "ko",
+    "explanation": "죄송합니다 (joeongsonghamnida) is used as an apology in formal situations.",
+    "examples": [
+      {
+        "source": "I'm sorry, I don't understand what you're saying",
+        "translation": "죄송합니다, 이해가 안 돼요",
+        "timestamp": 1771293969.7846026
+      }
+    ],
+    "count": 1
+  },
+  "5dc7eddc50515c8a": {
+    "id": "5dc7eddc50515c8a",
+    "name": "이해가",
+    "lang": "ko",
+    "explanation": "이해가 안 돼요 (ihaega an dwae-yo) means 'not to understand' or 'don't understand'.",
+    "examples": [
+      {
+        "source": "I'm sorry, I don't understand what you're saying",
+        "translation": "죄송합니다, 이해가 안 돼요",
+        "timestamp": 1771293969.7846105
+      }
+    ],
+    "count": 1
+  },
+  "734d4c938e660385": {
+    "id": "734d4c938e660385",
+    "name": "돼요",
+    "lang": "ko",
+    "explanation": "이해가 안 돼요 (ihaega an dwae-yo) means 'not to understand' or 'don't understand'.",
+    "examples": [
+      {
+        "source": "I'm sorry, I don't understand what you're saying",
+        "translation": "죄송합니다, 이해가 안 돼요",
+        "timestamp": 1771293969.7846127
+      }
+    ],
+    "count": 1
+  },
+  "fa5e262e46dbb08f": {
+    "id": "fa5e262e46dbb08f",
+    "name": "주실",
+    "lang": "ko",
+    "explanation": "주실 수 있나요 is a polite way to ask if someone can do something. 주실 is the honorific form of 주다, and 있나요 is the polite form of 있다.",
+    "examples": [
+      {
+        "source": "Could you please speak a little slower?",
+        "translation": "좀 더 천천히 말씀해 주실 수 있나요?",
+        "timestamp": 1771294004.1877568
+      }
+    ],
+    "count": 1
+  },
+  "8095adc3441b5862": {
+    "id": "8095adc3441b5862",
+    "name": "있나요",
+    "lang": "ko",
+    "explanation": "주실 수 있나요 is a polite way to ask if someone can do something. 주실 is the honorific form of 주다, and 있나요 is the polite form of 있다.",
+    "examples": [
+      {
+        "source": "Could you please speak a little slower?",
+        "translation": "좀 더 천천히 말씀해 주실 수 있나요?",
+        "timestamp": 1771294004.1877606
+      },
+      {
+        "source": "請問最近的捷運站在哪裡？",
+        "translation": "가장 가까운 지하철역이 어디에 있나요?",
+        "timestamp": 1771294151.1454217
+      }
+    ],
+    "count": 2
+  },
+  "01482d3e3f108eb1": {
+    "id": "01482d3e3f108eb1",
+    "name": "할수록",
+    "lang": "ko",
+    "explanation": "할수록 (halsurok) is a grammar pattern that emphasizes the relationship between two actions or states increasing together.",
+    "examples": [
+      {
+        "source": "The more I practice, the more confident I feel",
+        "translation": "연습할수록 더 자신감이 생깁니다",
+        "timestamp": 1771294029.8120685
+      }
+    ],
+    "count": 1
+  },
+  "4cb9512c8592f4ec": {
+    "id": "4cb9512c8592f4ec",
+    "name": "다면",
+    "lang": "ko",
+    "explanation": "假設句語氣助詞「다면」用於表達虛構或假設的情況。",
+    "examples": [
+      {
+        "source": "如果我早點知道的話，我就會早點來",
+        "translation": "조금 더 일찍 알았다면 조금 더 일찍 왔을 거예요",
+        "timestamp": 1771294076.6877367
+      }
+    ],
+    "count": 1
+  },
+  "5a01360bc705c95f": {
+    "id": "5a01360bc705c95f",
+    "name": "거예요",
+    "lang": "ko",
+    "explanation": "假定語氣助詞「을 거예요」用於表達假設或推測的情況。",
+    "examples": [
+      {
+        "source": "如果我早點知道的話，我就會早點來",
+        "translation": "조금 더 일찍 알았다면 조금 더 일찍 왔을 거예요",
+        "timestamp": 1771294076.6877427
+      }
+    ],
+    "count": 1
+  },
+  "df19c145d8d3c334": {
+    "id": "df19c145d8d3c334",
+    "name": "해질녘",
+    "lang": "ko",
+    "explanation": "해질녘 is a compound word combining 해 질 (sun set) and -녁 (-neok, suffix for time).",
+    "examples": [
+      {
+        "source": "The sunset over the ocean was breathtaking",
+        "translation": "해질녘 해가 바다 위에 떠 있는 모습은 정말 아름답습니다",
+        "timestamp": 1771294120.114534
+      }
+    ],
+    "count": 1
+  },
+  "ebbbcd2a37dd4a98": {
+    "id": "ebbbcd2a37dd4a98",
+    "name": "아름답습니다",
+    "lang": "ko",
+    "explanation": "아름답습니다 uses the polite form of the verb 아름다다 (to be beautiful).",
+    "examples": [
+      {
+        "source": "The sunset over the ocean was breathtaking",
+        "translation": "해질녘 해가 바다 위에 떠 있는 모습은 정말 아름답습니다",
+        "timestamp": 1771294120.1145413
+      },
+      {
+        "source": "海邊的夕陽真的美到不行",
+        "translation": "해변의 석양은 정말 아름답습니다",
+        "timestamp": 1771294237.620266
+      }
+    ],
+    "count": 2
+  },
+  "48fa94af2c8c9c0b": {
+    "id": "48fa94af2c8c9c0b",
+    "name": "아름다다",
+    "lang": "ko",
+    "explanation": "아름답습니다 uses the polite form of the verb 아름다다 (to be beautiful).",
+    "examples": [
+      {
+        "source": "The sunset over the ocean was breathtaking",
+        "translation": "해질녘 해가 바다 위에 떠 있는 모습은 정말 아름답습니다",
+        "timestamp": 1771294120.114544
+      }
+    ],
+    "count": 1
+  },
+  "bc857f85f2b0af3e": {
+    "id": "bc857f85f2b0af3e",
+    "name": "The sentence structure follows Korean formal speec",
+    "lang": "ko",
+    "explanation": "The sentence structure follows Korean formal speech pattern.",
+    "examples": [
+      {
+        "source": "The sunset over the ocean was breathtaking",
+        "translation": "해질녘 해가 바다 위에 떠 있는 모습은 정말 아름답습니다",
+        "timestamp": 1771294120.1145544
+      }
+    ],
+    "count": 1
+  },
+  "5c987ea36c8b1157": {
+    "id": "5c987ea36c8b1157",
+    "name": "이 is used to link the subject and predicate",
+    "lang": "ko",
+    "explanation": "이 is used to link the subject and predicate.",
+    "examples": [
+      {
+        "source": "請問最近的捷運站在哪裡？",
+        "translation": "가장 가까운 지하철역이 어디에 있나요?",
+        "timestamp": 1771294151.1454086
+      }
+    ],
+    "count": 1
+  },
+  "f955a209c67a4482": {
+    "id": "f955a209c67a4482",
+    "name": "어디에",
+    "lang": "ko",
+    "explanation": "어디에 means 'where' in a more formal context.",
+    "examples": [
+      {
+        "source": "請問最近的捷運站在哪裡？",
+        "translation": "가장 가까운 지하철역이 어디에 있나요?",
+        "timestamp": 1771294151.1454158
+      }
+    ],
+    "count": 1
+  },
+  "63f052e6c265c53e": {
+    "id": "63f052e6c265c53e",
+    "name": "알았다면",
+    "lang": "ko",
+    "explanation": "알았다면 (alatteumnep) is a past tense conditional form of 알다 (aldah), meaning 'to know'.",
+    "examples": [
+      {
+        "source": "If I had known earlier, I would have come sooner",
+        "translation": "그때 알았다면 더 일찍 왔을 텐데",
+        "timestamp": 1771294185.0973692
+      }
+    ],
+    "count": 1
+  },
+  "c0452b8806e2c4ff": {
+    "id": "c0452b8806e2c4ff",
+    "name": "알다",
+    "lang": "ko",
+    "explanation": "알았다면 (alatteumnep) is a past tense conditional form of 알다 (aldah), meaning 'to know'.",
+    "examples": [
+      {
+        "source": "If I had known earlier, I would have come sooner",
+        "translation": "그때 알았다면 더 일찍 왔을 텐데",
+        "timestamp": 1771294185.0973732
+      }
+    ],
+    "count": 1
+  },
+  "79ae8db13629e60b": {
+    "id": "79ae8db13629e60b",
+    "name": "왔을",
+    "lang": "ko",
+    "explanation": "왔을 (waelleul) is a past tense potential form of 오다 (odah), meaning 'to come'. It indicates an action that would have happened under certain conditions.",
+    "examples": [
+      {
+        "source": "If I had known earlier, I would have come sooner",
+        "translation": "그때 알았다면 더 일찍 왔을 텐데",
+        "timestamp": 1771294185.0973885
+      }
+    ],
+    "count": 1
+  },
+  "6bc2439b5bf2525c": {
+    "id": "6bc2439b5bf2525c",
+    "name": "오다",
+    "lang": "ko",
+    "explanation": "왔을 (waelleul) is a past tense potential form of 오다 (odah), meaning 'to come'. It indicates an action that would have happened under certain conditions.",
+    "examples": [
+      {
+        "source": "If I had known earlier, I would have come sooner",
+        "translation": "그때 알았다면 더 일찍 왔을 텐데",
+        "timestamp": 1771294185.097391
+      }
+    ],
+    "count": 1
+  },
+  "b70e0208c0973ee3": {
+    "id": "b70e0208c0973ee3",
+    "name": "텐데",
+    "lang": "ko",
+    "explanation": "텐데 (tenjeonde) implies a counterfactual situation, suggesting what might have been different if the condition had been met.",
+    "examples": [
+      {
+        "source": "If I had known earlier, I would have come sooner",
+        "translation": "그때 알았다면 더 일찍 왔을 텐데",
+        "timestamp": 1771294185.097399
+      }
+    ],
+    "count": 1
+  },
+  "76774c730d99fe99": {
+    "id": "76774c730d99fe99",
+    "name": "정말",
+    "lang": "ko",
+    "explanation": "정말 is an adverb that emphasizes the degree of something.",
+    "examples": [
+      {
+        "source": "這杯咖啡真的超好喝",
+        "translation": "이 커피 정말 맛있어요",
+        "timestamp": 1771294207.5105014
+      },
+      {
+        "source": "海邊的夕陽真的美到不行",
+        "translation": "해변의 석양은 정말 아름답습니다",
+        "timestamp": 1771294237.62026
+      }
+    ],
+    "count": 2
+  },
+  "daa628b8e5af5817": {
+    "id": "daa628b8e5af5817",
+    "name": "의 (ui) 是...的, 表示所有格或屬性。",
+    "lang": "ko",
+    "explanation": "의 (ui) 是...的, 表示所有格或屬性。",
+    "examples": [
+      {
+        "source": "海邊的夕陽真的美到不行",
+        "translation": "해변의 석양은 정말 아름답습니다",
+        "timestamp": 1771294237.6202533
+      }
+    ],
+    "count": 1
+  },
+  "d895a64314d17e0c": {
+    "id": "d895a64314d17e0c",
+    "name": "습니다",
+    "lang": "ko",
+    "explanation": "아름답습니다 (aereumbapseumyeon) 美到不行, 形容詞+습니다表示敬語形式。",
+    "examples": [
+      {
+        "source": "海邊的夕陽真的美到不行",
+        "translation": "해변의 석양은 정말 아름답습니다",
+        "timestamp": 1771294237.6202683
+      }
+    ],
+    "count": 1
+  },
+  "70475f7e35753cad": {
+    "id": "70475f7e35753cad",
+    "name": "좀 is used to emphasize the degree of something, si",
+    "lang": "ko",
+    "explanation": "좀 is used to emphasize the degree of something, similar to 'a bit' or 'somewhat'.",
+    "examples": [
+      {
+        "source": "你可以講慢一點嗎？",
+        "translation": "너 좀 천천히 말해줄래?",
+        "timestamp": 1771294266.1762486
+      }
+    ],
+    "count": 1
+  },
+  "3df4540f0aca5ab4": {
+    "id": "3df4540f0aca5ab4",
+    "name": "천천히",
+    "lang": "ko",
+    "explanation": "천천히 means slowly in Korean and matches the meaning of 慢 in Chinese.",
+    "examples": [
+      {
+        "source": "你可以講慢一點嗎？",
+        "translation": "너 좀 천천히 말해줄래?",
+        "timestamp": 1771294266.176256
+      }
+    ],
+    "count": 1
+  },
+  "685fd5b37a979730": {
+    "id": "685fd5b37a979730",
+    "name": "말해줄래",
+    "lang": "ko",
+    "explanation": "말해줄래? combines 말해줘 (malhaejwo) with 줄래 (jul-le), which is a casual way to ask someone to do something.",
+    "examples": [
+      {
+        "source": "你可以講慢一點嗎？",
+        "translation": "너 좀 천천히 말해줄래?",
+        "timestamp": 1771294266.1762629
+      }
+    ],
+    "count": 1
+  },
+  "aafffea7fe4c86db": {
+    "id": "aafffea7fe4c86db",
+    "name": "말해줘",
+    "lang": "ko",
+    "explanation": "말해줄래? combines 말해줘 (malhaejwo) with 줄래 (jul-le), which is a casual way to ask someone to do something.",
+    "examples": [
+      {
+        "source": "你可以講慢一點嗎？",
+        "translation": "너 좀 천천히 말해줄래?",
+        "timestamp": 1771294266.176265
+      }
+    ],
+    "count": 1
+  },
+  "eb546096e0e28088": {
+    "id": "eb546096e0e28088",
+    "name": "길을",
+    "lang": "ko",
+    "explanation": "길을 잃다 (迷失路途) 表示迷路。",
+    "examples": [
+      {
+        "source": "我覺得我們迷路了，讓我看一下地圖",
+        "translation": "우리가 길을 잃었나 봐요. 지도를 좀 봐야겠어요.",
+        "timestamp": 1771294306.4502702
+      }
+    ],
+    "count": 1
+  },
+  "aae37ec3c2d211cc": {
+    "id": "aae37ec3c2d211cc",
+    "name": "잃다",
+    "lang": "ko",
+    "explanation": "길을 잃다 (迷失路途) 表示迷路。",
+    "examples": [
+      {
+        "source": "我覺得我們迷路了，讓我看一下地圖",
+        "translation": "우리가 길을 잃었나 봐요. 지도를 좀 봐야겠어요.",
+        "timestamp": 1771294306.4502738
+      }
+    ],
+    "count": 1
+  },
+  "8383e95801c74def": {
+    "id": "8383e95801c74def",
+    "name": "지도를",
+    "lang": "ko",
+    "explanation": "지도를 좀 봐야겠어요 (需要看一下地圖) 是一個表示需要做某事的句子，其中包含了敬語尾語來表達禮貌。",
+    "examples": [
+      {
+        "source": "我覺得我們迷路了，讓我看一下地圖",
+        "translation": "우리가 길을 잃었나 봐요. 지도를 좀 봐야겠어요.",
+        "timestamp": 1771294306.4502797
+      }
+    ],
+    "count": 1
+  },
+  "72c72d2fae004d41": {
+    "id": "72c72d2fae004d41",
+    "name": "봐야겠어요",
+    "lang": "ko",
+    "explanation": "지도를 좀 봐야겠어요 (需要看一下地圖) 是一個表示需要做某事的句子，其中包含了敬語尾語來表達禮貌。",
+    "examples": [
+      {
+        "source": "我覺得我們迷路了，讓我看一下地圖",
+        "translation": "우리가 길을 잃었나 봐요. 지도를 좀 봐야겠어요.",
+        "timestamp": 1771294306.4502826
+      }
+    ],
+    "count": 1
+  },
+  "8d9d967b32da85f4": {
+    "id": "8d9d967b32da85f4",
+    "name": "使用「不好意思」來表達歉意。",
+    "lang": "en",
+    "explanation": "使用「不好意思」來表達歉意。",
+    "examples": [
+      {
+        "source": "不好意思，我聽不懂你在說什麼",
+        "translation": "Excuse me, I can't understand what you're saying.",
+        "timestamp": 1771294336.6970768
+      }
+    ],
+    "count": 1
+  },
+  "dcd740426ba09be3": {
+    "id": "dcd740426ba09be3",
+    "name": "「聽不懂」表示無法理解對方的話語。",
+    "lang": "en",
+    "explanation": "「聽不懂」表示無法理解對方的話語。",
+    "examples": [
+      {
+        "source": "不好意思，我聽不懂你在說什麼",
+        "translation": "Excuse me, I can't understand what you're saying.",
+        "timestamp": 1771294336.6970825
+      }
+    ],
+    "count": 1
+  },
+  "8b6d4219f104443d": {
+    "id": "8b6d4219f104443d",
+    "name": "「你在說什麼」是詢問對方正在說的內容。",
+    "lang": "en",
+    "explanation": "「你在說什麼」是詢問對方正在說的內容。",
+    "examples": [
+      {
+        "source": "不好意思，我聽不懂你在說什麼",
+        "translation": "Excuse me, I can't understand what you're saying.",
+        "timestamp": 1771294336.6970868
+      }
+    ],
+    "count": 1
+  },
+  "93b294e1129a03ef": {
+    "id": "93b294e1129a03ef",
+    "name": "「真的」用來強調程度。",
+    "lang": "en",
+    "explanation": "「真的」用來強調程度。",
+    "examples": [
+      {
+        "source": "這杯咖啡真的超好喝",
+        "translation": "This coffee is really super delicious.",
+        "timestamp": 1771294367.1874712
+      }
+    ],
+    "count": 1
+  },
+  "682805d691a6eb8f": {
+    "id": "682805d691a6eb8f",
+    "name": "「超好喝」是形容非常美味的一種說法。",
+    "lang": "en",
+    "explanation": "「超好喝」是形容非常美味的一種說法。",
+    "examples": [
+      {
+        "source": "這杯咖啡真的超好喝",
+        "translation": "This coffee is really super delicious.",
+        "timestamp": 1771294367.1874769
+      }
+    ],
+    "count": 1
+  },
+  "a05ece66ada7e0b2": {
+    "id": "a05ece66ada7e0b2",
+    "name": "過去完成時的虛擬語態，表示假設的情況。",
+    "lang": "en",
+    "explanation": "過去完成時的虛擬語態，表示假設的情況。",
+    "examples": [
+      {
+        "source": "如果我早點知道的話，我就會早點來",
+        "translation": "If I had known earlier, I would have come earlier.",
+        "timestamp": 1771294414.0912192
+      }
+    ],
+    "count": 1
+  },
+  "bd250e0074b5a2d3": {
+    "id": "bd250e0074b5a2d3",
+    "name": "如果...的話 (If ...,) 是一個條件句引導詞。",
+    "lang": "en",
+    "explanation": "如果...的話 (If ...,) 是一個條件句引導詞。",
+    "examples": [
+      {
+        "source": "如果我早點知道的話，我就會早點來",
+        "translation": "If I had known earlier, I would have come earlier.",
+        "timestamp": 1771294414.0912254
+      }
+    ],
+    "count": 1
+  },
+  "b0b481e13be37d0e": {
+    "id": "b0b481e13be37d0e",
+    "name": "使用了「讓我」來表示請求某人做某事。",
+    "lang": "en",
+    "explanation": "使用了「讓我」來表示請求某人做某事。",
+    "examples": [
+      {
+        "source": "我覺得我們迷路了，讓我看一下地圖",
+        "translation": "I think we're lost, let me check the map.",
+        "timestamp": 1771294444.3761835
+      }
+    ],
+    "count": 1
+  },
+  "99e18a9a3f861215": {
+    "id": "99e18a9a3f861215",
+    "name": "「我們迷路了」是主語+謂語的結構，表達了一種狀態。",
+    "lang": "en",
+    "explanation": "「我們迷路了」是主語+謂語的結構，表達了一種狀態。",
+    "examples": [
+      {
+        "source": "我覺得我們迷路了，讓我看一下地圖",
+        "translation": "I think we're lost, let me check the map.",
+        "timestamp": 1771294444.37619
+      }
+    ],
+    "count": 1
+  },
+  "956b0895b94256e3": {
+    "id": "956b0895b94256e3",
+    "name": "「檢查地圖」是一個動詞短語，用於描述一個動作。",
+    "lang": "en",
+    "explanation": "「檢查地圖」是一個動詞短語，用於描述一個動作。",
+    "examples": [
+      {
+        "source": "我覺得我們迷路了，讓我看一下地圖",
+        "translation": "I think we're lost, let me check the map.",
+        "timestamp": 1771294444.3761945
+      }
+    ],
+    "count": 1
+  },
+  "e346573309f94357": {
+    "id": "e346573309f94357",
+    "name": "「今天晚上」表示今晚的意思。",
+    "lang": "en",
+    "explanation": "「今天晚上」表示今晚的意思。",
+    "examples": [
+      {
+        "source": "今天晚上我想吃拉麵",
+        "translation": "Tonight I want to eat ramen.",
+        "timestamp": 1771294468.8014147
+      }
+    ],
+    "count": 1
+  },
+  "66991c9dd43c4e78": {
+    "id": "66991c9dd43c4e78",
+    "name": "「我想吃」是主語+動詞的結構，表達想做的事情。",
+    "lang": "en",
+    "explanation": "「我想吃」是主語+動詞的結構，表達想做的事情。",
+    "examples": [
+      {
+        "source": "今天晚上我想吃拉麵",
+        "translation": "Tonight I want to eat ramen.",
+        "timestamp": 1771294468.8014205
+      }
+    ],
+    "count": 1
+  },
+  "67fa6fb8b928aff4": {
+    "id": "67fa6fb8b928aff4",
+    "name": "「拉麵」是日文食物名稱，在中文中常用來指代這種日本麵食。",
+    "lang": "en",
+    "explanation": "「拉麵」是日文食物名稱，在中文中常用來指代這種日本麵食。",
+    "examples": [
+      {
+        "source": "今天晚上我想吃拉麵",
+        "translation": "Tonight I want to eat ramen.",
+        "timestamp": 1771294468.8014255
+      }
+    ],
+    "count": 1
+  },
+  "78429fe1d5419043": {
+    "id": "78429fe1d5419043",
+    "name": "The phrase '味道' is used to describe the taste or f",
+    "lang": "zh",
+    "explanation": "The phrase '味道' is used to describe the taste or flavor of something.",
+    "examples": [
+      {
+        "source": "This coffee tastes absolutely amazing",
+        "translation": "這咖啡味道絕佳",
+        "timestamp": 1771294491.1834087
+      }
+    ],
+    "count": 1
+  },
+  "e9d8251789577213": {
+    "id": "e9d8251789577213",
+    "name": "使用了情態動詞Can來表達請求。",
+    "lang": "en",
+    "explanation": "使用了情態動詞Can來表達請求。",
+    "examples": [
+      {
+        "source": "你可以講慢一點嗎？",
+        "translation": "Can you speak slower please?",
+        "timestamp": 1771294519.2529044
+      }
+    ],
+    "count": 1
+  },
+  "545a4a72961f7135": {
+    "id": "545a4a72961f7135",
+    "name": "講慢一點是形容副詞，用來描述說話的速度。",
+    "lang": "en",
+    "explanation": "講慢一點是形容副詞，用來描述說話的速度。",
+    "examples": [
+      {
+        "source": "你可以講慢一點嗎？",
+        "translation": "Can you speak slower please?",
+        "timestamp": 1771294519.2529104
+      }
+    ],
+    "count": 1
+  },
+  "e93afd0d291e1aef": {
+    "id": "e93afd0d291e1aef",
+    "name": "可以 is used to ask if something is possible or perm",
+    "lang": "zh",
+    "explanation": "可以 is used to ask if something is possible or permissible.",
+    "examples": [
+      {
+        "source": "Could you please speak a little slower?",
+        "translation": "你可以講慢一點嗎？",
+        "timestamp": 1771294553.3155434
+      }
+    ],
+    "count": 1
+  },
+  "1d109cd3070e51e2": {
+    "id": "1d109cd3070e51e2",
+    "name": "慢一...點 is a common phrase meaning 'a little slower",
+    "lang": "zh",
+    "explanation": "慢一...點 is a common phrase meaning 'a little slower'.",
+    "examples": [
+      {
+        "source": "Could you please speak a little slower?",
+        "translation": "你可以講慢一點嗎？",
+        "timestamp": 1771294553.3155518
+      }
+    ],
+    "count": 1
+  },
+  "3bfb79d3373348e0": {
+    "id": "3bfb79d3373348e0",
+    "name": "The structure 美得令人窒息 is used to emphasize that som",
+    "lang": "zh",
+    "explanation": "The structure 美得令人窒息 is used to emphasize that something is extremely beautiful, to the point of being overwhelming.",
+    "examples": [
+      {
+        "source": "The sunset over the ocean was breathtaking",
+        "translation": "海上的日落美得令人窒息",
+        "timestamp": 1771294595.6935856
+      }
+    ],
+    "count": 1
+  },
+  "b2d9011ae0cefa6d": {
+    "id": "b2d9011ae0cefa6d",
+    "name": "The use of 的 in 海上的日落 indicates possession or asso",
+    "lang": "zh",
+    "explanation": "The use of 的 in 海上的日落 indicates possession or association with the sea.",
+    "examples": [
+      {
+        "source": "The sunset over the ocean was breathtaking",
+        "translation": "海上的日落美得令人窒息",
+        "timestamp": 1771294595.6935935
+      }
+    ],
+    "count": 1
+  },
+  "74e689093e79dcdb": {
+    "id": "74e689093e79dcdb",
+    "name": "The structure 越...越... is used to express an incre",
+    "lang": "zh",
+    "explanation": "The structure 越...越... is used to express an increasing relationship between two elements.",
+    "examples": [
+      {
+        "source": "The more I practice, the more confident I feel",
+        "translation": "練習得越多，我就越有信心",
+        "timestamp": 1771294630.4729376
+      }
+    ],
+    "count": 1
+  },
+  "c3a0fc578a085907": {
+    "id": "c3a0fc578a085907",
+    "name": "練習得越多 (liàn-xí de zuì duō) means 'the more I pract",
+    "lang": "zh",
+    "explanation": "練習得越多 (liàn-xí de zuì duō) means 'the more I practice', and 越有信心 (zuì yǒu xìn-nɡ) means 'the more confident I feel'.",
+    "examples": [
+      {
+        "source": "The more I practice, the more confident I feel",
+        "translation": "練習得越多，我就越有信心",
+        "timestamp": 1771294630.4729476
+      }
+    ],
+    "count": 1
+  },
+  "52ca678f79826a24": {
+    "id": "52ca678f79826a24",
+    "name": "需要 (xūyào) is used to express necessity or require",
+    "lang": "zh",
+    "explanation": "需要 (xūyào) is used to express necessity or requirement.",
+    "examples": [
+      {
+        "source": "I need to wake up early tomorrow morning",
+        "translation": "我明天早上需要早起",
+        "timestamp": 1771294654.1656322
+      }
+    ],
+    "count": 1
+  },
+  "18d6ae0cb9453bcb": {
+    "id": "18d6ae0cb9453bcb",
+    "name": "The word 請 (qǐng) is added at the beginning of the",
+    "lang": "zh",
+    "explanation": "The word 請 (qǐng) is added at the beginning of the sentence to make it polite and formal.",
+    "examples": [
+      {
+        "source": "Can I get the bill please?",
+        "translation": "請結帳。",
+        "timestamp": 1771294681.3458133
+      }
+    ],
+    "count": 1
+  },
+  "20b2fc6192b10688": {
+    "id": "20b2fc6192b10688",
+    "name": "結帳 (jié zhàng) means 'settle the bill' and is used",
+    "lang": "zh",
+    "explanation": "結帳 (jié zhàng) means 'settle the bill' and is used when asking for the final amount due.",
+    "examples": [
+      {
+        "source": "Can I get the bill please?",
+        "translation": "請結帳。",
+        "timestamp": 1771294681.3458219
+      }
+    ],
+    "count": 1
+  },
+  "8a2845871f2ed826": {
+    "id": "8a2845871f2ed826",
+    "name": "The word 'πράγματι' is used here to emphasize the",
+    "lang": "el",
+    "explanation": "The word 'πράγματι' is used here to emphasize the meaning of 'absolutely'. It's an adverb that means 'indeed, really', and it often follows another adverb or adjective for emphasis.",
+    "examples": [
+      {
+        "source": "This coffee tastes absolutely amazing",
+        "translation": "Αυτός ο καφέ είναι απολύτως πράγματι όμορφος.",
+        "timestamp": 1771294719.2202103
+      }
+    ],
+    "count": 1
+  },
+  "c4b87f3a37894a6d": {
+    "id": "c4b87f3a37894a6d",
+    "name": "Use of 上 as a locative particle indicating the sou",
+    "lang": "zh",
+    "explanation": "Use of 上 as a locative particle indicating the source or location.",
+    "examples": [
+      {
+        "source": "What do you recommend from the menu?",
+        "translation": "選單上有什麼推薦的?",
+        "timestamp": 1771294747.8269658
+      }
+    ],
+    "count": 1
+  },
+  "544f95bc0b869d78": {
+    "id": "544f95bc0b869d78",
+    "name": "The structure 有什麼 to ask about existence or availa",
+    "lang": "zh",
+    "explanation": "The structure 有什麼 to ask about existence or availability.",
+    "examples": [
+      {
+        "source": "What do you recommend from the menu?",
+        "translation": "選單上有什麼推薦的?",
+        "timestamp": 1771294747.8269734
+      }
+    ],
+    "count": 1
+  },
+  "4f5c07783ce2bbcb": {
+    "id": "4f5c07783ce2bbcb",
+    "name": "The polite form of the verb is used here to show r",
+    "lang": "el",
+    "explanation": "The polite form of the verb is used here to show respect.",
+    "examples": [
+      {
+        "source": "Can I get the bill please?",
+        "translation": "Μπορεί να μου δώσετε το λιθάρισμα παρακαλώ;",
+        "timestamp": 1771294793.8303003
+      }
+    ],
+    "count": 1
+  },
+  "9e7f24e276239c66": {
+    "id": "9e7f24e276239c66",
+    "name": "The dative case is used for 'me' as it indicates t",
+    "lang": "el",
+    "explanation": "The dative case is used for 'me' as it indicates the indirect object receiving the action.",
+    "examples": [
+      {
+        "source": "Can I get the bill please?",
+        "translation": "Μπορεί να μου δώσετε το λιθάρισμα παρακαλώ;",
+        "timestamp": 1771294793.8303072
+      }
+    ],
+    "count": 1
+  },
+  "403f854265733b5e": {
+    "id": "403f854265733b5e",
+    "name": "The Greek sentence uses the definite article 'Η' (",
+    "lang": "el",
+    "explanation": "The Greek sentence uses the definite article 'Η' (i) before 'ηλιοσκότερα' (ilioskotera), which is feminine in gender.",
+    "examples": [
+      {
+        "source": "The sunset over the ocean was breathtaking",
+        "translation": "Η ηλιοσκότερα στη θάλασσα ήταν απίστευτη",
+        "timestamp": 1771294835.9340582
+      }
+    ],
+    "count": 1
+  },
+  "34a655d0f765b2ad": {
+    "id": "34a655d0f765b2ad",
+    "name": "'στη θάλασσα' (sti thalassa) combines the preposit",
+    "lang": "el",
+    "explanation": "'στη θάλασσα' (sti thalassa) combines the preposition 'στην' (stin) with the definite article for 'θάλασσα' (thalassa).",
+    "examples": [
+      {
+        "source": "The sunset over the ocean was breathtaking",
+        "translation": "Η ηλιοσκότερα στη θάλασσα ήταν απίστευτη",
+        "timestamp": 1771294835.934068
+      }
+    ],
+    "count": 1
+  },
+  "fd96645f7ec57151": {
+    "id": "fd96645f7ec57151",
+    "name": "The verb 'ήταν' (ētaan) is used to express past te",
+    "lang": "el",
+    "explanation": "The verb 'ήταν' (ētaan) is used to express past tense in this context.",
+    "examples": [
+      {
+        "source": "The sunset over the ocean was breathtaking",
+        "translation": "Η ηλιοσκότερα στη θάλασσα ήταν απίστευτη",
+        "timestamp": 1771294835.9340742
+      }
+    ],
+    "count": 1
+  },
+  "521a5bf8ddc1a6bf": {
+    "id": "521a5bf8ddc1a6bf",
+    "name": "The verb πάψειμε (papsiemi) is in the imperative f",
+    "lang": "el",
+    "explanation": "The verb πάψειμε (papsiemi) is in the imperative form and it's used here to suggest an action.",
+    "examples": [
+      {
+        "source": "Let's grab a beer after work",
+        "translation": "Ας πάψειμε μία αλάτζι άφτην του εργασιού",
+        "timestamp": 1771294878.725245
+      }
+    ],
+    "count": 1
+  },
+  "8e6b1a7147a0733a": {
+    "id": "8e6b1a7147a0733a",
+    "name": "The phrase άφτην του εργασιού (áftini tou ergasioú",
+    "lang": "el",
+    "explanation": "The phrase άφτην του εργασιού (áftini tou ergasioú) means 'after work' where 'of the work' implies possession or association.",
+    "examples": [
+      {
+        "source": "Let's grab a beer after work",
+        "translation": "Ας πάψειμε μία αλάτζι άφτην του εργασιού",
+        "timestamp": 1771294878.725255
+      }
+    ],
+    "count": 1
+  },
+  "4ab5a0dade422a7a": {
+    "id": "4ab5a0dade422a7a",
+    "name": "The Greek sentence uses the comparative form 'Περι",
+    "lang": "el",
+    "explanation": "The Greek sentence uses the comparative form 'Περισσότερο' (more) to express an increase in practice and confidence. The verb 'γίνομαι' is used here to convey a state of becoming or feeling something, which fits with the idea of increasing self-confidence through more practice.",
+    "examples": [
+      {
+        "source": "The more I practice, the more confident I feel",
+        "translation": "Περισσότερο πρακτίνω, τόσο πιστά γίνομαι",
+        "timestamp": 1771294912.661534
+      }
+    ],
+    "count": 1
+  },
+  "db986c329b81d6b0": {
+    "id": "db986c329b81d6b0",
+    "name": "The word 'πιο' is used to form superlatives in Gre",
+    "lang": "el",
+    "explanation": "The word 'πιο' is used to form superlatives in Greek, similar to 'most' or 'nearest'.",
+    "examples": [
+      {
+        "source": "Where is the nearest train station?",
+        "translation": "Πού είναι η πιο κοντινή σταθές τρένου;",
+        "timestamp": 1771294952.029457
+      }
+    ],
+    "count": 1
+  },
+  "7825eed52c3565fc": {
+    "id": "7825eed52c3565fc",
+    "name": "In this sentence, 'σταθές' (station) is feminine a",
+    "lang": "el",
+    "explanation": "In this sentence, 'σταθές' (station) is feminine and requires the definite article 'η', which also agrees with its gender.",
+    "examples": [
+      {
+        "source": "Where is the nearest train station?",
+        "translation": "Πού είναι η πιο κοντινή σταθές τρένου;",
+        "timestamp": 1771294952.0294673
+      }
+    ],
+    "count": 1
+  },
+  "29a22caec2c6c647": {
+    "id": "29a22caec2c6c647",
+    "name": "The genitive case of 'τρένο' (train) is used here",
+    "lang": "el",
+    "explanation": "The genitive case of 'τρένο' (train) is used here as it modifies 'σταθές'.",
+    "examples": [
+      {
+        "source": "Where is the nearest train station?",
+        "translation": "Πού είναι η πιο κοντινή σταθές τρένου;",
+        "timestamp": 1771294952.0294735
+      }
+    ],
+    "count": 1
+  },
+  "fd4778187bb117e6": {
+    "id": "fd4778187bb117e6",
+    "name": "The verb 'είμαι' (to be) is used in the plural for",
+    "lang": "el",
+    "explanation": "The verb 'είμαι' (to be) is used in the plural form 'είμαστε' to address a group of people.",
+    "examples": [
+      {
+        "source": "I think we're lost, let me check the map",
+        "translation": "Νομίζω ότι είμαστε πάχναρες, θα βλέψω στον καταλόγο",
+        "timestamp": 1771295003.2595046
+      }
+    ],
+    "count": 1
+  },
+  "f3c6b1a976ab9512": {
+    "id": "f3c6b1a976ab9512",
+    "name": "'Πάχναρες' is an informal way to say 'lost'",
+    "lang": "el",
+    "explanation": "'Πάχναρες' is an informal way to say 'lost'.",
+    "examples": [
+      {
+        "source": "I think we're lost, let me check the map",
+        "translation": "Νομίζω ότι είμαστε πάχναρες, θα βλέψω στον καταλόγο",
+        "timestamp": 1771295003.259511
+      }
+    ],
+    "count": 1
+  },
+  "9ce88d57fe1aaebd": {
+    "id": "9ce88d57fe1aaebd",
+    "name": "The future tense is formed with 'θα' followed by t",
+    "lang": "el",
+    "explanation": "The future tense is formed with 'θα' followed by the verb in its base form.",
+    "examples": [
+      {
+        "source": "I think we're lost, let me check the map",
+        "translation": "Νομίζω ότι είμαστε πάχναρες, θα βλέψω στον καταλόγο",
+        "timestamp": 1771295003.2595174
+      }
+    ],
+    "count": 1
+  },
+  "0be9e08f6b9df856": {
+    "id": "0be9e08f6b9df856",
+    "name": "在這裡，我們使用了「πιο」來表示程度，類似於中文的「比較」。",
+    "lang": "el",
+    "explanation": "在這裡，我們使用了「πιο」來表示程度，類似於中文的「比較」。",
+    "examples": [
+      {
+        "source": "你可以講慢一點嗎？",
+        "translation": "Μπορείς να μιλήσεις πιο α緩慢一些？",
+        "timestamp": 1771295035.6356697
+      }
+    ],
+    "count": 1
+  },
+  "690600801f94c6ce": {
+    "id": "690600801f94c6ce",
+    "name": "The verb πρότεινες is in the plural form to show r",
+    "lang": "el",
+    "explanation": "The verb πρότεινες is in the plural form to show respect and politeness.",
+    "examples": [
+      {
+        "source": "What do you recommend from the menu?",
+        "translation": "Ποια συνείδηση πρότεινες από το μενού;",
+        "timestamp": 1771295072.3354607
+      }
+    ],
+    "count": 1
+  },
+  "f67d27da00590346": {
+    "id": "f67d27da00590346",
+    "name": "在這裡，我們使用了「να」來引導一個子句，表示想要做某件事情。這相當於中文中的「想」。",
+    "lang": "el",
+    "explanation": "在這裡，我們使用了「να」來引導一個子句，表示想要做某件事情。這相當於中文中的「想」。",
+    "examples": [
+      {
+        "source": "我一直想跟你說一件很重要的事",
+        "translation": "Θέλω να σε ομιλήσω γιάτι έχω κάποια σημαντική πληροφόρα",
+        "timestamp": 1771295112.9335086
+      }
+    ],
+    "count": 1
+  },
+  "7a3ed69322480db0": {
+    "id": "7a3ed69322480db0",
+    "name": "「σημαντική πληροφόρα」是一個複合詞，用來表達「重要的事」。",
+    "lang": "el",
+    "explanation": "「σημαντική πληροφόρα」是一個複合詞，用來表達「重要的事」。",
+    "examples": [
+      {
+        "source": "我一直想跟你說一件很重要的事",
+        "translation": "Θέλω να σε ομιλήσω γιάτι έχω κάποια σημαντική πληροφόρα",
+        "timestamp": 1771295112.9335155
+      }
+    ],
+    "count": 1
+  },
+  "c7d1338a795171dd": {
+    "id": "c7d1338a795171dd",
+    "name": "使用指示代詞Το來引出特定物件。",
+    "lang": "el",
+    "explanation": "使用指示代詞Το來引出特定物件。",
+    "examples": [
+      {
+        "source": "海邊的夕陽真的美到不行",
+        "translation": "Το ήλιος του ακτού πραγματικά είναι όμορφος",
+        "timestamp": 1771295155.4801884
+      }
+    ],
+    "count": 1
+  },
+  "3976a26ba4f7542f": {
+    "id": "3976a26ba4f7542f",
+    "name": "使用所有格του來表示位置關係。",
+    "lang": "el",
+    "explanation": "使用所有格του來表示位置關係。",
+    "examples": [
+      {
+        "source": "海邊的夕陽真的美到不行",
+        "translation": "Το ήλιος του ακτού πραγματικά είναι όμορφος",
+        "timestamp": 1771295155.4801943
+      }
+    ],
+    "count": 1
+  },
+  "cab32dc265d890fb": {
+    "id": "cab32dc265d890fb",
+    "name": "使用副詞πραγματικά強調真實性。",
+    "lang": "el",
+    "explanation": "使用副詞πραγματικά強調真實性。",
+    "examples": [
+      {
+        "source": "海邊的夕陽真的美到不行",
+        "translation": "Το ήλιος του ακτού πραγματικά είναι όμορφος",
+        "timestamp": 1771295155.4802003
+      }
+    ],
+    "count": 1
+  },
+  "780a5fc571c5461a": {
+    "id": "780a5fc571c5461a",
+    "name": "使用形容詞όμορφος來描述美麗的程度。",
+    "lang": "el",
+    "explanation": "使用形容詞όμορφος來描述美麗的程度。",
+    "examples": [
+      {
+        "source": "海邊的夕陽真的美到不行",
+        "translation": "Το ήλιος του ακτού πραγματικά είναι όμορφος",
+        "timestamp": 1771295155.4802043
+      }
+    ],
+    "count": 1
+  },
+  "bef08cc820326b4f": {
+    "id": "bef08cc820326b4f",
+    "name": "在希臘語中，過去完成時態用於描述現在狀態的結果或影響。",
+    "lang": "el",
+    "explanation": "在希臘語中，過去完成時態用於描述現在狀態的結果或影響。",
+    "examples": [
+      {
+        "source": "我學這個語言已經三個月了",
+        "translation": "Έχω μάθει αυτή τη γλώσσα για τρία μήνες.",
+        "timestamp": 1771295199.0527847
+      }
+    ],
+    "count": 1
+  },
+  "abdee070bbef385f": {
+    "id": "abdee070bbef385f",
+    "name": "定冠詞τη 在這裡表示特定的語言。",
+    "lang": "el",
+    "explanation": "定冠詞τη 在這裡表示特定的語言。",
+    "examples": [
+      {
+        "source": "我學這個語言已經三個月了",
+        "translation": "Έχω μάθει αυτή τη γλώσσα για τρία μήνες.",
+        "timestamp": 1771295199.0527909
+      }
+    ],
+    "count": 1
+  },
+  "bc82a69ae5e91291": {
+    "id": "bc82a69ae5e91291",
+    "name": "希臘語中的時間表達常使用複數形式來表示持續的時間。",
+    "lang": "el",
+    "explanation": "希臘語中的時間表達常使用複數形式來表示持續的時間。",
+    "examples": [
+      {
+        "source": "我學這個語言已經三個月了",
+        "translation": "Έχω μάθει αυτή τη γλώσσα για τρία μήνες.",
+        "timestamp": 1771295199.052795
+      }
+    ],
+    "count": 1
+  },
+  "6dcce84290910207": {
+    "id": "6dcce84290910207",
+    "name": "使用過去式和將來式的語法。",
+    "lang": "el",
+    "explanation": "使用過去式和將來式的語法。",
+    "examples": [
+      {
+        "source": "如果我早點知道的話，我就會早點來",
+        "translation": "Εάν είχα γνωρίζει πρώτα, θα ήμουν έρχομαι νωρίτερα",
+        "timestamp": 1771295238.9244163
+      }
+    ],
+    "count": 1
+  },
+  "0700d69d8ef8f0ad": {
+    "id": "0700d69d8ef8f0ad",
+    "name": "動詞「置」的變化形式用於請求某人進行結帳。",
+    "lang": "el",
+    "explanation": "動詞「置」的變化形式用於請求某人進行結帳。",
+    "examples": [
+      {
+        "source": "可以幫我結帳嗎？",
+        "translation": "Μπορείτε να μου βάλετε την λήψη;",
+        "timestamp": 1771295273.5767357
+      }
+    ],
+    "count": 1
+  },
+  "ad8f1ddcb2cb512f": {
+    "id": "ad8f1ddcb2cb512f",
+    "name": "名詞「λήψη」用於表示結帳動作或過程。",
+    "lang": "el",
+    "explanation": "名詞「λήψη」用於表示結帳動作或過程。",
+    "examples": [
+      {
+        "source": "可以幫我結帳嗎？",
+        "translation": "Μπορείτε να μου βάλετε την λήψη;",
+        "timestamp": 1771295273.5767417
+      }
+    ],
+    "count": 1
+  },
+  "9e3e2ba0c8e0d43b": {
+    "id": "9e3e2ba0c8e0d43b",
+    "name": "The conditional form of the verb is used to expres",
+    "lang": "it",
+    "explanation": "The conditional form of the verb is used to express hypothetical situations or actions that did not happen in the past.",
+    "examples": [
+      {
+        "source": "If I had known earlier, I would have come sooner",
+        "translation": "Se avessi saputo prima, sarei venuto prima.",
+        "timestamp": 1771295319.5613863
+      }
+    ],
+    "count": 1
+  },
+  "97cbb83206b721ea": {
+    "id": "97cbb83206b721ea",
+    "name": "In Italian, 'avere' (to have) and 'sapere' (to kno",
+    "lang": "it",
+    "explanation": "In Italian, 'avere' (to have) and 'sapere' (to know) are often used with verbs of motion like 'venire' (to come) to indicate a completed action.",
+    "examples": [
+      {
+        "source": "If I had known earlier, I would have come sooner",
+        "translation": "Se avessi saputo prima, sarei venuto prima.",
+        "timestamp": 1771295319.561395
+      }
+    ],
+    "count": 1
+  },
+  "a4de4f13102d83f8": {
+    "id": "a4de4f13102d83f8",
+    "name": "使用了過去式的動詞來表示過去的推薦動作。",
+    "lang": "el",
+    "explanation": "使用了過去式的動詞來表示過去的推薦動作。",
+    "examples": [
+      {
+        "source": "你們推薦菜單上的什麼？",
+        "translation": "Ποια συντάγματα πρότεινες στη λίστα;",
+        "timestamp": 1771295356.929964
+      }
+    ],
+    "count": 1
+  },
+  "c4ace40257c80f17": {
+    "id": "c4ace40257c80f17",
+    "name": "πρότεινες 是 προτείνω 的過去式，表示被動語態。",
+    "lang": "el",
+    "explanation": "πρότεινες 是 προτείνω 的過去式，表示被動語態。",
+    "examples": [
+      {
+        "source": "你們推薦菜單上的什麼？",
+        "translation": "Ποια συντάγματα πρότεινες στη λίστα;",
+        "timestamp": 1771295356.9299707
+      }
+    ],
+    "count": 1
+  },
+  "a991d2519a40c172": {
+    "id": "a991d2519a40c172",
+    "name": "在希臘文中，選單上的菜餚通常用 συντάγματα 來表示。",
+    "lang": "el",
+    "explanation": "在希臘文中，選單上的菜餚通常用 συντάγματα 來表示。",
+    "examples": [
+      {
+        "source": "你們推薦菜單上的什麼？",
+        "translation": "Ποια συντάγματα πρότεινες στη λίστα;",
+        "timestamp": 1771295356.9299753
+      }
+    ],
+    "count": 1
+  },
+  "d02caf997728c61c": {
+    "id": "d02caf997728c61c",
+    "name": "Potrebbe is the formal and polite form of 'could'",
+    "lang": "it",
+    "explanation": "Potrebbe is the formal and polite form of 'could' (potere). It's used to make a request formally.",
+    "examples": [
+      {
+        "source": "Could you please speak a little slower?",
+        "translation": "Potrebbe parlare un po' più lentamente?",
+        "timestamp": 1771295389.2512918
+      }
+    ],
+    "count": 1
+  },
+  "afcf75878d26c993": {
+    "id": "afcf75878d26c993",
+    "name": "The phrase 'un po'' means 'a little bit' or 'somew",
+    "lang": "it",
+    "explanation": "The phrase 'un po'' means 'a little bit' or 'somewhat'.",
+    "examples": [
+      {
+        "source": "Could you please speak a little slower?",
+        "translation": "Potrebbe parlare un po' più lentamente?",
+        "timestamp": 1771295389.2512977
+      }
+    ],
+    "count": 1
+  },
+  "7575dbb70ebf5cb9": {
+    "id": "7575dbb70ebf5cb9",
+    "name": "The verb 'essere' (to be) is used here to describe",
+    "lang": "it",
+    "explanation": "The verb 'essere' (to be) is used here to describe the state or quality of the coffee.",
+    "examples": [
+      {
+        "source": "This coffee tastes absolutely amazing",
+        "translation": "Questo caffè è assolutamente straordinario.",
+        "timestamp": 1771295415.7804313
+      }
+    ],
+    "count": 1
+  },
+  "1dfbb8bb4a190b58": {
+    "id": "1dfbb8bb4a190b58",
+    "name": "The adverb 'assolutamente' intensifies the adjecti",
+    "lang": "it",
+    "explanation": "The adverb 'assolutamente' intensifies the adjective that follows it.",
+    "examples": [
+      {
+        "source": "This coffee tastes absolutely amazing",
+        "translation": "Questo caffè è assolutamente straordinario.",
+        "timestamp": 1771295415.780439
+      }
+    ],
+    "count": 1
+  },
+  "c03ce73ce56546f3": {
+    "id": "c03ce73ce56546f3",
+    "name": "The verb 'permettere' is used in its polite form '",
+    "lang": "it",
+    "explanation": "The verb 'permettere' is used in its polite form 'permettimi' to maintain a courteous tone.",
+    "examples": [
+      {
+        "source": "I think we're lost, let me check the map",
+        "translation": "Penso che siamo persi, permettimi di controllare la mappa",
+        "timestamp": 1771295455.1101468
+      }
+    ],
+    "count": 1
+  },
+  "f02234182502b874": {
+    "id": "f02234182502b874",
+    "name": "'Siamo' is the contraction of 'si +iamo', which is",
+    "lang": "it",
+    "explanation": "'Siamo' is the contraction of 'si +iamo', which is commonly used when referring to oneself and others.",
+    "examples": [
+      {
+        "source": "I think we're lost, let me check the map",
+        "translation": "Penso che siamo persi, permettimi di controllare la mappa",
+        "timestamp": 1771295455.110154
+      }
+    ],
+    "count": 1
+  },
+  "201a6bb4b3967091": {
+    "id": "201a6bb4b3967091",
+    "name": "The preposition 'da' is used to indicate duration",
+    "lang": "it",
+    "explanation": "The preposition 'da' is used to indicate duration of time.",
+    "examples": [
+      {
+        "source": "I've been studying this language for three months",
+        "translation": "Studio questa lingua da tre mesi.",
+        "timestamp": 1771295477.1354616
+      }
+    ],
+    "count": 1
+  },
+  "65373577a3711343": {
+    "id": "65373577a3711343",
+    "name": "The use of 'vorrei' (I would like to) is a polite",
+    "lang": "it",
+    "explanation": "The use of 'vorrei' (I would like to) is a polite and formal way to express a desire or intention.",
+    "examples": [
+      {
+        "source": "I want to eat ramen for dinner tonight",
+        "translation": "Vorrei mangiare ramen per cena questa sera",
+        "timestamp": 1771295518.1081846
+      }
+    ],
+    "count": 1
+  },
+  "b32120b34694036f": {
+    "id": "b32120b34694036f",
+    "name": "The use of 'Andiamo a prendere' is an idiomatic ex",
+    "lang": "it",
+    "explanation": "The use of 'Andiamo a prendere' is an idiomatic expression meaning 'let's go get something'.",
+    "examples": [
+      {
+        "source": "Let's grab a beer after work",
+        "translation": "Andiamo a prendere una birra dopo il lavoro",
+        "timestamp": 1771295556.6141207
+      }
+    ],
+    "count": 1
+  },
+  "d66ad771212ed80d": {
+    "id": "d66ad771212ed80d",
+    "name": "Dopo il lavoro is a common phrase indicating the t",
+    "lang": "it",
+    "explanation": "Dopo il lavoro is a common phrase indicating the time after work has ended.",
+    "examples": [
+      {
+        "source": "Let's grab a beer after work",
+        "translation": "Andiamo a prendere una birra dopo il lavoro",
+        "timestamp": 1771295556.6141274
+      }
+    ],
+    "count": 1
+  },
+  "5645abdd0c37a843": {
+    "id": "5645abdd0c37a843",
+    "name": "使用了現在完成時態 'siamo' 表示狀態。",
+    "lang": "it",
+    "explanation": "使用了現在完成時態 'siamo' 表示狀態。",
+    "examples": [
+      {
+        "source": "我覺得我們迷路了，讓我看一下地圖",
+        "translation": "Penso che siamo smarriti, permettimi di guardare la mappa.",
+        "timestamp": 1771295605.5097208
+      }
+    ],
+    "count": 1
+  },
+  "987471b5269d6e70": {
+    "id": "987471b5269d6e70",
+    "name": "請求用語 'permettimi' 是正式而禮貌的方式來表達要求。",
+    "lang": "it",
+    "explanation": "請求用語 'permettimi' 是正式而禮貌的方式來表達要求。",
+    "examples": [
+      {
+        "source": "我覺得我們迷路了，讓我看一下地圖",
+        "translation": "Penso che siamo smarriti, permettimi di guardare la mappa.",
+        "timestamp": 1771295605.5097272
+      }
+    ],
+    "count": 1
+  },
+  "d79b9c1cdda28fbd": {
+    "id": "d79b9c1cdda28fbd",
+    "name": "動詞不定式 'guardare' 在這裡表示動作的目的。",
+    "lang": "it",
+    "explanation": "動詞不定式 'guardare' 在這裡表示動作的目的。",
+    "examples": [
+      {
+        "source": "我覺得我們迷路了，讓我看一下地圖",
+        "translation": "Penso che siamo smarriti, permettimi di guardare la mappa.",
+        "timestamp": 1771295605.5097315
+      }
+    ],
+    "count": 1
+  },
+  "62e7bc543b188007": {
+    "id": "62e7bc543b188007",
+    "name": "The phrase uses the comparative form 'più' to expr",
+    "lang": "it",
+    "explanation": "The phrase uses the comparative form 'più' to express an increase in confidence as a result of more practice.",
+    "examples": [
+      {
+        "source": "The more I practice, the more confident I feel",
+        "translation": "Più pratico, più mi sento sicuro.",
+        "timestamp": 1771295633.3262336
+      }
+    ],
+    "count": 1
+  },
+  "529d460818f3264f": {
+    "id": "529d460818f3264f",
+    "name": "Puoi (你可以): Congiuntivo presente dell'ausiliario '",
+    "lang": "it",
+    "explanation": "Puoi (你可以): Congiuntivo presente dell'ausiliario 'potere', usato per esprimere una richiesta o un permesso.",
+    "examples": [
+      {
+        "source": "你可以講慢一點嗎？",
+        "translation": "Puoi parlare più lentamente?",
+        "timestamp": 1771295663.994421
+      }
+    ],
+    "count": 1
+  },
+  "76ca5b8818c8309e": {
+    "id": "76ca5b8818c8309e",
+    "name": "Parlare lentamente: L'avverbio viene aggiunto dopo",
+    "lang": "it",
+    "explanation": "Parlare lentamente: L'avverbio viene aggiunto dopo il verbo per specificare come si deve parlare.",
+    "examples": [
+      {
+        "source": "你可以講慢一點嗎？",
+        "translation": "Puoi parlare più lentamente?",
+        "timestamp": 1771295663.99443
+      }
+    ],
+    "count": 1
+  },
+  "02c5f80c2316a096": {
+    "id": "02c5f80c2316a096",
+    "name": "使用了義大利語中的禮貌請求形式。",
+    "lang": "it",
+    "explanation": "使用了義大利語中的禮貌請求形式。",
+    "examples": [
+      {
+        "source": "可以幫我結帳嗎？",
+        "translation": "Puoi aiutarmi con il conto, per favore?",
+        "timestamp": 1771295691.0485978
+      }
+    ],
+    "count": 1
+  },
+  "8e54dd2a7039fd64": {
+    "id": "8e54dd2a7039fd64",
+    "name": "Voglio dirti una cosa importante is a direct trans",
+    "lang": "it",
+    "explanation": "Voglio dirti una cosa importante is a direct translation that maintains the meaning of 我一直想跟你說一件很重要的事. In Italian, this structure is natural and conveys the same sense of urgency or importance as in Chinese.",
+    "examples": [
+      {
+        "source": "我一直想跟你說一件很重要的事",
+        "translation": "Voglio dirti una cosa importante.",
+        "timestamp": 1771295719.042897
+      }
+    ],
+    "count": 1
+  },
+  "0cc5582df55c4db7": {
+    "id": "0cc5582df55c4db7",
+    "name": "條件式用於表達假設或虛擬的情況。",
+    "lang": "it",
+    "explanation": "條件式用於表達假設或虛擬的情況。",
+    "examples": [
+      {
+        "source": "如果我早點知道的話，我就會早點來",
+        "translation": "Se avessi saputo prima, sarei venuto prima.",
+        "timestamp": 1771295749.5318494
+      }
+    ],
+    "count": 1
+  },
+  "a3a2795e0ecdad35": {
+    "id": "a3a2795e0ecdad35",
+    "name": "副詞「prima」在句子中表示時間上的先後關係。",
+    "lang": "it",
+    "explanation": "副詞「prima」在句子中表示時間上的先後關係。",
+    "examples": [
+      {
+        "source": "如果我早點知道的話，我就會早點來",
+        "translation": "Se avessi saputo prima, sarei venuto prima.",
+        "timestamp": 1771295749.5318558
+      }
+    ],
+    "count": 1
+  },
+  "ca3e042c9e92f85f": {
+    "id": "ca3e042c9e92f85f",
+    "name": "使用動詞devo表示需要或必須做某事。",
+    "lang": "it",
+    "explanation": "使用動詞devo表示需要或必須做某事。",
+    "examples": [
+      {
+        "source": "我明天早上要早起",
+        "translation": "Domani mattina devo alzarmi presto.",
+        "timestamp": 1771295777.167937
+      }
+    ],
+    "count": 1
+  },
+  "310949562a11bd4a": {
+    "id": "310949562a11bd4a",
+    "name": "alzarmi是反身動詞，表示起床。",
+    "lang": "it",
+    "explanation": "alzarmi是反身動詞，表示起床。",
+    "examples": [
+      {
+        "source": "我明天早上要早起",
+        "translation": "Domani mattina devo alzarmi presto.",
+        "timestamp": 1771295777.1679423
+      }
+    ],
+    "count": 1
+  },
+  "793c9144bd64c25c": {
+    "id": "793c9144bd64c25c",
+    "name": "The phrase 'para la cena' is used to indicate the",
+    "lang": "es",
+    "explanation": "The phrase 'para la cena' is used to indicate the context of dinner.",
+    "examples": [
+      {
+        "source": "I want to eat ramen for dinner tonight",
+        "translation": "Quiero comer ramen para la cena esta noche",
+        "timestamp": 1771295809.09113
+      }
+    ],
+    "count": 1
+  },
+  "5d0233598e39675a": {
+    "id": "5d0233598e39675a",
+    "name": "使用非正式的道歉語氣，表示理解上的困難。",
+    "lang": "it",
+    "explanation": "使用非正式的道歉語氣，表示理解上的困難。",
+    "examples": [
+      {
+        "source": "不好意思，我聽不懂你在說什麼",
+        "translation": "Mi dispiace, non capisco quello che stai dicendo.",
+        "timestamp": 1771295834.082037
+      }
+    ],
+    "count": 1
+  },
+  "f8c546d8b20457b6": {
+    "id": "f8c546d8b20457b6",
+    "name": "Use the feminine form 'esta' for 'this' when refer",
+    "lang": "es",
+    "explanation": "Use the feminine form 'esta' for 'this' when referring to a feminine noun like 'café'.",
+    "examples": [
+      {
+        "source": "This coffee tastes absolutely amazing",
+        "translation": "Esta café está absolutamente delicioso",
+        "timestamp": 1771295861.7997298
+      }
+    ],
+    "count": 1
+  },
+  "41fc16a2c8bb7cd9": {
+    "id": "41fc16a2c8bb7cd9",
+    "name": "The adjective 'absolutamente' is used here as an a",
+    "lang": "es",
+    "explanation": "The adjective 'absolutamente' is used here as an adverb to emphasize the degree of the taste.",
+    "examples": [
+      {
+        "source": "This coffee tastes absolutely amazing",
+        "translation": "Esta café está absolutamente delicioso",
+        "timestamp": 1771295861.7997375
+      }
+    ],
+    "count": 1
+  },
+  "820eee1203c589c6": {
+    "id": "820eee1203c589c6",
+    "name": "Use of the contraction 'estás' for 'you are'",
+    "lang": "es",
+    "explanation": "Use of the contraction 'estás' for 'you are'.",
+    "examples": [
+      {
+        "source": "I'm sorry, I don't understand what you're saying",
+        "translation": "Lo siento, no entiendo lo que estás diciendo",
+        "timestamp": 1771295904.0494244
+      }
+    ],
+    "count": 1
+  },
+  "97d478beec4b9760": {
+    "id": "97d478beec4b9760",
+    "name": "The gerund form 'diciendo' is used to describe a c",
+    "lang": "es",
+    "explanation": "The gerund form 'diciendo' is used to describe a continuous action.",
+    "examples": [
+      {
+        "source": "I'm sorry, I don't understand what you're saying",
+        "translation": "Lo siento, no entiendo lo que estás diciendo",
+        "timestamp": 1771295904.0494313
+      }
+    ],
+    "count": 1
+  },
+  "e8c61f0a1a836125": {
+    "id": "e8c61f0a1a836125",
+    "name": "The phrase 'lo que' translates to 'what' in this c",
+    "lang": "es",
+    "explanation": "The phrase 'lo que' translates to 'what' in this context, introducing the clause that follows.",
+    "examples": [
+      {
+        "source": "I'm sorry, I don't understand what you're saying",
+        "translation": "Lo siento, no entiendo lo que estás diciendo",
+        "timestamp": 1771295904.049437
+      }
+    ],
+    "count": 1
+  },
+  "744214fcc4410d11": {
+    "id": "744214fcc4410d11",
+    "name": "Use 'más' + comparative adjective to express super",
+    "lang": "es",
+    "explanation": "Use 'más' + comparative adjective to express superlatives in Spanish.",
+    "examples": [
+      {
+        "source": "Where is the nearest train station?",
+        "translation": "¿Dónde está la estación de tren más cercana?",
+        "timestamp": 1771295937.66611
+      }
+    ],
+    "count": 1
+  },
+  "67e6a3c69fe0e926": {
+    "id": "67e6a3c69fe0e926",
+    "name": "The use of 'querido' here is a past participle use",
+    "lang": "es",
+    "explanation": "The use of 'querido' here is a past participle used to express an ongoing intention or desire.",
+    "examples": [
+      {
+        "source": "I've been meaning to tell you something important",
+        "translation": "He querido contarte algo importante",
+        "timestamp": 1771295962.6170204
+      }
+    ],
+    "count": 1
+  },
+  "09ca6721209ac894": {
+    "id": "09ca6721209ac894",
+    "name": "使用了形容詞來描述夕陽的美。",
+    "lang": "es",
+    "explanation": "使用了形容詞來描述夕陽的美。",
+    "examples": [
+      {
+        "source": "海邊的夕陽真的美到不行",
+        "translation": "El atardecer en la playa es realmente hermoso",
+        "timestamp": 1771295998.1107178
+      }
+    ],
+    "count": 1
+  },
+  "10e19e37c62009d3": {
+    "id": "10e19e37c62009d3",
+    "name": "句子結構保持了原文的意思和情感。",
+    "lang": "es",
+    "explanation": "句子結構保持了原文的意思和情感。",
+    "examples": [
+      {
+        "source": "海邊的夕陽真的美到不行",
+        "translation": "El atardecer en la playa es realmente hermoso",
+        "timestamp": 1771295998.1107233
+      }
+    ],
+    "count": 1
+  },
+  "925920b83efdfdab": {
+    "id": "925920b83efdfdab",
+    "name": "使用 \"Vamos\" 表示建議或邀請。",
+    "lang": "es",
+    "explanation": "使用 \"Vamos\" 表示建議或邀請。",
+    "examples": [
+      {
+        "source": "下班之後一起去喝一杯吧",
+        "translation": "Vamos a tomar algo después del trabajo",
+        "timestamp": 1771296035.599893
+      }
+    ],
+    "count": 1
+  },
+  "9ab38bb9d79d9272": {
+    "id": "9ab38bb9d79d9272",
+    "name": "用 \"algo\" 來泛指少量的飲料，類似於中文中的 \"一杯\"",
+    "lang": "es",
+    "explanation": "用 \"algo\" 來泛指少量的飲料，類似於中文中的 \"一杯\"",
+    "examples": [
+      {
+        "source": "下班之後一起去喝一杯吧",
+        "translation": "Vamos a tomar algo después del trabajo",
+        "timestamp": 1771296035.5998993
+      }
+    ],
+    "count": 1
+  },
+  "625ece5ff523683d": {
+    "id": "625ece5ff523683d",
+    "name": "使用 \"después del trabajo\" 表達下班後的意思。",
+    "lang": "es",
+    "explanation": "使用 \"después del trabajo\" 表達下班後的意思。",
+    "examples": [
+      {
+        "source": "下班之後一起去喝一杯吧",
+        "translation": "Vamos a tomar algo después del trabajo",
+        "timestamp": 1771296035.5999043
+      }
+    ],
+    "count": 1
+  },
+  "8cb22ed3b392dc44": {
+    "id": "8cb22ed3b392dc44",
+    "name": "The verb 'levantarse' is a reflexive verb, meaning",
+    "lang": "es",
+    "explanation": "The verb 'levantarse' is a reflexive verb, meaning it requires the pronoun 'me' attached to the end of the verb.",
+    "examples": [
+      {
+        "source": "I need to wake up early tomorrow morning",
+        "translation": "Necesito levantarme temprano mañana por la mañana",
+        "timestamp": 1771296062.6235461
+      }
+    ],
+    "count": 1
+  },
+  "b56e236b1d34940c": {
+    "id": "b56e236b1d34940c",
+    "name": "使用「Cuanto más...más...」句型來表示程度的增加。",
+    "lang": "es",
+    "explanation": "使用「Cuanto más...más...」句型來表示程度的增加。",
+    "examples": [
+      {
+        "source": "越練習就越有自信",
+        "translation": "Cuanto más practico, más confiado me siento",
+        "timestamp": 1771296096.2215383
+      }
+    ],
+    "count": 1
+  },
+  "3dd0209a2dcb10ef": {
+    "id": "3dd0209a2dcb10ef",
+    "name": "「me siento + adj.」是西班牙語中表示感受的常用結構。",
+    "lang": "es",
+    "explanation": "「me siento + adj.」是西班牙語中表示感受的常用結構。",
+    "examples": [
+      {
+        "source": "越練習就越有自信",
+        "translation": "Cuanto más practico, más confiado me siento",
+        "timestamp": 1771296096.221545
+      }
+    ],
+    "count": 1
+  },
+  "b18a72c5fe6d7a8c": {
+    "id": "b18a72c5fe6d7a8c",
+    "name": "此句子展示瞭如何將中文中的主謂結構轉換為西班牙語中的相應結構。",
+    "lang": "es",
+    "explanation": "此句子展示瞭如何將中文中的主謂結構轉換為西班牙語中的相應結構。",
+    "examples": [
+      {
+        "source": "越練習就越有自信",
+        "translation": "Cuanto más practico, más confiado me siento",
+        "timestamp": 1771296096.2215497
+      }
+    ],
+    "count": 1
+  },
+  "9bb536d6b298cdd8": {
+    "id": "9bb536d6b298cdd8",
+    "name": "使用形容詞來描述咖啡的味道。",
+    "lang": "es",
+    "explanation": "使用形容詞來描述咖啡的味道。",
+    "examples": [
+      {
+        "source": "這杯咖啡真的超好喝",
+        "translation": "Esta taza de café es realmente deliciosa.",
+        "timestamp": 1771296126.4179034
+      }
+    ],
+    "count": 1
+  },
+  "0c04022401dd9942": {
+    "id": "0c04022401dd9942",
+    "name": "使用副詞來強調形容詞的程度。",
+    "lang": "es",
+    "explanation": "使用副詞來強調形容詞的程度。",
+    "examples": [
+      {
+        "source": "這杯咖啡真的超好喝",
+        "translation": "Esta taza de café es realmente deliciosa.",
+        "timestamp": 1771296126.4179087
+      }
+    ],
+    "count": 1
+  },
+  "9c63262348f3deb5": {
+    "id": "9c63262348f3deb5",
+    "name": "將中文的語法結構轉換為西班牙語中的自然表達。",
+    "lang": "es",
+    "explanation": "將中文的語法結構轉換為西班牙語中的自然表達。",
+    "examples": [
+      {
+        "source": "這杯咖啡真的超好喝",
+        "translation": "Esta taza de café es realmente deliciosa.",
+        "timestamp": 1771296126.4179132
+      }
+    ],
+    "count": 1
+  },
+  "1b4ec282421f71e3": {
+    "id": "1b4ec282421f71e3",
+    "name": "El uso de '¿Qué' al inicio de la oración es común",
+    "lang": "es",
+    "explanation": "El uso de '¿Qué' al inicio de la oración es común en español para formular preguntas.",
+    "examples": [
+      {
+        "source": "你們推薦菜單上的什麼？",
+        "translation": "¿Qué recomiendas de la carta?",
+        "timestamp": 1771296155.2303705
+      }
+    ],
+    "count": 1
+  },
+  "726e93f79556a079": {
+    "id": "726e93f79556a079",
+    "name": "使用了西班牙語的祈使句形式 'déjame' 表示請求。",
+    "lang": "es",
+    "explanation": "使用了西班牙語的祈使句形式 'déjame' 表示請求。",
+    "examples": [
+      {
+        "source": "我覺得我們迷路了，讓我看一下地圖",
+        "translation": "Creo que nos hemos perdido, déjame ver el mapa",
+        "timestamp": 1771296196.6784427
+      }
+    ],
+    "count": 1
+  },
+  "107cd08e5e81fcd6": {
+    "id": "107cd08e5e81fcd6",
+    "name": "將 '讓我看一下地圖' 譯為 'déjame ver el mapa'，保持了原意。",
+    "lang": "es",
+    "explanation": "將 '讓我看一下地圖' 譯為 'déjame ver el mapa'，保持了原意。",
+    "examples": [
+      {
+        "source": "我覺得我們迷路了，讓我看一下地圖",
+        "translation": "Creo que nos hemos perdido, déjame ver el mapa",
+        "timestamp": 1771296196.6784492
+      }
+    ],
+    "count": 1
+  },
+  "66db8cbd5560eeb8": {
+    "id": "66db8cbd5560eeb8",
+    "name": "하세요",
+    "lang": "ko",
+    "explanation": "The phrase uses the polite form of addressing someone, which includes the suffix -하세요 (-haseyo).",
+    "examples": [
+      {
+        "source": "hello",
+        "translation": "안녕하세요",
+        "timestamp": 1771296989.3526454
+      }
+    ],
+    "count": 1
+  },
+  "72ded4d89136e54b": {
+    "id": "72ded4d89136e54b",
+    "name": "The phrase '你好' is a common greeting in Chinese",
+    "lang": "zh",
+    "explanation": "The phrase '你好' is a common greeting in Chinese.",
+    "examples": [
+      {
+        "source": "hello",
+        "translation": "你好",
+        "timestamp": 1771297003.351558
+      }
+    ],
+    "count": 1
+  },
+  "51251aac9035c8b9": {
+    "id": "51251aac9035c8b9",
+    "name": "The sentence structure follows the subject-object-",
+    "lang": "ja",
+    "explanation": "The sentence structure follows the subject-object-verb (SOV) order typical in Japanese. The object '怠け者の犬' comes before the verb '跳び越す'.",
+    "examples": [
+      {
+        "source": "The quick brown fox jumps over the lazy dog",
+        "translation": "素早い茶色の狐が怠け者の犬を跳び越す",
+        "timestamp": 1771297048.960035
+      }
+    ],
+    "count": 1
+  },
+  "51810789f97b7676": {
+    "id": "51810789f97b7676",
+    "name": "味道 (wèidào) is used to describe the taste or flavo",
+    "lang": "zh",
+    "explanation": "味道 (wèidào) is used to describe the taste or flavor of something.",
+    "examples": [
+      {
+        "source": "This coffee tastes amazing",
+        "translation": "這咖啡味道很棒",
+        "timestamp": 1771300767.2147837
       }
     ],
     "count": 1

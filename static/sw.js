@@ -1,10 +1,17 @@
 // SentSay Service Worker — Offline/PWA support
-const CACHE_NAME = 'sentsay-v3';
+const CACHE_NAME = 'sentsay-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/style.css',
-  '/app.js',
+  '/js/app.js',
+  '/js/state.js',
+  '/js/api.js',
+  '/js/ui.js',
+  '/js/srs.js',
+  '/js/quiz.js',
+  '/js/history.js',
+  '/js/shortcuts.js',
   '/manifest.json',
   'https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap'
 ];
