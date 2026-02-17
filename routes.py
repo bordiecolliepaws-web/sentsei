@@ -55,6 +55,7 @@ from feedback import router as feedback_router
 from quiz_routes import router as quiz_router
 from learn_routes import router as learn_router
 from compare_routes import router as compare_router
+from favorites_routes import router as favorites_router
 
 router = APIRouter()
 router.include_router(surprise_router)
@@ -62,6 +63,7 @@ router.include_router(feedback_router)
 router.include_router(quiz_router)
 router.include_router(learn_router)
 router.include_router(compare_router)
+router.include_router(favorites_router)
 
 # Re-export for backward compatibility
 from learn_routes import _learn_sentence_impl, _detect_input_language, MAX_INPUT_LEN, _check_injection

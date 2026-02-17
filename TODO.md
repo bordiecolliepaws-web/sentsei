@@ -162,8 +162,8 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Split style.css (2672 lines)** ✅ 2026-02-18 — Extracted into `variables.css` (38 lines, custom properties/themes), `components.css` (2446 lines, all component styles), `responsive.css` (196 lines, media queries). Main `style.css` is now 3 @import statements.
 - [x] **Rate limit visibility** ✅ 2026-02-18 — X-RateLimit-Limit/Remaining/Window headers on all API responses. Frontend counter appears near input when ≤10 remaining, amber at ≤10, red at ≤3. CORS expose_headers, aria-live for accessibility.
 - [ ] **Batch SRS review mode** — Queue up 10 due cards, show progress bar, stats at end (correct %, avg time per card, streak). More engaging than one-at-a-time.
-- [ ] **Sentence favorites / bookmarks** — Star button on results, separate from history. Favorites don't get pushed out by the 50-entry history limit. Exportable. Syncs to server for logged-in users.
-- [ ] **Learn endpoint returns empty `words` field** — The response has both `breakdown` (populated) and `words` (empty array). Remove the dead `words` field or alias it to `breakdown` for API consistency.
+- [x] **Sentence favorites / bookmarks** ✅ 2026-02-18 — Star button on results, separate from history. localStorage + server sync for logged-in users. Favorites panel in side menu, Anki TSV export. No entry limit.
+- [x] **Learn endpoint returns empty `words` field** ✅ 2026-02-18 — Non-issue: field doesn't exist in current codebase, already clean.
 - [ ] **Frontend smoke tests** — Playwright or Puppeteer headless tests: load page, enter sentence, get result, check word chips expand, verify history saves. Run in CI alongside backend tests.
 
 ## Cron Test Matrix

@@ -14,7 +14,7 @@ SUPPORTED_LANGUAGES = {
     "es": "Spanish",
 }
 
-ALLOWED_DATA_KEYS = {"history", "srs_deck", "progress", "preferences", "rich_history"}
+ALLOWED_DATA_KEYS = {"history", "srs_deck", "progress", "preferences", "rich_history", "favorites"}
 
 # --- Pydantic Models ---
 
