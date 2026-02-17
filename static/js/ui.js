@@ -373,10 +373,46 @@ export function closeCompareResults() {
     DOM.compareResults.innerHTML = '';
 }
 
+function syncVisibleResultDividers() {
+    if (!DOM.results) return;
+    DOM.results.querySelectorAll('.history-divider').forEach(divider => {
+        divider.classList.add('lang-filter-hidden');
+    });
+
+    let hasVisibleCard = false;
+    DOM.results.querySelectorAll('.result-card').forEach(card => {
+        if (card.classList.contains('lang-filter-hidden')) return;
+        if (hasVisibleCard) {
+            const divider = card.previousElementSibling;
+            if (divider && divider.classList.contains('history-divider')) {
+                divider.classList.remove('lang-filter-hidden');
+            }
+        }
+        hasVisibleCard = true;
+    });
+}
+
+export function filterResultsByLanguage(langCode) {
+    if (!DOM.results) return;
+    const selectedLang = (langCode || '').trim().toLowerCase();
+    DOM.results.querySelectorAll('.result-card').forEach(card => {
+        const cardLang = (card.dataset.lang || '').trim().toLowerCase();
+        const shouldHide = Boolean(selectedLang) && cardLang && cardLang !== selectedLang;
+        card.classList.toggle('lang-filter-hidden', shouldHide);
+    });
+    syncVisibleResultDividers();
+}
+
 // === Render result card ===
 export function renderResult(data, original, reqCtx) {
+    const targetLang = (reqCtx.target_language || DOM.langSelect.value || '').trim().toLowerCase();
+    const activeReqCtx = {
+        ...reqCtx,
+        target_language: targetLang || (reqCtx.target_language || DOM.langSelect.value || '')
+    };
     const card = document.createElement('div');
     card.className = 'result-card';
+    card.dataset.lang = activeReqCtx.target_language;
 
     const DIFFICULTY_LABELS = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
     const hasBreakdown = data.breakdown && data.breakdown.length > 0;
@@ -404,7 +440,7 @@ export function renderResult(data, original, reqCtx) {
                 ${data.sentence_difficulty ? `<div class="result-difficulty result-difficulty--${data.sentence_difficulty.level}" title="${(data.sentence_difficulty.factors || []).join(', ')}">${data.sentence_difficulty.level === 'beginner' ? '🟢' : data.sentence_difficulty.level === 'intermediate' ? '🟡' : '🔴'} ${data.sentence_difficulty.level}</div>` : ''}
             </div>
             <div class="result-actions">
-                <button type="button" class="speak-btn" aria-label="Listen to pronunciation" data-lang="${DOM.langSelect.value}">
+                <button type="button" class="speak-btn" aria-label="Listen to pronunciation" data-lang="${activeReqCtx.target_language}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
                         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                         <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
@@ -419,7 +455,7 @@ export function renderResult(data, original, reqCtx) {
                     </svg>
                     <span class="copy-label">Copy</span>
                 </button>
-                <button type="button" class="share-btn" aria-label="Share link" data-sentence="${original.replace(/"/g, '&quot;')}" data-lang="${reqCtx.target_language || DOM.langSelect.value}">
+                <button type="button" class="share-btn" aria-label="Share link" data-sentence="${original.replace(/"/g, '&quot;')}" data-lang="${activeReqCtx.target_language}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
                         <circle cx="18" cy="5" r="3"></circle>
                         <circle cx="6" cy="12" r="3"></circle>
@@ -466,7 +502,7 @@ export function renderResult(data, original, reqCtx) {
     card.querySelectorAll('.word-chip').forEach((chip, idx) => {
         const wordData = data.breakdown[idx];
         const chipHandler = () => {
-            handleWordChipClick(chip, wordData, data, reqCtx);
+            handleWordChipClick(chip, wordData, data, activeReqCtx);
             chip.setAttribute('aria-expanded', String(chip.classList.contains('expanded')));
         };
         chip.addEventListener('click', chipHandler);
@@ -524,7 +560,7 @@ export function renderResult(data, original, reqCtx) {
     const shareUrl = new URL(window.location.href);
     shareUrl.search = '';
     shareUrl.searchParams.set('s', original);
-    shareUrl.searchParams.set('t', reqCtx.target_language || DOM.langSelect.value);
+    shareUrl.searchParams.set('t', activeReqCtx.target_language);
     history.replaceState(null, '', shareUrl.toString());
 
     // Fast segment
@@ -539,7 +575,7 @@ export function renderResult(data, original, reqCtx) {
                     body: JSON.stringify({
                         sentence: original,
                         translation: data.translation,
-                        target_language: reqCtx.target_language || DOM.langSelect.value,
+                        target_language: activeReqCtx.target_language,
                     })
                 });
                 if (!segResp.ok) throw new Error('Failed');
@@ -560,7 +596,7 @@ export function renderResult(data, original, reqCtx) {
                 data._segmentBreakdown = segWords;
                 segmentChips.querySelectorAll('.word-chip').forEach((chip, idx) => {
                     const wordData = segWords[idx];
-                    const chipHandler = () => handleWordChipClick(chip, wordData, data, reqCtx);
+                    const chipHandler = () => handleWordChipClick(chip, wordData, data, activeReqCtx);
                     chip.addEventListener('click', chipHandler);
                     chip.addEventListener('keydown', (e) => {
                         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chipHandler(); }
@@ -585,8 +621,8 @@ export function renderResult(data, original, reqCtx) {
                     body: JSON.stringify({
                         sentence: original,
                         translation: data.translation,
-                        target_language: reqCtx.target_language || DOM.langSelect.value,
-                        input_language: reqCtx.input_language || state.selectedInputLang,
+                        target_language: activeReqCtx.target_language,
+                        input_language: activeReqCtx.input_language || state.selectedInputLang,
                         speaker_gender: state.selectedGender,
                         speaker_formality: state.selectedFormality
                     })
@@ -629,7 +665,7 @@ export function renderResult(data, original, reqCtx) {
 
                 section.querySelectorAll('.word-chip').forEach((chip, idx) => {
                     const wordData = data.breakdown[idx];
-                    const chipHandler = () => handleWordChipClick(chip, wordData, data, reqCtx);
+                    const chipHandler = () => handleWordChipClick(chip, wordData, data, activeReqCtx);
                     chip.addEventListener('click', chipHandler);
                     chip.addEventListener('keydown', (e) => {
                         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chipHandler(); }
@@ -672,7 +708,7 @@ export function renderResult(data, original, reqCtx) {
                     headers: { 'Content-Type': 'application/json', 'X-App-Password': state.appPassword },
                     body: JSON.stringify({
                         translation: data.translation,
-                        target_language: reqCtx.target_language || DOM.langSelect.value,
+                        target_language: activeReqCtx.target_language,
                         source_sentence: original
                     })
                 });
@@ -707,9 +743,12 @@ export function renderResult(data, original, reqCtx) {
         DOM.results.insertBefore(divider, DOM.results.firstChild);
     }
     DOM.results.insertBefore(card, DOM.results.firstChild);
+    filterResultsByLanguage(DOM.langSelect.value);
 
     requestAnimationFrame(() => {
-        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (!card.classList.contains('lang-filter-hidden')) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     });
 }
 

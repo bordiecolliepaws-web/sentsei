@@ -374,6 +374,49 @@
             padding: 0.5rem 0;
         }
 
+        .history-lang-filter {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.55rem 1rem;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+
+        .history-lang-pill {
+            background: var(--surface2);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 0.28rem 0.6rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.28rem;
+            font-family: inherit;
+            transition: border-color 0.2s, color 0.2s, background 0.2s;
+        }
+
+        .history-lang-pill:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        .history-lang-pill.active {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        .history-lang-count {
+            font-size: 0.68rem;
+            opacity: 0.8;
+        }
+
         .history-panel-empty {
             padding: 2rem 1rem;
             text-align: center;
@@ -2019,6 +2062,7 @@
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
         .sr-only.focus-visible-only:focus { position: fixed; top: 0.5rem; left: 0.5rem; width: auto; height: auto; padding: 0.5rem 1rem; margin: 0; overflow: visible; clip: auto; background: var(--accent); color: white; border-radius: 8px; z-index: 9999; font-size: 0.9rem; font-weight: 600; }
 
+        .lang-filter-hidden { display: none !important; }
         .hidden { display: none !important; }
 
         /* Mobile-first improvements */

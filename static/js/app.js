@@ -11,7 +11,7 @@ import {
     getLanguageNamesMap, openStatsModal, closeStatsModal,
     startLoadingTimer, stopLoadingTimer, showError, hideError, setRandomLoadingTip,
     speakTranslation, applyTheme, toggleTheme, initToggle, applyRomanization,
-    renderResult, renderCompareResults, closeCompareResults, escapeHtml
+    renderResult, renderCompareResults, closeCompareResults, escapeHtml, filterResultsByLanguage
 } from './ui.js?v=20260217';
 import {
     loadSRSDeck, saveSRSDeck, addToSRS, getDueItems, updateSRSItem,
@@ -27,7 +27,8 @@ import {
     addToRichHistory, saveSentenceToHistory, renderSentenceHistory,
     toggleHistoryPanel, openHistoryPanel, closeHistoryPanel,
     updateHistoryBadge, renderHistoryPanel,
-    exportHistoryAsAnki, copyAllHistoryToClipboard, setHistoryDeps
+    exportHistoryAsAnki, copyAllHistoryToClipboard, setHistoryDeps,
+    setHistoryFilterLang, normalizeSentenceHistoryEntries
 } from './history.js';
 import { initShortcuts, setShortcutDeps } from './shortcuts.js';
 
@@ -83,6 +84,7 @@ function initDOM() {
     DOM.historyToggle = document.getElementById('history-toggle');
     DOM.historyBadge = document.getElementById('history-badge');
     DOM.historyPanel = document.getElementById('history-panel');
+    DOM.historyLangFilter = document.getElementById('history-lang-filter');
     DOM.historyPanelList = document.getElementById('history-panel-list');
     DOM.historyOverlay = document.getElementById('history-overlay');
     DOM.historyClear = document.getElementById('history-clear-btn');
@@ -153,6 +155,12 @@ function selectLangPill(code) {
         p.classList.toggle('active', isActive);
         p.setAttribute('aria-checked', String(isActive));
     });
+    filterResultsByLanguage(code);
+    setHistoryFilterLang(code);
+    renderHistoryPanel();
+    renderSentenceHistory();
+    updateStoriesBadge();
+    if (state.storyPanelOpen) renderStoriesBrowser();
 }
 
 async function loadLanguages() {
@@ -282,7 +290,7 @@ async function learn() {
         cancelSpeculative();
         const reqCtx = { target_language: DOM.langSelect.value, input_language: state.selectedInputLang, sentence: cached.sentence };
         renderResult(cached.data, cached.sentence, reqCtx);
-        saveSentenceToHistory(cached.sentence);
+        saveSentenceToHistory(cached.sentence, reqCtx.target_language);
         addToRichHistory(cached.sentence, cached.data.translation, DOM.langSelect.value, cached.data.pronunciation);
         recordLearnProgress(DOM.langSelect.value, 1);
         DOM.sentenceInput.value = '';
@@ -338,7 +346,7 @@ async function learn() {
             successfulResults.forEach(item => {
                 renderResult(item.result, item.sentence, { ...reqCtx, sentence: item.sentence });
             });
-            saveSentenceToHistory(sentence);
+            saveSentenceToHistory(sentence, reqCtx.target_language);
             if (successfulResults.length) {
                 const first = successfulResults[0];
                 addToRichHistory(sentence, first.result.translation, DOM.langSelect.value, first.result.pronunciation);
@@ -369,7 +377,7 @@ async function learn() {
             const data = await resp.json();
             const reqCtx = { target_language: DOM.langSelect.value, input_language: state.selectedInputLang, sentence: sentence };
             renderResult(data, sentence, reqCtx);
-            saveSentenceToHistory(sentence);
+            saveSentenceToHistory(sentence, reqCtx.target_language);
             addToRichHistory(sentence, data.translation, DOM.langSelect.value, data.pronunciation);
             recordLearnProgress(DOM.langSelect.value, 1);
             DOM.sentenceInput.value = '';
@@ -494,7 +502,7 @@ async function surpriseMe() {
             cancelSpeculative();
             const reqCtx = { target_language: lang, input_language: inputLang, sentence: data.sentence };
             renderResult(data.result, data.sentence, reqCtx);
-            saveSentenceToHistory(data.sentence);
+            saveSentenceToHistory(data.sentence, lang);
             addToRichHistory(data.sentence, data.result.translation, lang, data.result.pronunciation);
             recordLearnProgress(lang, 1);
             DOM.sentenceInput.value = '';
@@ -865,7 +873,11 @@ const SYNC_KEYS_MAP = {
     },
     'history': {
         get: () => state.sentenceHistory,
-        set: (d) => { state.sentenceHistory = d || []; localStorage.setItem(KEYS.SENTENCE_HISTORY, JSON.stringify(state.sentenceHistory)); renderSentenceHistory(); }
+        set: (d) => {
+            state.sentenceHistory = normalizeSentenceHistoryEntries(d, localStorage.getItem(KEYS.TARGET_LANG) || '');
+            localStorage.setItem(KEYS.SENTENCE_HISTORY, JSON.stringify(state.sentenceHistory));
+            renderSentenceHistory();
+        }
     },
 };
 
