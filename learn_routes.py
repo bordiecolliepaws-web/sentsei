@@ -70,7 +70,8 @@ def _detect_input_language(sentence: str, input_lang: str = "auto"):
         return any('\u4e00' <= c <= '\u9fff' for c in sentence)
 
 
-@router.post("/api/learn")
+@router.post("/api/learn", tags=["Learning"], summary="Translate and break down a sentence",
+              description="Translates a sentence into the target language with pronunciation, grammar notes, and word-by-word breakdown.")
 async def learn_sentence(
     request: Request,
     req: SentenceRequest,
@@ -422,7 +423,7 @@ TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chines
     return result
 
 
-@router.post("/api/learn-fast")
+@router.post("/api/learn-fast", tags=["Learning"], summary="Fast translation (no breakdown)")
 async def learn_fast(
     request: Request,
     req: SentenceRequest,
@@ -513,7 +514,7 @@ Return ONLY valid JSON (no markdown):
     return result
 
 
-@router.post("/api/segment")
+@router.post("/api/segment", tags=["Learning"], summary="Segment text into sentences")
 async def segment_sentence(
     request: Request,
     req: BreakdownRequest,
@@ -576,7 +577,7 @@ async def segment_sentence(
         return {"breakdown": breakdown, "source": source}
 
 
-@router.post("/api/breakdown")
+@router.post("/api/breakdown", tags=["Learning"], summary="Word-by-word breakdown of a translation")
 async def get_breakdown(
     request: Request,
     req: BreakdownRequest,
@@ -661,7 +662,7 @@ Rules:
     return result
 
 
-@router.post("/api/learn-stream")
+@router.post("/api/learn-stream", tags=["Learning"], summary="Stream a translation via SSE")
 async def learn_sentence_stream(
     request: Request,
     req: SentenceRequest,
@@ -719,7 +720,7 @@ async def learn_sentence_stream(
                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
-@router.post("/api/learn-multi")
+@router.post("/api/learn-multi", tags=["Learning"], summary="Translate multiple sentences at once")
 async def learn_multi(
     request: Request,
     req: MultiSentenceRequest,

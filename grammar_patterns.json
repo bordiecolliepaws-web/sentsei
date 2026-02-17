@@ -305,9 +305,14 @@
         "source": "這杯咖啡真的超好喝",
         "translation": "このコーヒー本當に美味しいです。",
         "timestamp": 1771293844.9122567
+      },
+      {
+        "source": "I want to eat ramen for dinner tonight",
+        "translation": "今晩、夕飯にラーメンを食べたいです。",
+        "timestamp": 1771330030.1739757
       }
     ],
-    "count": 4
+    "count": 5
   },
   "4e51b0f1d2037a69": {
     "id": "4e51b0f1d2037a69",
@@ -3364,9 +3369,14 @@
         "source": "I want to eat ramen",
         "translation": "ラーメンを食べたいです",
         "timestamp": 1771307978.7671976
+      },
+      {
+        "source": "今天晚上我想吃拉麵",
+        "translation": "今晩はラーメンを食べたいです。",
+        "timestamp": 1771330142.0530899
       }
     ],
-    "count": 1
+    "count": 2
   },
   "c24b2af791805430": {
     "id": "c24b2af791805430",
@@ -3420,9 +3430,14 @@
         "source": "What do you recommend from the menu?",
         "translation": "メニューからおすすめはありますか？",
         "timestamp": 1771315411.4945562
+      },
+      {
+        "source": "我一直想跟你說一件很重要的事",
+        "translation": "ずっとあなたに伝えたい重要なことがあります。",
+        "timestamp": 1771330070.6774452
       }
     ],
-    "count": 1
+    "count": 2
   },
   "c256998ae3dd8f8e": {
     "id": "c256998ae3dd8f8e",
@@ -3546,6 +3561,174 @@
         "source": "Hello world",
         "translation": "안녕하세요",
         "timestamp": 1771318688.499739
+      }
+    ],
+    "count": 1
+  },
+  "593446bbe538600d": {
+    "id": "593446bbe538600d",
+    "name": "たら",
+    "lang": "ja",
+    "explanation": "たら (tara) is used here to express a conditional action, meaning 'if/when something happens'.",
+    "examples": [
+      {
+        "source": "Let's grab a beer after work",
+        "translation": "仕事が終わったらビールを飲もう",
+        "timestamp": 1771329998.366513
+      }
+    ],
+    "count": 1
+  },
+  "5538b29499890c16": {
+    "id": "5538b29499890c16",
+    "name": "もう",
+    "lang": "ja",
+    "explanation": "飲もう (nomou) is the volitional form of 飲む (nomu), which expresses an intention or suggestion.",
+    "examples": [
+      {
+        "source": "Let's grab a beer after work",
+        "translation": "仕事が終わったらビールを飲もう",
+        "timestamp": 1771329998.366521
+      }
+    ],
+    "count": 1
+  },
+  "d3cca5cf7ed7312a": {
+    "id": "d3cca5cf7ed7312a",
+    "name": "ごはん",
+    "lang": "ja",
+    "explanation": "夕飯に is used to specify 'for dinner' in a formal context, but 夜ごはん would be more common in casual situations.",
+    "examples": [
+      {
+        "source": "I want to eat ramen for dinner tonight",
+        "translation": "今晩、夕飯にラーメンを食べたいです。",
+        "timestamp": 1771330030.1739852
+      }
+    ],
+    "count": 1
+  },
+  "6d97e2f90a2f17cb": {
+    "id": "6d97e2f90a2f17cb",
+    "name": "〜たい",
+    "lang": "ja",
+    "explanation": "「〜たい」是動詞的意志形，表達想要做某事。",
+    "examples": [
+      {
+        "source": "我一直想跟你說一件很重要的事",
+        "translation": "ずっとあなたに伝えたい重要なことがあります。",
+        "timestamp": 1771330070.6774347
+      }
+    ],
+    "count": 1
+  },
+  "8d3b34c507769aa7": {
+    "id": "8d3b34c507769aa7",
+    "name": "なこと",
+    "lang": "ja",
+    "explanation": "「重要なこと」是形容詞的重要形式加上名詞。",
+    "examples": [
+      {
+        "source": "我一直想跟你說一件很重要的事",
+        "translation": "ずっとあなたに伝えたい重要なことがあります。",
+        "timestamp": 1771330070.6774402
+      }
+    ],
+    "count": 1
+  },
+  "6c7f43f76ab19f3c": {
+    "id": "6c7f43f76ab19f3c",
+    "name": "をお",
+    "lang": "ja",
+    "explanation": "お會計をお願いできますかは、お店で結帳してもらうことを丁寧に求めています。",
+    "examples": [
+      {
+        "source": "可以幫我結帳嗎？",
+        "translation": "お會計をお願いできますか。",
+        "timestamp": 1771330108.9343617
+      }
+    ],
+    "count": 2
+  },
+  "0f0bfee9c50d382f": {
+    "id": "0f0bfee9c50d382f",
+    "name": "いするという",
+    "lang": "ja",
+    "explanation": "お會計は正式な表現で、お會計をお願いするという形で伝える。",
+    "examples": [
+      {
+        "source": "可以幫我結帳嗎？",
+        "translation": "お會計をお願いできますか。",
+        "timestamp": 1771330108.9343655
+      }
+    ],
+    "count": 1
+  },
+  "f0a38e86bf049dac": {
+    "id": "f0a38e86bf049dac",
+    "name": "できますかは",
+    "lang": "ja",
+    "explanation": "できますかは、何かを可能かどうか尋ねる時に使う。",
+    "examples": [
+      {
+        "source": "可以幫我結帳嗎？",
+        "translation": "お會計をお願いできますか。",
+        "timestamp": 1771330108.9343705
+      }
+    ],
+    "count": 1
+  },
+  "e1123c811520b5fa": {
+    "id": "e1123c811520b5fa",
+    "name": "かを",
+    "lang": "ja",
+    "explanation": "できますかは、何かを可能かどうか尋ねる時に使う。",
+    "examples": [
+      {
+        "source": "可以幫我結帳嗎？",
+        "translation": "お會計をお願いできますか。",
+        "timestamp": 1771330108.934373
+      }
+    ],
+    "count": 1
+  },
+  "f7938b4a2ee03d60": {
+    "id": "f7938b4a2ee03d60",
+    "name": "いできますかは",
+    "lang": "ja",
+    "explanation": "お會計をお願いできますかは、お店で結帳してもらうことを丁寧に求めています。",
+    "examples": [
+      {
+        "source": "可以幫我結帳嗎？",
+        "translation": "お會計をお願いできますか。",
+        "timestamp": 1771330108.9343793
+      }
+    ],
+    "count": 1
+  },
+  "193d0b1640c60a70": {
+    "id": "193d0b1640c60a70",
+    "name": "助詞「は」用於標示話題或主題。",
+    "lang": "ja",
+    "explanation": "助詞「は」用於標示話題或主題。",
+    "examples": [
+      {
+        "source": "今天晚上我想吃拉麵",
+        "translation": "今晩はラーメンを食べたいです。",
+        "timestamp": 1771330142.0530784
+      }
+    ],
+    "count": 1
+  },
+  "26172757145de31e": {
+    "id": "26172757145de31e",
+    "name": "助詞「を」用於標示賓語。",
+    "lang": "ja",
+    "explanation": "助詞「を」用於標示賓語。",
+    "examples": [
+      {
+        "source": "今天晚上我想吃拉麵",
+        "translation": "今晩はラーメンを食べたいです。",
+        "timestamp": 1771330142.053084
       }
     ],
     "count": 1

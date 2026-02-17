@@ -20,7 +20,20 @@ from llm import check_ollama_connectivity
 from routes import router
 from surprise import load_surprise_bank, fill_surprise_bank_task, refill_surprise_bank_task, get_surprise_bank
 
-app = FastAPI()
+app = FastAPI(
+    title="SentSay API",
+    description=(
+        "Sentence-based language learning API. "
+        "Type any sentence and get translations with pronunciation, "
+        "grammar notes, and word-by-word breakdowns.\n\n"
+        "**Core flow:** POST `/api/learn` with a sentence and target language.\n\n"
+        "**Authentication:** Most endpoints require an `X-App-Password` header. "
+        "User accounts (optional) use Bearer tokens via `/api/auth/*` endpoints."
+    ),
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+)
 
 # CORS — configurable via env vars, defaults to same-origin only
 _cors_origins = [o.strip() for o in os.environ.get("SENTSEI_CORS_ORIGINS", "").split(",") if o.strip()]

@@ -9,7 +9,7 @@ from learn_routes import _learn_sentence_impl, _detect_input_language, MAX_INPUT
 router = APIRouter()
 
 
-@router.post("/api/compare")
+@router.post("/api/compare", tags=["Learning"], summary="Compare translation across all languages")
 async def compare_sentence(
     request: Request,
     req: CompareRequest,

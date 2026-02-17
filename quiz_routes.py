@@ -124,7 +124,7 @@ Return ONLY valid JSON:
     }
 
 
-@router.post("/api/quiz-check")
+@router.post("/api/quiz-check", tags=["Quiz"], summary="Check a quiz answer")
 async def quiz_check(
     request: Request,
     req: QuizCheckRequest,

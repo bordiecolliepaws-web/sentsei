@@ -67,7 +67,7 @@ router.include_router(compare_router)
 from learn_routes import _learn_sentence_impl, _detect_input_language, MAX_INPUT_LEN, _check_injection
 
 
-@router.post("/api/word-detail")
+@router.post("/api/word-detail", tags=["Learning"], summary="Get detailed info about a word")
 async def word_detail(
     request: Request,
     req: WordDetailRequest,
@@ -120,7 +120,7 @@ Return JSON only: {{"examples":[{{"sentence":"..","pronunciation":"..","meaning"
     return result
 
 
-@router.post("/api/word-detail-stream")
+@router.post("/api/word-detail-stream", tags=["Learning"], summary="Stream word detail via SSE")
 async def word_detail_stream(
     request: Request,
     req: WordDetailRequest,
@@ -208,7 +208,7 @@ Return JSON only: {{"examples":[{{"sentence":"..","pronunciation":"..","meaning"
                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
-@router.post("/api/context-examples")
+@router.post("/api/context-examples", tags=["Learning"], summary="Get example sentences using a word")
 async def context_examples(
     request: Request,
     req: ContextExamplesRequest,
@@ -285,12 +285,12 @@ Rules:
     return result
 
 
-@router.get("/api/languages")
+@router.get("/api/languages", tags=["Reference"], summary="List supported languages")
 async def get_languages():
     return SUPPORTED_LANGUAGES
 
 
-@router.post("/api/export-anki")
+@router.post("/api/export-anki", tags=["Export"], summary="Export history as Anki TSV")
 async def export_anki(
     entries: List[AnkiExportEntry],
     _pw=Depends(require_password),
@@ -319,7 +319,7 @@ async def export_anki(
     return Response(content=content, media_type="text/tab-separated-values", headers=headers)
 
 
-@router.get("/api/health")
+@router.get("/api/health", tags=["System"], summary="Health check with stats")
 async def health_check():
     from cache import _translation_cache, CACHE_MAX, CACHE_TTL
     ollama_ok = await check_ollama_connectivity()
@@ -338,7 +338,7 @@ async def health_check():
     }
 
 
-@router.get("/api/stories")
+@router.get("/api/stories", tags=["Stories"], summary="List available stories")
 async def list_stories():
     return [
         {"id": s["id"], "title": s["title"], "source": s["source"], "language": s["language"], "sentence_count": len(s["sentences"])}
@@ -346,7 +346,7 @@ async def list_stories():
     ]
 
 
-@router.get("/api/story/{story_id}")
+@router.get("/api/story/{story_id}", tags=["Stories"], summary="Get a specific story")
 async def get_story(story_id: str):
     story = STORIES.get(story_id)
     if not story:
@@ -354,7 +354,7 @@ async def get_story(story_id: str):
     return story
 
 
-@router.get("/api/grammar-patterns")
+@router.get("/api/grammar-patterns", tags=["Reference"], summary="Browse grammar patterns")
 async def list_grammar_patterns(lang: Optional[str] = None, _pw=Depends(require_password)):
     patterns = list(get_grammar_patterns().values())
     if lang:
@@ -366,7 +366,7 @@ async def list_grammar_patterns(lang: Optional[str] = None, _pw=Depends(require_
     ]
 
 
-@router.get("/api/grammar-patterns/{pattern_id}")
+@router.get("/api/grammar-patterns/{pattern_id}", tags=["Reference"], summary="Get grammar pattern details")
 async def get_grammar_pattern(pattern_id: str, _pw=Depends(require_password)):
     pattern = get_grammar_patterns().get(pattern_id)
     if not pattern:
@@ -376,7 +376,7 @@ async def get_grammar_pattern(pattern_id: str, _pw=Depends(require_password)):
 
 # --- Auth Routes ---
 
-@router.post("/api/auth/register")
+@router.post("/api/auth/register", tags=["Auth"], summary="Register a new user")
 async def auth_register(req: AuthRequest):
     import re as _re
     username = req.username.strip()
@@ -406,7 +406,7 @@ async def auth_register(req: AuthRequest):
     return {"token": token, "username": username}
 
 
-@router.post("/api/auth/login")
+@router.post("/api/auth/login", tags=["Auth"], summary="Log in and get a session token")
 async def auth_login(req: AuthRequest):
     username = req.username.strip()
     conn = get_db()
@@ -426,7 +426,7 @@ async def auth_login(req: AuthRequest):
     return {"token": token, "username": username}
 
 
-@router.post("/api/auth/logout")
+@router.post("/api/auth/logout", tags=["Auth"], summary="Log out and invalidate token")
 async def auth_logout(authorization: Optional[str] = Header(default=None)):
     token = extract_bearer_token(authorization)
     if token:
@@ -437,7 +437,7 @@ async def auth_logout(authorization: Optional[str] = Header(default=None)):
     return {"ok": True}
 
 
-@router.get("/api/auth/me")
+@router.get("/api/auth/me", tags=["Auth"], summary="Get current user info")
 async def auth_me(authorization: Optional[str] = Header(default=None)):
     token = extract_bearer_token(authorization)
     user = get_user_from_token(token)
@@ -446,7 +446,7 @@ async def auth_me(authorization: Optional[str] = Header(default=None)):
     return {"username": user["username"]}
 
 
-@router.get("/api/user-data/{key}")
+@router.get("/api/user-data/{key}", tags=["Auth"], summary="Get user data by key")
 async def get_user_data(key: str, authorization: Optional[str] = Header(default=None)):
     if key not in ALLOWED_DATA_KEYS:
         raise HTTPException(400, f"Invalid data key. Allowed: {', '.join(ALLOWED_DATA_KEYS)}")

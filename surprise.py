@@ -48,7 +48,7 @@ def decrement_user_request():
         _get_user_event().set()
 
 
-@router.get("/api/surprise")
+@router.get("/api/surprise", tags=["Surprise"], summary="Get a random pre-translated sentence")
 async def get_surprise_sentence(lang: str, input_lang: str = "en"):
     if lang not in SUPPORTED_LANGUAGES:
         raise HTTPException(400, "Unsupported language")
@@ -76,7 +76,7 @@ async def get_surprise_sentence(lang: str, input_lang: str = "en"):
     }
 
 
-@router.get("/api/surprise-bank-status")
+@router.get("/api/surprise-bank-status", tags=["System"], summary="Surprise bank fill status")
 async def surprise_bank_status():
     status = {}
     for key, items in _surprise_bank.items():

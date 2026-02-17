@@ -14,7 +14,7 @@ router = APIRouter()
 FEEDBACK_FILE = Path(__file__).parent / "feedback.jsonl"
 
 
-@router.post("/api/feedback")
+@router.post("/api/feedback", tags=["Feedback"], summary="Submit feedback")
 async def submit_feedback(req: FeedbackRequest, _pw=Depends(require_password)):
     if not req.message or not req.message.strip():
         raise HTTPException(400, "Feedback cannot be empty")
@@ -63,7 +63,7 @@ async def submit_feedback(req: FeedbackRequest, _pw=Depends(require_password)):
     return {"ok": True}
 
 
-@router.get("/api/feedback-list")
+@router.get("/api/feedback-list", tags=["Feedback"], summary="List all feedback (admin)")
 async def list_feedback(_pw=Depends(require_password), limit: int = 50, offset: int = 0):
     entries = []
     if FEEDBACK_FILE.exists():
@@ -77,7 +77,7 @@ async def list_feedback(_pw=Depends(require_password), limit: int = 50, offset: 
     return {"total": len(entries), "entries": entries[offset:offset + limit]}
 
 
-@router.delete("/api/feedback/{index}")
+@router.delete("/api/feedback/{index}", tags=["Feedback"], summary="Delete feedback entry (admin)")
 async def delete_feedback(index: int, _pw=Depends(require_password)):
     if not FEEDBACK_FILE.exists():
         raise HTTPException(404, "No feedback file")
