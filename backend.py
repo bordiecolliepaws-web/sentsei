@@ -18,6 +18,7 @@ from cache import (load_cache, save_cache, is_cache_dirty, load_grammar_patterns
 from auth import init_user_db, cleanup_expired_sessions, rate_limit_remaining, get_rate_limit_key, RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW
 from llm import check_ollama_connectivity
 from routes import router
+from stats_routes import router as stats_router
 from surprise import load_surprise_bank, fill_surprise_bank_task, refill_surprise_bank_task, get_surprise_bank
 
 app = FastAPI(
@@ -48,6 +49,7 @@ if _cors_origins:
     )
 
 app.include_router(router)
+app.include_router(stats_router)
 
 
 import collections, bisect
