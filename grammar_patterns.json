@@ -3818,15 +3818,20 @@
     "id": "d2e09fae36828cc9",
     "name": "するほど",
     "lang": "ja",
-    "explanation": "練習するほど自信が増す：表示隨著練習的進行，自信逐漸增加。",
+    "explanation": "練習するほど、自信が増していきます。 uses the pattern ほど (hodo) to express proportionality between practice and confidence.",
     "examples": [
       {
         "source": "越練習就越有自信",
         "translation": "練習するほど自信が増す",
         "timestamp": 1771355356.4903073
+      },
+      {
+        "source": "The more I practice, the more confident I feel",
+        "translation": "練習するほど、自信が増していきます。",
+        "timestamp": 1771390112.8459997
       }
     ],
-    "count": 1
+    "count": 2
   },
   "2220529ec2f3c18b": {
     "id": "2220529ec2f3c18b",
@@ -3950,6 +3955,34 @@
         "source": "This coffee tastes amazing",
         "translation": "這咖啡味道超級好。",
         "timestamp": 1771389524.6399229
+      }
+    ],
+    "count": 1
+  },
+  "81f3b3c58252266c": {
+    "id": "81f3b3c58252266c",
+    "name": "していきます",
+    "lang": "ja",
+    "explanation": "練習するほど、自信が増していきます。 uses the pattern ほど (hodo) to express proportionality between practice and confidence.",
+    "examples": [
+      {
+        "source": "The more I practice, the more confident I feel",
+        "translation": "練習するほど、自信が増していきます。",
+        "timestamp": 1771390112.8460042
+      }
+    ],
+    "count": 1
+  },
+  "a328ac04279eabf9": {
+    "id": "a328ac04279eabf9",
+    "name": "ます",
+    "lang": "ja",
+    "explanation": "ます-form (imasu, masu) is used for polite expression of ongoing actions or states.",
+    "examples": [
+      {
+        "source": "The more I practice, the more confident I feel",
+        "translation": "練習するほど、自信が増していきます。",
+        "timestamp": 1771390112.846011
       }
     ],
     "count": 1

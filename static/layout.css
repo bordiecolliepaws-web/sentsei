@@ -1,0 +1,367 @@
+/* === Component Styles === */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 720px;
+            padding: 2rem 1.5rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .header-title-row {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--accent), #f0c96e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stats-btn { display: none; }
+
+        header p {
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .input-area {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .language-select {
+            margin-bottom: 1rem;
+        }
+
+        .language-select label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .lang-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            padding-bottom: 2px;
+        }
+
+        .lang-pill {
+            background: var(--surface2);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-family: inherit;
+        }
+
+        .lang-pill:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        .lang-pill.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .lang-pill .flag {
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.65rem;
+        }
+
+        .toggle-row label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-weight: 600;
+            min-width: 72px;
+            flex-shrink: 0;
+        }
+
+        .toggle-pills {
+            display: flex;
+            gap: 0.3rem;
+        }
+
+        .toggle-pill {
+            background: transparent;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 0.25rem 0.6rem;
+            font-size: 0.72rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.2rem;
+        }
+
+        .toggle-pill:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        .toggle-pill.active {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .sentence-input {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .sentence-input-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.55rem;
+            min-width: 152px;
+        }
+
+        .sentence-input textarea {
+            flex: 1;
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+            min-height: 52px;
+            max-height: 120px;
+        }
+
+        .sentence-input textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .sentence-input textarea::placeholder {
+            color: var(--text-dim);
+        }
+
+        .sentence-input button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 1.1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            min-height: 52px;
+        }
+
+        .sentence-input .surprise-btn {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+
+        .sentence-input .surprise-btn:hover {
+            filter: none;
+            background: var(--accent-glow);
+        }
+
+        .sentence-input .surprise-btn:disabled {
+            border-color: var(--border);
+            color: var(--text-dim);
+            background: transparent;
+        }
+
+        .sentence-input button:hover {
+            filter: brightness(1.15);
+            transform: translateY(-1px);
+        }
+
+        .sentence-input button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .input-hint {
+            margin-top: 0.65rem;
+            font-size: 0.78rem;
+            color: var(--text-dim);
+        }
+
+        .sentence-history-wrap {
+            margin-top: 1rem;
+        }
+
+        .sentence-history-title {
+            font-size: 0.76rem;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .sentence-history {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+        }
+
+        .history-chip {
+            max-width: 100%;
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 0.38rem 0.68rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: border-color 0.2s, transform 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-chip:hover {
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        /* History */
+        .history-divider {
+            margin: 1.5rem 0;
+        }
+
+/* === Language Picker === */
+.language-picker {
+    padding: 1.5rem 0;
+    text-align: center;
+}
+.picker-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 1.2rem;
+}
+.picker-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    max-width: 480px;
+    margin: 0 auto;
+}
+@media (min-width: 640px) {
+    .picker-grid {
+        grid-template-columns: repeat(4, 1fr);
+        max-width: 640px;
+    }
+}
+.picker-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 1.2rem 0.5rem;
+    background: var(--card-bg, var(--bg));
+    border: 2px solid var(--border, rgba(255,255,255,0.08));
+    border-radius: 12px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    user-select: none;
+}
+.picker-card:hover {
+    border-color: var(--accent);
+    background: var(--accent-glow, rgba(232,168,56,0.08));
+    transform: translateY(-2px);
+}
+.picker-card:active {
+    transform: translateY(0);
+}
+.picker-card .picker-flag {
+    font-size: 2rem;
+    line-height: 1;
+}
+.picker-card .picker-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+/* Change Language Button */
+.change-lang-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    background: var(--accent-glow, rgba(232,168,56,0.08));
+    border: 1px solid var(--accent, #e8a838);
+    border-radius: 8px;
+    color: var(--accent, #e8a838);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    margin-top: 0.5rem;
+    font-family: inherit;
+}
+.change-lang-btn:hover {
+    background: rgba(232,168,56,0.15);
+}
+.change-lang-arrow {
+    font-size: 0.7rem;
+    opacity: 0.7;
+}
