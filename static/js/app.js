@@ -44,6 +44,8 @@ import { toggleGrammarPanel, closeGrammarPanel, loadGrammarPatterns } from './gr
 import { getSpeculativeKey, showSpeculativeIndicator, hideSpeculativeIndicator, cancelSpeculative, startSpeculative } from './speculative.js';
 import { initOnboarding, setOnboardingDeps } from './onboarding.js';
 import { pollOllamaHealth, updateOfflineBanner, startHealthPolling } from './offline.js';
+import { learn, surpriseMe, _hasMultipleSentences } from './learn.js';
+import { initSettings } from './settings.js';
 
 // === Populate DOM refs ===
 function initDOM() {
@@ -169,7 +171,6 @@ function updateChangeLangButton(code) {
     if (nameEl) nameEl.textContent = name;
 }
 
-// === Language selection ===
 function selectLangPill(code) {
     const selectedCode = (code || '').trim().toLowerCase();
     DOM.langSelect.value = selectedCode;
@@ -200,7 +201,6 @@ async function loadLanguages() {
         opt.value = code;
         opt.textContent = name;
         DOM.langSelect.appendChild(opt);
-        // Old pills (hidden but functional)
         const pill = document.createElement('button');
         pill.type = 'button';
         pill.className = 'lang-pill';
@@ -211,7 +211,6 @@ async function loadLanguages() {
         pill.innerHTML = `<span class="flag">${flag}</span>${name}`;
         pill.addEventListener('click', () => selectLangPill(code));
         DOM.langPills.appendChild(pill);
-        // Picker card
         if (pickerGrid) {
             const card = document.createElement('button');
             card.type = 'button';
@@ -226,213 +225,13 @@ async function loadLanguages() {
     const hasSavedLang = savedLang && Object.prototype.hasOwnProperty.call(langs, savedLang);
     const defaultLang = hasSavedLang ? savedLang : (Object.prototype.hasOwnProperty.call(langs, 'zh') ? 'zh' : Object.keys(langs)[0]);
     if (defaultLang) selectLangPill(defaultLang);
-    // Show picker if no saved preference (first visit)
-    if (!hasSavedLang) {
-        showLanguagePicker();
-    }
+    if (!hasSavedLang) showLanguagePicker();
     state.languagesLoaded = true;
     renderHistoryPanel();
     renderProgressStats();
     await loadStories();
-    // Wire change-language button
     const changeLangBtn = document.getElementById('change-lang-btn');
     if (changeLangBtn) changeLangBtn.addEventListener('click', showLanguagePicker);
-}
-
-// === Multi-sentence detection ===
-function _hasMultipleSentences(text) {
-    const parts = text.split(/(?<=[.!?。！？])\s*/).filter(s => s.trim());
-    return parts.length > 1;
-}
-
-// === Learn ===
-async function learn() {
-    if (!ensurePassword()) return;
-
-    const sentence = DOM.sentenceInput.value.trim();
-    if (!sentence) return;
-    state.learnGeneration++;
-    state.lastLearnSentence = sentence;
-    state.lastActionType = 'learn';
-    hideError();
-
-    // Check speculative cache
-    const specKey = getSpeculativeKey();
-    if (specKey && state.speculativeCache[specKey]) {
-        const cached = state.speculativeCache[specKey];
-        delete state.speculativeCache[specKey];
-        cancelSpeculative();
-        const reqCtx = { target_language: DOM.langSelect.value, input_language: state.selectedInputLang, sentence: cached.sentence };
-        renderResult(cached.data, cached.sentence, reqCtx);
-        saveSentenceToHistory(cached.sentence, reqCtx.target_language);
-        addToRichHistory(cached.sentence, cached.data.translation, DOM.langSelect.value, cached.data.pronunciation);
-        recordLearnProgress(DOM.langSelect.value, 1);
-        DOM.sentenceInput.value = '';
-        DOM.sentenceInput.style.height = 'auto';
-        return;
-    }
-    cancelSpeculative();
-
-    if (state._autoRetryCount === 0 || !state.lastLearnSentence || state.lastLearnSentence !== sentence) {
-        state._autoRetryCount = 0;
-    }
-
-    DOM.learnBtn.disabled = true;
-    if (DOM.compareBtn) DOM.compareBtn.disabled = true;
-    setRandomLoadingTip();
-    DOM.loading.classList.remove('hidden');
-    startLoadingTimer();
-
-    const isMulti = _hasMultipleSentences(sentence);
-    if (isMulti) {
-        DOM.loadingMessage.textContent = 'Translating multiple sentences...';
-    } else {
-        DOM.loadingMessage.textContent = 'Translating...';
-    }
-
-    state.currentAbortController = new AbortController();
-    const timeoutMs = isMulti ? Math.min(sentence.split(/(?<=[.!?。！？])\s*/).filter(s => s.trim()).length, 10) * 120000 : LEARN_TIMEOUT_MS;
-    const timeoutId = setTimeout(() => state.currentAbortController.abort(), timeoutMs);
-
-    const _fetchStart = performance.now();
-    try {
-        if (isMulti) {
-            const resp = await fetch('/api/learn-multi', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-App-Password': state.appPassword },
-                body: JSON.stringify({
-                    sentences: sentence,
-                    target_language: DOM.langSelect.value, input_language: state.selectedInputLang,
-                    speaker_gender: state.selectedGender, speaker_formality: state.selectedFormality
-                }),
-                signal: state.currentAbortController.signal
-            });
-            clearTimeout(timeoutId);
-            if (resp.status === 401) {
-                localStorage.removeItem(KEYS.PASSWORD_STORAGE);
-                state.appPassword = '';
-                openPasswordModal('Session expired. Enter password again.');
-                throw new Error('Unauthorized');
-            }
-            if (!resp.ok) throw new Error(await friendlyError(resp));
-            updateRateLimitDisplay(resp);
-            const data = await resp.json();
-            const _elapsedMs = Math.round(performance.now() - _fetchStart);
-            const reqCtx = { target_language: DOM.langSelect.value, input_language: state.selectedInputLang, sentence: sentence };
-            const successfulResults = Array.isArray(data.results) ? data.results.filter(item => item && item.result) : [];
-            successfulResults.forEach(item => {
-                renderResult(item.result, item.sentence, { ...reqCtx, sentence: item.sentence }, _elapsedMs);
-            });
-            saveSentenceToHistory(sentence, reqCtx.target_language);
-            if (successfulResults.length) {
-                const first = successfulResults[0];
-                addToRichHistory(sentence, first.result.translation, DOM.langSelect.value, first.result.pronunciation);
-            }
-            recordLearnProgress(DOM.langSelect.value, successfulResults.length);
-            DOM.sentenceInput.value = '';
-            DOM.sentenceInput.style.height = 'auto';
-        } else {
-            const reqBody = {
-                sentence: sentence,
-                target_language: DOM.langSelect.value, input_language: state.selectedInputLang,
-                speaker_gender: state.selectedGender, speaker_formality: state.selectedFormality
-            };
-            const resp = await fetch('/api/learn-fast', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-App-Password': state.appPassword },
-                body: JSON.stringify(reqBody),
-                signal: state.currentAbortController.signal
-            });
-            clearTimeout(timeoutId);
-            if (resp.status === 401) {
-                localStorage.removeItem(KEYS.PASSWORD_STORAGE);
-                state.appPassword = '';
-                openPasswordModal('Session expired. Enter password again.');
-                throw new Error('Unauthorized');
-            }
-            if (!resp.ok) throw new Error(await friendlyError(resp));
-            updateRateLimitDisplay(resp);
-            const data = await resp.json();
-            const _elapsedMs = Math.round(performance.now() - _fetchStart);
-            const reqCtx = { target_language: DOM.langSelect.value, input_language: state.selectedInputLang, sentence: sentence };
-            renderResult(data, sentence, reqCtx, _elapsedMs);
-            saveSentenceToHistory(sentence, reqCtx.target_language);
-            addToRichHistory(sentence, data.translation, DOM.langSelect.value, data.pronunciation);
-            recordLearnProgress(DOM.langSelect.value, 1);
-            DOM.sentenceInput.value = '';
-            DOM.sentenceInput.style.height = 'auto';
-        }
-    } catch (err) {
-        clearTimeout(timeoutId);
-        console.error(err);
-        if (err.message === '__AUTO_RETRY_502__' && state._autoRetryCount < MAX_AUTO_RETRIES) {
-            state._autoRetryCount++;
-            DOM.loadingMessage.textContent = `Translation engine warming up... retry ${state._autoRetryCount}/${MAX_AUTO_RETRIES}`;
-            DOM.loading.classList.remove('hidden');
-            await new Promise(r => setTimeout(r, AUTO_RETRY_DELAY_MS));
-            if (!DOM.sentenceInput.value.trim() && state.lastLearnSentence) {
-                DOM.sentenceInput.value = state.lastLearnSentence;
-            }
-            learn();
-            return;
-        }
-        state._autoRetryCount = 0;
-        if (err.name === 'AbortError') {
-            showError('Request timed out — the model might be busy. Tap retry.');
-        } else if (err.message === 'Unauthorized') {
-            // already handled
-        } else if (err.message === '__AUTO_RETRY_502__') {
-            showError('Translation engine is unreachable after multiple retries. Please check if Ollama is running.');
-        } else if (err.message && err.message !== 'API error') {
-            showError(err.message);
-        } else {
-            showError('Something went wrong. Tap retry to try again.');
-        }
-    } finally {
-        stopLoadingTimer();
-        state.currentAbortController = null;
-        if (state.appPassword === KEYS.APP_PASSWORD) {
-            DOM.learnBtn.disabled = false;
-            if (DOM.compareBtn) DOM.compareBtn.disabled = false;
-        } else {
-            lockApp();
-        }
-        DOM.loading.classList.add('hidden');
-    }
-}
-
-// === Surprise Me ===
-async function surpriseMe() {
-    if (!ensurePassword()) return;
-    DOM.surpriseBtn.disabled = true;
-    try {
-        const lang = DOM.langSelect.value;
-        const inputLang = state.selectedInputLang === 'auto' ? 'en' : state.selectedInputLang;
-        const resp = await fetch(`/api/surprise?lang=${encodeURIComponent(lang)}&input_lang=${encodeURIComponent(inputLang)}`);
-        if (!resp.ok) throw new Error(await friendlyError(resp));
-        updateRateLimitDisplay(resp);
-        const data = await resp.json();
-        DOM.sentenceInput.value = data.sentence;
-        DOM.sentenceInput.style.height = 'auto';
-        DOM.sentenceInput.style.height = DOM.sentenceInput.scrollHeight + 'px';
-        if (data.precomputed && data.result) {
-            cancelSpeculative();
-            const reqCtx = { target_language: lang, input_language: inputLang, sentence: data.sentence };
-            renderResult(data.result, data.sentence, reqCtx);
-            saveSentenceToHistory(data.sentence, lang);
-            addToRichHistory(data.sentence, data.result.translation, lang, data.result.pronunciation);
-            recordLearnProgress(lang, 1);
-            DOM.sentenceInput.value = '';
-            DOM.sentenceInput.style.height = 'auto';
-        } else {
-            await learn();
-        }
-    } catch (err) {
-        console.error(err);
-        alert('Could not fetch a surprise sentence.');
-    } finally {
-        DOM.surpriseBtn.disabled = false;
-    }
 }
 
 // === Feedback ===
@@ -451,9 +250,6 @@ function initFeedback() {
         send.disabled = true; send.textContent = 'Sending...';
         try {
             const pw = localStorage.getItem(KEYS.PASSWORD_STORAGE) || '';
-
-            // Best-effort: attach the most recent sentence/translation context
-            // so backend can tie feedback to a specific cached result.
             let sentence = '';
             let translation = '';
             let targetLang = '';
@@ -466,10 +262,7 @@ function initFeedback() {
                     translation = (transEl?.textContent || '').trim();
                     targetLang = latestCard.dataset.lang || DOM.langSelect?.value || '';
                 }
-            } catch (_) {
-                // Ignore — context is optional.
-            }
-
+            } catch (_) {}
             await fetch('/api/feedback', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-App-Password': pw },
@@ -576,11 +369,9 @@ function initAuth() {
         const username = authUsernameInput.value.trim();
         const password = authPasswordInput.value;
         if (!username || !password) return;
-
         authSubmitBtn.disabled = true;
         authErrorEl.classList.add('hidden');
         const endpoint = state.authMode === 'register' ? '/api/auth/register' : '/api/auth/login';
-
         try {
             const resp = await fetch(endpoint, {
                 method: 'POST',
@@ -734,35 +525,8 @@ function init() {
     setHistoryDeps({ selectLangPill });
     setOnboardingDeps({ learn, selectLangPill });
 
-    // Init toggles
-    initToggle(DOM.genderPills, state.selectedGender, KEYS.GENDER, v => state.selectedGender = v);
-    initToggle(DOM.formalityPills, state.selectedFormality, KEYS.FORMALITY, v => state.selectedFormality = v);
-
-    // Romanization
-    DOM.romanizationToggle.addEventListener('click', () => {
-        state.showRomanization = !state.showRomanization;
-        localStorage.setItem(KEYS.ROMANIZATION, String(state.showRomanization));
-        applyRomanization();
-    });
-    applyRomanization();
-
-    // Input language
-    DOM.inputLangPills.querySelectorAll('.lang-pill').forEach(p => {
-        const isActive = p.dataset.lang === state.selectedInputLang;
-        p.classList.toggle('active', isActive);
-        p.setAttribute('role', 'radio');
-        p.setAttribute('aria-checked', String(isActive));
-        p.addEventListener('click', () => {
-            DOM.inputLangPills.querySelectorAll('.lang-pill').forEach(q => {
-                q.classList.remove('active');
-                q.setAttribute('aria-checked', 'false');
-            });
-            p.classList.add('active');
-            p.setAttribute('aria-checked', 'true');
-            state.selectedInputLang = p.dataset.lang;
-            localStorage.setItem(KEYS.INPUT_LANG, state.selectedInputLang);
-        });
-    });
+    // Settings (theme, toggles, romanization, input lang)
+    initSettings();
 
     // Password form
     DOM.passwordForm.addEventListener('submit', async function(e) {
@@ -789,7 +553,6 @@ function init() {
     DOM.historyCopyAll.addEventListener('click', copyAllHistoryToClipboard);
 
     // Favorites panel events
-    const favPanel = document.getElementById('favorites-panel');
     const favOverlay = document.getElementById('favorites-overlay');
     const favClose = document.getElementById('favorites-panel-close');
     const favExportAnki = document.getElementById('favorites-export-anki-btn');
@@ -917,18 +680,6 @@ function init() {
 
     // Feedback
     initFeedback();
-
-    // Theme
-    const explicitTheme = localStorage.getItem(KEYS.THEME);
-    const osPrefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
-    const initialTheme = explicitTheme || (osPrefersDark === false ? 'light' : 'dark');
-    applyTheme(initialTheme);
-    // Listen for OS theme changes (only when user hasn't explicitly chosen)
-    window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener('change', e => {
-        if (!localStorage.getItem(KEYS.THEME)) applyTheme(e.matches ? 'dark' : 'light');
-    });
-    const themeToggleBtn = document.getElementById('theme-toggle');
-    if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
 
     // Auth
     initAuth();
