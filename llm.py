@@ -1,11 +1,10 @@
 """LLM interaction (Ollama), prompt building, pronunciation, and post-processing."""
-import os
 import json
 import re as _re
 import hashlib
 import random
 import time
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from pathlib import Path
 
 from log import get_logger
@@ -26,10 +25,22 @@ OLLAMA_URL = "http://localhost:11434"
 OLLAMA_MODEL = "qwen2.5:14b-instruct-q3_K_M"
 TAIDE_MODEL = "jcai/llama3-taide-lx-8b-chat-alpha1:Q4_K_M"
 
+# Per-language model overrides for languages where the default model produces garbled output
+LANGUAGE_MODEL_OVERRIDES: Dict[str, str] = {
+    "he": "gemma2:9b",  # Hebrew: qwen2.5 mixes in Korean/Thai characters
+}
+
+
+def get_model_for_language(lang_code: str) -> str:
+    """Return the best Ollama model for a given target language."""
+    return LANGUAGE_MODEL_OVERRIDES.get(lang_code, OLLAMA_MODEL)
+
 # --- Pronunciation ---
 _kakasi = pykakasi.kakasi()
 _mecab_tagger = MeCab.Tagger()
 _s2twp = OpenCC('s2twp')
+_s2t = OpenCC('s2t')
+_t2s = OpenCC('t2s')
 
 # Common reading overrides (MeCab/unidic sometimes gives formal readings)
 _JA_READING_OVERRIDES = {
@@ -433,10 +444,61 @@ def detect_sentence_difficulty(sentence: str, breakdown: list = None) -> dict:
 
 
 # --- CC-CEDICT Dictionary ---
-_cedict_data = {}
+_cedict_data: Dict[str, str] = {}
+_cedict_entries: Dict[str, Dict[str, Any]] = {}
+_cedict_line_re = _re.compile(r"^(\S+)\s+(\S+)\s+\[([^\]]+)\]\s+/(.+)/$")
 _cedict_path = Path(__file__).parent / "cedict_dict.json"
 if _cedict_path.exists():
     _cedict_data = json.loads(_cedict_path.read_text())
+
+
+def _register_cedict_entry(traditional: str, simplified: str, pinyin_num: str, definitions: List[str]):
+    entry = _cedict_entries.get(traditional) or _cedict_entries.get(simplified)
+    if entry is None:
+        entry = {
+            "traditional": traditional,
+            "simplified": simplified,
+            "pinyin": pinyin_num.strip(),
+            "definitions": [],
+        }
+    else:
+        if not entry.get("pinyin"):
+            entry["pinyin"] = pinyin_num.strip()
+        if not entry.get("traditional"):
+            entry["traditional"] = traditional
+        if not entry.get("simplified"):
+            entry["simplified"] = simplified
+
+    defs = entry.setdefault("definitions", [])
+    for item in definitions:
+        text = item.strip()
+        if not text or text in defs:
+            continue
+        defs.append(text)
+        if len(defs) >= 8:
+            break
+
+    _cedict_entries[traditional] = entry
+    _cedict_entries[simplified] = entry
+
+
+_cedict_txt_path = Path(__file__).parent / "cedict.txt"
+if _cedict_txt_path.exists():
+    try:
+        with _cedict_txt_path.open("r", encoding="utf-8") as _f:
+            for _line in _f:
+                _line = _line.strip()
+                if not _line or _line.startswith("#"):
+                    continue
+                _m = _cedict_line_re.match(_line)
+                if not _m:
+                    continue
+                _trad, _simp, _pin, _defs_raw = _m.groups()
+                _defs = [x for x in _defs_raw.split("/") if x]
+                _register_cedict_entry(_trad, _simp, _pin, _defs)
+        logger.info("Loaded CEDICT entries", extra={"component": "cedict", "count": len(_cedict_entries)})
+    except Exception:
+        logger.exception("Failed to load CEDICT entries", extra={"component": "cedict"})
 
 _jieba_dict_path = Path(__file__).parent / "jieba_tw_dict.txt"
 if _jieba_dict_path.exists():
@@ -456,10 +518,165 @@ _particle_overrides = {
 }
 
 
+def _best_definition(definitions: List[str]) -> str:
+    if not definitions:
+        return ""
+    for raw in definitions:
+        d = raw.strip()
+        if not d:
+            continue
+        low = d.lower()
+        if low.startswith("variant of ") or low.startswith("old variant of "):
+            continue
+        if low.startswith("surname "):
+            continue
+        return d
+    return definitions[0].strip()
+
+
+def get_cedict_entry(word: str) -> Optional[Dict[str, Any]]:
+    """Return structured CEDICT data for a word, handling simp/trad variants."""
+    clean = (word or "").strip()
+    if not clean:
+        return None
+
+    if clean in _particle_overrides:
+        trad = _s2t.convert(clean)
+        simp = _t2s.convert(trad)
+        return {
+            "traditional": trad,
+            "simplified": simp,
+            "pinyin": deterministic_word_pronunciation(trad, "zh") or "",
+            "definitions": [_particle_overrides[clean]],
+        }
+
+    candidates = [clean]
+    for variant in (_s2t.convert(clean), _s2twp.convert(clean), _t2s.convert(clean)):
+        if variant and variant not in candidates:
+            candidates.append(variant)
+
+    for token in candidates:
+        entry = _cedict_entries.get(token)
+        if entry:
+            return {
+                "traditional": entry.get("traditional", token),
+                "simplified": entry.get("simplified", _t2s.convert(token)),
+                "pinyin": entry.get("pinyin", ""),
+                "definitions": list(entry.get("definitions", [])),
+            }
+
+    for token in candidates:
+        meaning = _cedict_data.get(token)
+        if meaning:
+            trad = _s2t.convert(token)
+            simp = _t2s.convert(trad)
+            return {
+                "traditional": trad,
+                "simplified": simp,
+                "pinyin": deterministic_word_pronunciation(trad, "zh") or "",
+                "definitions": [meaning],
+            }
+    return None
+
+
 def cedict_lookup(word: str) -> Optional[str]:
-    if word in _particle_overrides:
-        return _particle_overrides[word]
-    return _cedict_data.get(word)
+    entry = get_cedict_entry(word)
+    if not entry:
+        return None
+    return _best_definition(entry.get("definitions", []))
+
+
+def get_hebrew_dict_pronunciation(word: str) -> Optional[str]:
+    clean = (word or "").strip().strip('.,!?;:\'"')
+    if not clean:
+        return None
+    return _HEBREW_DICT.get(clean)
+
+
+def _build_word_examples(word: str, lang_code: str, meaning: str, sentence_context: Optional[str]) -> List[Dict[str, str]]:
+    examples: List[Dict[str, str]] = []
+    context = (sentence_context or "").strip()
+    if context and word and word in context:
+        examples.append({
+            "sentence": context,
+            "pronunciation": deterministic_pronunciation(context, lang_code) or "",
+            "meaning": meaning,
+        })
+    examples.append({
+        "sentence": word,
+        "pronunciation": deterministic_word_pronunciation(word, lang_code) or "",
+        "meaning": meaning,
+    })
+    # Keep response small and deterministic.
+    return examples[:2]
+
+
+def build_dictionary_word_detail(word: str, meaning: str, target_language: str,
+                                 sentence_context: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """Build word-detail payload from preloaded dictionaries. Returns None if no match."""
+    clean_word = (word or "").strip()
+    clean_meaning = (meaning or "").strip()
+    if not clean_word:
+        return None
+
+    if target_language == "zh":
+        entry = get_cedict_entry(clean_word)
+        if not entry:
+            return None
+        definitions = entry.get("definitions", [])
+        primary_meaning = clean_meaning or _best_definition(definitions)
+        display_word = entry.get("traditional") or clean_word
+        pronunciation = entry.get("pinyin") or deterministic_word_pronunciation(display_word, "zh") or ""
+        related = []
+        trad = entry.get("traditional")
+        simp = entry.get("simplified")
+        if trad and simp and trad != simp:
+            related.extend([
+                {"word": trad, "meaning": "traditional"},
+                {"word": simp, "meaning": "simplified"},
+            ])
+        return {
+            "meaning": primary_meaning,
+            "pronunciation": pronunciation,
+            "definitions": definitions,
+            "examples": _build_word_examples(display_word, "zh", primary_meaning, sentence_context),
+            "conjugations": [],
+            "related": related,
+            "source": "dictionary",
+            "dictionary_source": "cedict",
+        }
+
+    if target_language == "ja":
+        pronunciation = deterministic_word_pronunciation(clean_word, "ja")
+        if not pronunciation:
+            return None
+        primary_meaning = clean_meaning or ""
+        return {
+            "meaning": primary_meaning,
+            "pronunciation": pronunciation,
+            "examples": _build_word_examples(clean_word, "ja", primary_meaning, sentence_context),
+            "conjugations": [],
+            "related": [],
+            "source": "dictionary",
+            "dictionary_source": "mecab",
+        }
+
+    if target_language == "he":
+        pronunciation = get_hebrew_dict_pronunciation(clean_word)
+        if not pronunciation:
+            return None
+        primary_meaning = clean_meaning or ""
+        return {
+            "meaning": primary_meaning,
+            "pronunciation": pronunciation,
+            "examples": _build_word_examples(clean_word, "he", primary_meaning, sentence_context),
+            "conjugations": [],
+            "related": [],
+            "source": "dictionary",
+            "dictionary_source": "hebrew_builtin",
+        }
+
+    return None
 
 
 # --- Helpers ---
@@ -510,6 +727,37 @@ def sanitize_tsv_cell(value: Optional[str]) -> str:
 def anki_language_label(code: str) -> str:
     name = SUPPORTED_LANGUAGES.get(code, code)
     return f"{name} ({code})" if name != code else code
+
+
+def normalize_word_detail_payload(payload: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    result: Dict[str, Any] = payload.copy() if isinstance(payload, dict) else {}
+    for key in ("examples", "conjugations", "related"):
+        value = result.get(key)
+        result[key] = value if isinstance(value, list) else []
+    return result
+
+
+async def llm_word_detail(word: str, meaning: str, target_language: str) -> Optional[Dict[str, Any]]:
+    """Fallback word-detail generation through LLM."""
+    lang_name = SUPPORTED_LANGUAGES[target_language]
+    meaning_is_chinese = any('\u4e00' <= c <= '\u9fff' for c in (meaning or ""))
+    explain_lang = "繁體中文" if meaning_is_chinese else "English"
+
+    prompt = f"""Word: "{word}" ({lang_name}, meaning: {meaning}).
+Return JSON only: {{"examples":[{{"sentence":"..","pronunciation":"..","meaning":".."}}],"conjugations":[{{"form":"..","label":".."}}],"related":[{{"word":"..","meaning":".."}}]}}
+2 examples, 2-3 conjugations ([] if none), 2 related words. Explanations in {explain_lang}. Simple sentences."""
+
+    text = await ollama_chat(
+        [{"role": "system", "content": f"{lang_name} vocab teacher. JSON only."},
+         {"role": "user", "content": prompt}],
+        model=get_model_for_language(target_language), temperature=0.3, num_predict=512, timeout=45
+    )
+    if text is None:
+        return None
+    parsed = parse_json_object(text)
+    if not parsed:
+        return {"examples": [], "conjugations": [], "related": []}
+    return normalize_word_detail_payload(ensure_traditional_chinese(parsed))
 
 
 async def ollama_chat(messages: list, model: str = None, temperature: float = 0.3,

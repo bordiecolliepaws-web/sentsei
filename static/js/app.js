@@ -133,15 +133,16 @@ function initState() {
 
 // === Language selection ===
 function selectLangPill(code) {
-    DOM.langSelect.value = code;
-    localStorage.setItem(KEYS.TARGET_LANG, code);
+    const selectedCode = (code || '').trim().toLowerCase();
+    DOM.langSelect.value = selectedCode;
+    localStorage.setItem(KEYS.TARGET_LANG, selectedCode);
     DOM.langPills.querySelectorAll('.lang-pill').forEach(p => {
-        const isActive = p.dataset.lang === code;
+        const isActive = p.dataset.lang === selectedCode;
         p.classList.toggle('active', isActive);
         p.setAttribute('aria-checked', String(isActive));
     });
-    filterResultsByLanguage(code);
-    setHistoryFilterLang(code);
+    filterResultsByLanguage(selectedCode);
+    setHistoryFilterLang(selectedCode);
     renderHistoryPanel();
     renderSentenceHistory();
     updateStoriesBadge();

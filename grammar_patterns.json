@@ -474,9 +474,14 @@
         "source": "這杯咖啡真的超好喝",
         "translation": "このコーヒー本當に美味しいです。",
         "timestamp": 1771293844.9122512
+      },
+      {
+        "source": "海邊的夕陽真的美到不行",
+        "translation": "海辺の夕陽は本當に美しい",
+        "timestamp": 1771372875.7472641
       }
     ],
-    "count": 3
+    "count": 4
   },
   "5eb2f611b6ee5784": {
     "id": "5eb2f611b6ee5784",
@@ -3898,6 +3903,20 @@
         "source": "The sunset over the ocean was breathtaking",
         "translation": "海の夕日は息を吞むほど美しかった",
         "timestamp": 1771365629.3606615
+      }
+    ],
+    "count": 1
+  },
+  "04af7d568f0db113": {
+    "id": "04af7d568f0db113",
+    "name": "本當に (jittsu ni) 是一個強調詞，用來表示某事物的程度或真實性。",
+    "lang": "ja",
+    "explanation": "本當に (jittsu ni) 是一個強調詞，用來表示某事物的程度或真實性。",
+    "examples": [
+      {
+        "source": "海邊的夕陽真的美到不行",
+        "translation": "海辺の夕陽は本當に美しい",
+        "timestamp": 1771372875.7472568
       }
     ],
     "count": 1

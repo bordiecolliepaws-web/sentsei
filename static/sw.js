@@ -1,5 +1,5 @@
 // SentSay Service Worker — Offline/PWA support
-const CACHE_NAME = 'sentsay-v20260217-langsplit';
+const CACHE_NAME = 'sentsay-v20260218-langsplit';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

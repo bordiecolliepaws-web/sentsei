@@ -5,7 +5,6 @@ import re as _re
 import random
 import hashlib
 import time
-import asyncio
 from typing import Optional, List
 from pathlib import Path
 from collections import defaultdict
@@ -15,8 +14,6 @@ from log import get_logger
 logger = get_logger("sentsei.routes")
 
 from fastapi import APIRouter, Depends, HTTPException, Header, Request, Response
-from fastapi.responses import StreamingResponse
-import httpx
 
 from models import (
     SUPPORTED_LANGUAGES, ALLOWED_DATA_KEYS,
@@ -37,10 +34,11 @@ from auth import (
 )
 from llm import (
     OLLAMA_URL, OLLAMA_MODEL,
-    deterministic_pronunciation, deterministic_word_pronunciation,
-    ensure_traditional_chinese, detect_sentence_difficulty,
-    cedict_lookup, parse_json_object, split_sentences,
+    deterministic_pronunciation, ensure_traditional_chinese,
+    build_dictionary_word_detail, normalize_word_detail_payload,
+    llm_word_detail, parse_json_object,
     sanitize_tsv_cell, anki_language_label,
+    get_model_for_language,
     ollama_chat, check_ollama_connectivity,
 )
 
@@ -100,118 +98,25 @@ async def word_detail(
         logger.info("word-detail cache hit", extra={"word": req.word, "lang": req.target_language})
         return cached
 
-    lang_name = SUPPORTED_LANGUAGES[req.target_language]
-    meaning_is_chinese = any('\u4e00' <= c <= '\u9fff' for c in req.meaning)
-    explain_lang = "繁體中文" if meaning_is_chinese else "English"
-
-    prompt = f"""Word: "{req.word}" ({lang_name}, meaning: {req.meaning}).
-Return JSON only: {{"examples":[{{"sentence":"..","pronunciation":"..","meaning":".."}}],"conjugations":[{{"form":"..","label":".."}}],"related":[{{"word":"..","meaning":".."}}]}}
-2 examples, 2-3 conjugations ([] if none), 2 related words. Explanations in {explain_lang}. Simple sentences."""
-
-    text = await ollama_chat(
-        [{"role": "system", "content": f"{lang_name} vocab teacher. JSON only."},
-         {"role": "user", "content": prompt}],
-        model=OLLAMA_MODEL, temperature=0.3, num_predict=512, timeout=45
+    # Dictionary-first path (CEDICT / MeCab / Hebrew builtins) for instant response.
+    result = build_dictionary_word_detail(
+        word=req.word,
+        meaning=req.meaning,
+        target_language=req.target_language,
+        sentence_context=req.sentence_context,
     )
+    if result is not None:
+        result = normalize_word_detail_payload(result)
+        word_cache_put(wc_key, result)
+        return result
 
-    if text is None:
+    # Fallback to LLM only when dictionary data is unavailable.
+    result = await llm_word_detail(req.word, req.meaning, req.target_language)
+    if result is None:
         raise HTTPException(502, "LLM API error")
-
-    result = parse_json_object(text)
-    if not result:
-        return {"examples": [], "conjugations": [], "related": []}
-
-    result = ensure_traditional_chinese(result)
+    result = normalize_word_detail_payload(result)
     word_cache_put(wc_key, result)
     return result
-
-
-@router.post("/api/word-detail-stream", tags=["Learning"], summary="Stream word detail via SSE")
-async def word_detail_stream(
-    request: Request,
-    req: WordDetailRequest,
-    _pw=Depends(require_password),
-):
-    """SSE streaming version of word-detail — sends progress while LLM works."""
-
-    rate_key = get_rate_limit_key(request)
-    rate_limit_cleanup()
-    if not rate_limit_check(rate_key):
-        raise HTTPException(429, "Too many requests. Please wait a minute.")
-
-    if len(req.word) > MAX_INPUT_LEN or len(req.meaning) > MAX_INPUT_LEN:
-        raise HTTPException(400, f"Input too long (max {MAX_INPUT_LEN} characters)")
-    if req.sentence_context and len(req.sentence_context) > MAX_INPUT_LEN:
-        raise HTTPException(400, f"Input too long (max {MAX_INPUT_LEN} characters)")
-
-    if req.target_language not in SUPPORTED_LANGUAGES:
-        raise HTTPException(400, "Unsupported language")
-
-    # Check word-detail cache first — return instant JSON if cached
-    wc_key = word_cache_key(req.word, req.target_language, req.meaning)
-    cached = word_cache_get(wc_key)
-    if cached is not None:
-        logger.info("word-detail-stream cache hit", extra={"word": req.word, "lang": req.target_language})
-        async def _cached():
-            yield f"data: {json.dumps({'type': 'result', 'data': cached}, ensure_ascii=False)}\n\n"
-        return StreamingResponse(_cached(), media_type="text/event-stream",
-                                headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
-
-    async def _generate():
-        try:
-            yield f"data: {json.dumps({'type': 'progress', 'status': 'Looking up word details...'})}\n\n"
-
-            lang_name = SUPPORTED_LANGUAGES[req.target_language]
-            meaning_is_chinese = any('\u4e00' <= c <= '\u9fff' for c in req.meaning)
-            explain_lang = "繁體中文" if meaning_is_chinese else "English"
-
-            prompt = f"""Word: "{req.word}" ({lang_name}, meaning: {req.meaning}).
-Return JSON only: {{"examples":[{{"sentence":"..","pronunciation":"..","meaning":".."}}],"conjugations":[{{"form":"..","label":".."}}],"related":[{{"word":"..","meaning":".."}}]}}
-2 examples, 2-3 conjugations ([] if none), 2 related words. Explanations in {explain_lang}. Simple sentences."""
-
-            # Run LLM call as a task so we can send progress heartbeats
-            llm_task = asyncio.create_task(ollama_chat(
-                [{"role": "system", "content": f"{lang_name} vocab teacher. JSON only."},
-                 {"role": "user", "content": prompt}],
-                model=OLLAMA_MODEL, temperature=0.3, num_predict=512, timeout=45
-            ))
-
-            elapsed = 0
-            messages = [
-                (3, "Generating examples..."),
-                (8, "Building conjugations..."),
-                (15, "Finding related words..."),
-                (22, "Almost there..."),
-            ]
-            msg_idx = 0
-            while not llm_task.done():
-                await asyncio.sleep(1.5)
-                elapsed += 1.5
-                while msg_idx < len(messages) and elapsed >= messages[msg_idx][0]:
-                    yield f"data: {json.dumps({'type': 'progress', 'status': messages[msg_idx][1]})}\n\n"
-                    msg_idx += 1
-                # Heartbeat to keep connection alive
-                yield f"data: {json.dumps({'type': 'heartbeat', 'elapsed': round(elapsed, 1)})}\n\n"
-
-            text = llm_task.result()
-            if text is None:
-                yield f"data: {json.dumps({'type': 'error', 'message': 'Translation engine unavailable'})}\n\n"
-                return
-
-            result = parse_json_object(text)
-            if not result:
-                result = {"examples": [], "conjugations": [], "related": []}
-            else:
-                result = ensure_traditional_chinese(result)
-                word_cache_put(wc_key, result)
-
-            yield f"data: {json.dumps({'type': 'result', 'data': result}, ensure_ascii=False)}\n\n"
-        except Exception as e:
-            logger.exception("word-detail-stream error")
-            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
-
-    return StreamingResponse(_generate(), media_type="text/event-stream",
-                            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
 @router.post("/api/context-examples", tags=["Learning"], summary="Get example sentences using a word")
@@ -268,7 +173,7 @@ Rules:
 
     text = await ollama_chat(
         [{"role": "system", "content": system_msg}, {"role": "user", "content": prompt}],
-        model=OLLAMA_MODEL, temperature=0.5, num_predict=1024, timeout=120
+        model=get_model_for_language(req.target_language), temperature=0.5, num_predict=1024, timeout=120
     )
 
     if text is None:

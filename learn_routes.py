@@ -36,6 +36,7 @@ from llm import (
     ensure_traditional_chinese, detect_sentence_difficulty,
     cedict_lookup, parse_json_object, split_sentences,
     ollama_chat, check_ollama_connectivity,
+    get_model_for_language,
 )
 
 from surprise import (
@@ -179,7 +180,7 @@ The "formality" field in the response MUST be "{formality}".
 """
     prompt = prompt + "\n" + speaker_block
 
-    model = OLLAMA_MODEL
+    model = get_model_for_language(target_language)
 
     taiwan_chinese_rules = """
 TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chinese):

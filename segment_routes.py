@@ -14,7 +14,7 @@ from llm import (
     OLLAMA_MODEL,
     deterministic_pronunciation, deterministic_word_pronunciation,
     ensure_traditional_chinese, cedict_lookup, parse_json_object,
-    ollama_chat,
+    ollama_chat, get_model_for_language,
 )
 from learn_routes import MAX_INPUT_LEN, _detect_input_language
 
@@ -128,7 +128,7 @@ Rules:
 
     text = await ollama_chat(
         [{"role": "system", "content": system_msg}, {"role": "user", "content": prompt}],
-        model=OLLAMA_MODEL, temperature=0.3, num_predict=1024, timeout=60
+        model=get_model_for_language(lang_code), temperature=0.3, num_predict=1024, timeout=60
     )
 
     if text is None:

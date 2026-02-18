@@ -1236,6 +1236,21 @@
             align-items: center;
             gap: 0.5rem;
             margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .result-lang-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.28rem;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            padding: 0.2rem 0.5rem;
         }
 
         .result-actions {
@@ -1955,6 +1970,7 @@
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
         .sr-only.focus-visible-only:focus { position: fixed; top: 0.5rem; left: 0.5rem; width: auto; height: auto; padding: 0.5rem 1rem; margin: 0; overflow: visible; clip: auto; background: var(--accent); color: white; border-radius: 8px; z-index: 9999; font-size: 0.9rem; font-weight: 600; }
 
+        .lang-hidden { display: none !important; }
         .lang-filter-hidden { display: none !important; }
         .hidden { display: none !important; }
 

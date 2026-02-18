@@ -12,6 +12,7 @@ from auth import APP_PASSWORD, rate_limit_check, rate_limit_cleanup, get_rate_li
 from llm import (
     OLLAMA_MODEL, deterministic_pronunciation, parse_json_object,
     new_quiz_id, translation_hint, ollama_chat,
+    get_model_for_language,
 )
 
 router = APIRouter()
@@ -86,7 +87,7 @@ Return ONLY valid JSON:
 
     text = await ollama_chat(
         [{"role": "system", "content": system_msg}, {"role": "user", "content": prompt}],
-        model=OLLAMA_MODEL, temperature=0.2, num_predict=256, timeout=60
+        model=get_model_for_language(lang), temperature=0.2, num_predict=256, timeout=60
     )
 
     if text is None:
@@ -173,7 +174,7 @@ Return JSON only in this format:
 
     text = await ollama_chat(
         [{"role": "system", "content": system_msg}, {"role": "user", "content": prompt}],
-        model=OLLAMA_MODEL, temperature=0.1, num_predict=196, timeout=60
+        model=get_model_for_language(quiz["language"]), temperature=0.1, num_predict=196, timeout=60
     )
 
     if text is None:

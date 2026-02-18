@@ -9,10 +9,15 @@ logger = get_logger("sentsei.stream_routes")
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
-from models import SentenceRequest, MultiSentenceRequest
-from cache import cache_key, cache_get
+from models import SentenceRequest, MultiSentenceRequest, WordDetailRequest, SUPPORTED_LANGUAGES
+from cache import cache_key, cache_get, word_cache_key, word_cache_get, word_cache_put
 from auth import rate_limit_check, rate_limit_cleanup, get_rate_limit_key, require_password
-from llm import split_sentences
+from llm import (
+    split_sentences,
+    build_dictionary_word_detail,
+    normalize_word_detail_payload,
+    llm_word_detail,
+)
 from surprise import increment_user_request, decrement_user_request
 from learn_routes import _learn_sentence_impl, MAX_INPUT_LEN
 
@@ -75,6 +80,100 @@ async def learn_sentence_stream(
 
     return StreamingResponse(_generate(), media_type="text/event-stream",
                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+@router.post("/api/word-detail-stream", tags=["Learning"], summary="Stream word detail via SSE")
+async def word_detail_stream(
+    request: Request,
+    req: WordDetailRequest,
+    _pw=Depends(require_password),
+):
+    """SSE word-detail endpoint with dictionary-first fast path."""
+
+    rate_key = get_rate_limit_key(request)
+    rate_limit_cleanup()
+    if not rate_limit_check(rate_key):
+        raise HTTPException(429, "Too many requests. Please wait a minute.")
+
+    if len(req.word) > MAX_INPUT_LEN or len(req.meaning) > MAX_INPUT_LEN:
+        raise HTTPException(400, f"Input too long (max {MAX_INPUT_LEN} characters)")
+    if req.sentence_context and len(req.sentence_context) > MAX_INPUT_LEN:
+        raise HTTPException(400, f"Input too long (max {MAX_INPUT_LEN} characters)")
+
+    if req.target_language not in SUPPORTED_LANGUAGES:
+        raise HTTPException(400, "Unsupported language")
+
+    wc_key = word_cache_key(req.word, req.target_language, req.meaning)
+    cached = word_cache_get(wc_key)
+    if cached is not None:
+        logger.info("word-detail-stream cache hit", extra={"word": req.word, "lang": req.target_language})
+
+        async def _cached():
+            yield f"data: {json.dumps({'type': 'result', 'data': cached}, ensure_ascii=False)}\n\n"
+
+        return StreamingResponse(
+            _cached(),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
+
+    dict_result = build_dictionary_word_detail(
+        word=req.word,
+        meaning=req.meaning,
+        target_language=req.target_language,
+        sentence_context=req.sentence_context,
+    )
+    if dict_result is not None:
+        result = normalize_word_detail_payload(dict_result)
+        word_cache_put(wc_key, result)
+
+        async def _from_dict():
+            yield f"data: {json.dumps({'type': 'result', 'data': result}, ensure_ascii=False)}\n\n"
+
+        return StreamingResponse(
+            _from_dict(),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
+
+    async def _generate():
+        try:
+            yield f"data: {json.dumps({'type': 'progress', 'status': 'Looking up word details...'})}\n\n"
+            llm_task = asyncio.create_task(llm_word_detail(req.word, req.meaning, req.target_language))
+
+            elapsed = 0.0
+            messages = [
+                (3, "Generating examples..."),
+                (8, "Building conjugations..."),
+                (15, "Finding related words..."),
+                (22, "Almost there..."),
+            ]
+            msg_idx = 0
+            while not llm_task.done():
+                await asyncio.sleep(1.5)
+                elapsed += 1.5
+                while msg_idx < len(messages) and elapsed >= messages[msg_idx][0]:
+                    yield f"data: {json.dumps({'type': 'progress', 'status': messages[msg_idx][1]})}\n\n"
+                    msg_idx += 1
+                yield f"data: {json.dumps({'type': 'heartbeat', 'elapsed': round(elapsed, 1)})}\n\n"
+
+            result = llm_task.result()
+            if result is None:
+                yield f"data: {json.dumps({'type': 'error', 'message': 'Translation engine unavailable'})}\n\n"
+                return
+
+            result = normalize_word_detail_payload(result)
+            word_cache_put(wc_key, result)
+            yield f"data: {json.dumps({'type': 'result', 'data': result}, ensure_ascii=False)}\n\n"
+        except Exception as e:
+            logger.exception("word-detail-stream error")
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+
+    return StreamingResponse(
+        _generate(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @router.post("/api/learn-multi", tags=["Learning"], summary="Translate multiple sentences at once")

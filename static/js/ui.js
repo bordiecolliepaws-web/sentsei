@@ -377,16 +377,16 @@ export function closeCompareResults() {
 function syncVisibleResultDividers() {
     if (!DOM.results) return;
     DOM.results.querySelectorAll('.history-divider').forEach(divider => {
-        divider.classList.add('lang-filter-hidden');
+        divider.classList.add('lang-hidden');
     });
 
     let hasVisibleCard = false;
     DOM.results.querySelectorAll('.result-card').forEach(card => {
-        if (card.classList.contains('lang-filter-hidden')) return;
+        if (card.classList.contains('lang-hidden')) return;
         if (hasVisibleCard) {
             const divider = card.previousElementSibling;
             if (divider && divider.classList.contains('history-divider')) {
-                divider.classList.remove('lang-filter-hidden');
+                divider.classList.remove('lang-hidden');
             }
         }
         hasVisibleCard = true;
@@ -398,8 +398,8 @@ export function filterResultsByLanguage(langCode) {
     const selectedLang = (langCode || '').trim().toLowerCase();
     DOM.results.querySelectorAll('.result-card').forEach(card => {
         const cardLang = (card.dataset.lang || '').trim().toLowerCase();
-        const shouldHide = Boolean(selectedLang) && cardLang && cardLang !== selectedLang;
-        card.classList.toggle('lang-filter-hidden', shouldHide);
+        const shouldHide = Boolean(selectedLang) && cardLang !== selectedLang;
+        card.classList.toggle('lang-hidden', shouldHide);
     });
     syncVisibleResultDividers();
 }
@@ -409,11 +409,15 @@ export function renderResult(data, original, reqCtx) {
     const targetLang = (reqCtx.target_language || DOM.langSelect.value || '').trim().toLowerCase();
     const activeReqCtx = {
         ...reqCtx,
-        target_language: targetLang || (reqCtx.target_language || DOM.langSelect.value || '')
+        target_language: targetLang || (reqCtx.target_language || DOM.langSelect.value || '').trim().toLowerCase()
     };
+    const resultLangCode = activeReqCtx.target_language || '';
+    const langNames = getLanguageNamesMap();
+    const langFlag = LANG_FLAGS[resultLangCode] || '🌐';
+    const langLabel = langNames[resultLangCode] || (resultLangCode ? resultLangCode.toUpperCase() : 'Unknown');
     const card = document.createElement('div');
     card.className = 'result-card';
-    card.dataset.lang = activeReqCtx.target_language;
+    card.dataset.lang = resultLangCode;
 
     const DIFFICULTY_LABELS = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
     const hasBreakdown = data.breakdown && data.breakdown.length > 0;
@@ -437,6 +441,7 @@ export function renderResult(data, original, reqCtx) {
             <div class="result-translation">${data.translation}</div>
             <div class="result-pronunciation">${data.pronunciation}</div>
             <div class="result-meta">
+                <div class="result-lang-badge" title="${escapeHtml(langLabel)}">${langFlag} ${escapeHtml((resultLangCode || '--').toUpperCase())}</div>
                 <div class="result-formality">${data.formality}</div>
                 ${data.sentence_difficulty ? `<div class="result-difficulty result-difficulty--${data.sentence_difficulty.level}" title="${(data.sentence_difficulty.factors || []).join(', ')}">${data.sentence_difficulty.level === 'beginner' ? '🟢' : data.sentence_difficulty.level === 'intermediate' ? '🟡' : '🔴'} ${data.sentence_difficulty.level}</div>` : ''}
                 ${data.from_cache && data.ollama_offline ? '<div class="cached-badge" title="Served from cache while translation engine is offline">📦 cached</div>' : ''}
@@ -755,7 +760,7 @@ export function renderResult(data, original, reqCtx) {
     filterResultsByLanguage(DOM.langSelect.value);
 
     requestAnimationFrame(() => {
-        if (!card.classList.contains('lang-filter-hidden')) {
+        if (!card.classList.contains('lang-hidden')) {
             card.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     });
