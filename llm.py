@@ -676,6 +676,21 @@ def build_dictionary_word_detail(word: str, meaning: str, target_language: str,
             "dictionary_source": "hebrew_builtin",
         }
 
+    # Generic fallback for all other supported languages (ko, el, it, es, en)
+    # Uses deterministic pronunciation + passed-in meaning for instant response
+    pronunciation = deterministic_word_pronunciation(clean_word, target_language)
+    if pronunciation is not None:
+        primary_meaning = clean_meaning or ""
+        return {
+            "meaning": primary_meaning,
+            "pronunciation": pronunciation,
+            "examples": _build_word_examples(clean_word, target_language, primary_meaning, sentence_context),
+            "conjugations": [],
+            "related": [],
+            "source": "dictionary",
+            "dictionary_source": "deterministic",
+        }
+
     return None
 
 
