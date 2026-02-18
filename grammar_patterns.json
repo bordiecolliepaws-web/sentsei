@@ -315,9 +315,14 @@
         "source": "I want to eat ramen for dinner tonight",
         "translation": "今晩、夕飯にラーメンを食べたいです。",
         "timestamp": 1771330030.1739757
+      },
+      {
+        "source": "The weather is really nice today",
+        "translation": "今日は本當にいい天気です",
+        "timestamp": 1771386205.6505423
       }
     ],
-    "count": 5
+    "count": 6
   },
   "4e51b0f1d2037a69": {
     "id": "4e51b0f1d2037a69",
@@ -3917,6 +3922,34 @@
         "source": "海邊的夕陽真的美到不行",
         "translation": "海辺の夕陽は本當に美しい",
         "timestamp": 1771372875.7472568
+      }
+    ],
+    "count": 1
+  },
+  "5e219a033bc2e790": {
+    "id": "5e219a033bc2e790",
+    "name": "Particles like は are crucial for marking topics in",
+    "lang": "ja",
+    "explanation": "Particles like は are crucial for marking topics in Japanese sentences.",
+    "examples": [
+      {
+        "source": "The weather is really nice today",
+        "translation": "今日は本當にいい天気です",
+        "timestamp": 1771386205.6505554
+      }
+    ],
+    "count": 1
+  },
+  "3d010455520f8d0d": {
+    "id": "3d010455520f8d0d",
+    "name": "Demonstrative pronoun '這' is used to indicate the",
+    "lang": "zh",
+    "explanation": "Demonstrative pronoun '這' is used to indicate the specific coffee being referred to.",
+    "examples": [
+      {
+        "source": "This coffee tastes amazing",
+        "translation": "這咖啡味道超級好。",
+        "timestamp": 1771389524.6399229
       }
     ],
     "count": 1

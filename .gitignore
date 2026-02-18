@@ -1,9 +1,7 @@
 __pycache__/
-__pycache__/
+*.pyc
 server.log
-__pycache__/
-__pycache__/
 translation_cache.json
 sentsei.db
-__pycache__/
-*.pyc
+node_modules/
+test-results/
