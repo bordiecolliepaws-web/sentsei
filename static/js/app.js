@@ -131,6 +131,43 @@ function initState() {
     state.quizStats = loadQuizStats();
 }
 
+// === Language Picker ===
+function showLanguagePicker() {
+    const picker = document.getElementById('language-picker');
+    const learnView = document.getElementById('learn-view');
+    const resultsEl = DOM.results;
+    const compareEl = DOM.compareResults;
+    const changeLangBtn = document.getElementById('change-lang-btn');
+    if (picker) picker.classList.remove('hidden');
+    if (learnView) learnView.style.display = 'none';
+    if (resultsEl) resultsEl.style.display = 'none';
+    if (compareEl) compareEl.style.display = 'none';
+    if (changeLangBtn) changeLangBtn.classList.add('hidden');
+}
+
+function hideLanguagePicker() {
+    const picker = document.getElementById('language-picker');
+    const learnView = document.getElementById('learn-view');
+    const resultsEl = DOM.results;
+    const compareEl = DOM.compareResults;
+    const changeLangBtn = document.getElementById('change-lang-btn');
+    if (picker) picker.classList.add('hidden');
+    if (learnView) learnView.style.display = '';
+    if (resultsEl) resultsEl.style.display = '';
+    if (compareEl) compareEl.style.display = '';
+    if (changeLangBtn) changeLangBtn.classList.remove('hidden');
+}
+
+function updateChangeLangButton(code) {
+    const flag = LANG_FLAGS[code] || '🌐';
+    const langNames = getLanguageNamesMap();
+    const name = langNames[code] || (DOM.langSelect.options[DOM.langSelect.selectedIndex]?.textContent) || code.toUpperCase();
+    const flagEl = document.getElementById('change-lang-flag');
+    const nameEl = document.getElementById('change-lang-name');
+    if (flagEl) flagEl.textContent = flag;
+    if (nameEl) nameEl.textContent = name;
+}
+
 // === Language selection ===
 function selectLangPill(code) {
     const selectedCode = (code || '').trim().toLowerCase();
@@ -147,17 +184,22 @@ function selectLangPill(code) {
     renderSentenceHistory();
     updateStoriesBadge();
     if (state.storyPanelOpen) renderStoriesBrowser();
+    updateChangeLangButton(selectedCode);
+    hideLanguagePicker();
 }
 
 async function loadLanguages() {
     if (state.languagesLoaded) return;
     const langs = await fetch('/api/languages').then(r => r.json());
     DOM.langPills.innerHTML = '';
+    const pickerGrid = document.getElementById('picker-grid');
+    if (pickerGrid) pickerGrid.innerHTML = '';
     for (const [code, name] of Object.entries(langs)) {
         const opt = document.createElement('option');
         opt.value = code;
         opt.textContent = name;
         DOM.langSelect.appendChild(opt);
+        // Old pills (hidden but functional)
         const pill = document.createElement('button');
         pill.type = 'button';
         pill.className = 'lang-pill';
@@ -168,14 +210,32 @@ async function loadLanguages() {
         pill.innerHTML = `<span class="flag">${flag}</span>${name}`;
         pill.addEventListener('click', () => selectLangPill(code));
         DOM.langPills.appendChild(pill);
+        // Picker card
+        if (pickerGrid) {
+            const card = document.createElement('button');
+            card.type = 'button';
+            card.className = 'picker-card';
+            card.dataset.lang = code;
+            card.innerHTML = `<span class="picker-flag">${flag}</span><span class="picker-name">${name}</span>`;
+            card.addEventListener('click', () => selectLangPill(code));
+            pickerGrid.appendChild(card);
+        }
     }
     const savedLang = localStorage.getItem(KEYS.TARGET_LANG);
-    const defaultLang = (savedLang && Object.prototype.hasOwnProperty.call(langs, savedLang)) ? savedLang : (Object.prototype.hasOwnProperty.call(langs, 'zh') ? 'zh' : Object.keys(langs)[0]);
+    const hasSavedLang = savedLang && Object.prototype.hasOwnProperty.call(langs, savedLang);
+    const defaultLang = hasSavedLang ? savedLang : (Object.prototype.hasOwnProperty.call(langs, 'zh') ? 'zh' : Object.keys(langs)[0]);
     if (defaultLang) selectLangPill(defaultLang);
+    // Show picker if no saved preference (first visit)
+    if (!hasSavedLang) {
+        showLanguagePicker();
+    }
     state.languagesLoaded = true;
     renderHistoryPanel();
     renderProgressStats();
     await loadStories();
+    // Wire change-language button
+    const changeLangBtn = document.getElementById('change-lang-btn');
+    if (changeLangBtn) changeLangBtn.addEventListener('click', showLanguagePicker);
 }
 
 // === Multi-sentence detection ===

@@ -11,7 +11,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/style.css?v=20260217">
+    <link rel="stylesheet" href="/style.css?v=20260218">
 </head>
 <body>
     <a href="#sentence" class="sr-only focus-visible-only">Skip to input</a>
@@ -57,9 +57,20 @@
                 <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle light/dark theme">🌙</button>
             </div>
             <p>Say what's on your mind. Learn it in any language.</p>
+            <button id="change-lang-btn" class="change-lang-btn hidden" type="button" aria-label="Change language">
+                <span id="change-lang-flag">🌐</span>
+                <span id="change-lang-name">Language</span>
+                <span class="change-lang-arrow">▾</span>
+            </button>
         </header>
 
-        <div class="input-area">
+        <!-- Language Picker View -->
+        <div id="language-picker" class="language-picker hidden">
+            <h2 class="picker-title">Choose a language</h2>
+            <div id="picker-grid" class="picker-grid"></div>
+        </div>
+
+        <div class="input-area" id="learn-view">
             <div class="language-select">
                 <label>I'm typing in</label>
                 <div id="input-lang-pills" class="lang-pills" role="radiogroup" aria-label="Input language">
@@ -68,7 +79,7 @@
                     <button type="button" class="lang-pill" data-lang="zh">🇹🇼 中文</button>
                 </div>
             </div>
-            <div class="language-select">
+            <div class="language-select" id="translate-to-row" style="display:none">
                 <label>Translate to</label>
                 <div id="lang-pills" class="lang-pills" role="radiogroup" aria-label="Target language"></div>
                 <select id="lang" style="display:none"></select>
@@ -402,6 +413,6 @@
         </div>
     </div>
 
-    <script type="module" src="/js/app.js?v=20260217"></script>
+    <script type="module" src="/js/app.js?v=20260218"></script>
 </body>
 </html>
