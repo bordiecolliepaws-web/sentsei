@@ -92,7 +92,7 @@ async def put_srs_deck(deck: List[Dict[str, Any]], authorization: Optional[str] 
 @router.post("/api/srs/item", tags=["SRS"], summary="Add one item to the SRS deck")
 async def add_srs_item(item: SRSItemPayload, authorization: Optional[str] = Header(default=None)):
     user = _require_user(authorization)
-    item_data = item.dict(exclude_none=True)
+    item_data = item.model_dump(exclude_none=True)
     conn = get_db()
     try:
         deck = _load_srs_deck(conn, user["id"])
