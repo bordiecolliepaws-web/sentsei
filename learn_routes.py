@@ -31,7 +31,7 @@ from auth import (
     require_password,
 )
 from llm import (
-    OLLAMA_URL, OLLAMA_MODEL,
+    OLLAMA_URL, OLLAMA_MODEL, OLLAMA_MODEL_FAST, LANGUAGE_MODEL_OVERRIDES,
     deterministic_pronunciation, deterministic_word_pronunciation,
     ensure_traditional_chinese, detect_sentence_difficulty,
     cedict_lookup, parse_json_object, split_sentences,
@@ -131,96 +131,39 @@ async def _learn_sentence_impl(request: Request, req: SentenceRequest):
     source_lang = "Traditional Chinese (繁體中文, 台灣用法)" if input_is_chinese else "English"
     source_lang_short = "繁體中文" if input_is_chinese else "English"
 
-    prompt = f"""TASK: Translate this sentence into {lang_name} and break it down.
+    formality_hints = {
+        "ko": {"casual": "반말", "polite": "존댓말", "formal": "격식체"},
+        "ja": {"casual": "タメ口", "polite": "です/ます", "formal": "敬語"},
+        "zh": {"casual": "口語", "polite": "standard", "formal": "書面"},
+    }
+    form_hint = ""
+    if lang_code in formality_hints:
+        form_hint = f" ({formality_hints[lang_code].get(formality, formality)})"
 
-TARGET LANGUAGE: {lang_name} — {script_hint}
-SOURCE LANGUAGE (what the user typed in): {source_lang}
+    prompt = f"""Translate into {lang_name} ({script_hint}): "{req.sentence}"
+Speaker: {gender}, {formality}{form_hint}. Explanations in {source_lang_short}.
 
-INPUT: "{req.sentence}"
+Return JSON only:
+{{"translation":"{lang_name} text","pronunciation":"romanized","literal":"word-by-word in {source_lang_short}",
+"breakdown":[{{"word":"..","pronunciation":"..","meaning":"in {source_lang_short}","difficulty":"easy|medium|hard","note":"grammar note in {source_lang_short} or null"}}],
+"grammar_notes":["1-3 key patterns in {source_lang_short}"],"cultural_note":"or null",
+"formality":"{formality}","alternative":"alt sentence | PRONUNCIATION or null",
+"native_expression":"native way | pronunciation | explanation in {source_lang_short}, or null if direct translation is already natural"}}
 
-IMPORTANT: The input may contain mixed languages (e.g. Chinese + English words). Understand the MEANING of the entire sentence, then translate the WHOLE MEANING into {lang_name}. Do NOT keep any source language words in the translation.
+Rules: translation MUST be in {lang_name} script. All meanings/notes in {source_lang_short} only. Break down only words from the translation.{' 繁體中文 Taiwan usage only, no 簡體.' if lang_code == 'zh' or input_is_chinese else ''}"""
 
-You MUST translate into {lang_name}. For example, if target is Korean, write 한국어. If Japanese, write 日本語. If Hebrew, write עברית. Do NOT output Chinese unless the target language IS Chinese. Do NOT echo back the input sentence as the translation.
-
-CRITICAL RULES:
-1. The "translation" field MUST be written in {lang_name} using {script_hint}. NOT Chinese, NOT English (unless target IS English).
-2. The "word" fields in breakdown MUST be {lang_name} words in {lang_name} script.
-3. ALL "meaning" fields MUST be in {source_lang_short}. ALL "grammar_notes" MUST be in {source_lang_short}. ALL "cultural_note" and "note" fields MUST be in {source_lang_short}. The user reads {source_lang_short}, so write ALL explanations in {source_lang_short}. NEVER write explanations in Chinese if the source is English. NEVER write explanations in English if the source is Chinese.
-4. When writing ANY Chinese text, use ONLY Traditional Chinese (繁體中文) with Taiwan usage. NEVER Simplified Chinese.
-5. Do NOT mix languages. Explanations in one language only.
-
-Respond with ONLY valid JSON (no markdown, no code fences) in this exact structure:
-{{
-  "translation": "DIRECT translation — stay close to the structure and meaning of the input sentence. Translate faithfully in {lang_name} script (e.g. for Korean use 한글, for Japanese use 日本語, etc.)",
-  "pronunciation": "FULL romanized pronunciation of the translation using standard systems: Japanese=Hepburn romaji (e.g. oshiete kudasai, NOT OLLOW-te), Chinese=pinyin with tones, Korean=Revised Romanization, Hebrew=standard transliteration, Greek=standard transliteration",
-  "literal": "word-by-word literal translation back to the detected source language",
-  "breakdown": [
-    {{
-      "word": "each word/particle EXACTLY as it appears in the translation above — do NOT invent words that aren't in the translation. Split naturally (e.g. for Chinese: 我/練得越多/越/覺得/自信, NOT 越自信 if the sentence says 越覺得自信). For grammar patterns like 越...越..., show each 越 with its attached word separately.",
-      "pronunciation": "romanized pronunciation (Japanese: Hepburn romaji like 'kudasai', NOT made-up spellings)",
-      "meaning": "meaning in {source_lang_short} ONLY",
-      "difficulty": "easy|medium|hard",
-      "note": "brief grammar/usage note in {source_lang_short} ONLY, otherwise null. NEVER write notes in {lang_name} when source is {source_lang_short}."
-    }}
-  ],
-  "grammar_notes": [
-    "Key grammar pattern or structure explanation (1-3 short notes). MUST be written in {source_lang_short}. NEVER in {lang_name} unless {lang_name} IS {source_lang_short}."
-  ],
-  "cultural_note": "optional cultural context or usage tip (in the detected source language), null if none",
-  "formality": "casual|polite|formal — what register this translation uses",
-  "alternative": "an alternative way to say this (different formality or phrasing) with pronunciation. Format: 'alternative sentence | PRONUNCIATION'. Example: '請講得比較慢一點 | qǐng jiǎng de bǐjiào màn yīdiǎn'. Null if none.",
-  "native_expression": "ALWAYS provide this. This is how a native {lang_name} speaker would NATURALLY rephrase this — more colloquial, idiomatic, or restructured compared to the direct translation above. Format: 'native sentence | FULL PRONUNCIATION | EXPLANATION IN {source_lang_short}'. Example for Chinese: '這咖啡也太好喝了吧 | zhè kāfēi yě tài hǎo hē le ba | Uses 也太...了吧 (yě tài...le ba), a common exclamation pattern meaning \"this is way too [good]\"'. When mentioning {lang_name} words in the explanation, always add pronunciation and meaning in parentheses. CRITICAL: The native expression must preserve the SAME MEANING as the input. Do NOT change key concepts (e.g. if the input says 'confident', the native expression must also be about confidence, NOT progress or something else). You can change structure, formality, and phrasing, but the core meaning must stay the same. If the native expression uses different vocabulary, explain WHY in the explanation. Only null if the direct translation is already exactly how a native would say it."
-}}"""
-
-    speaker_block = f"""
-SPEAKER IDENTITY:
-- Gender: {gender} — adjust pronouns, gendered words accordingly. For Japanese: use 僕/俺 for male, あたし for female, 私 for neutral. For Hebrew: adjust verb conjugation, adjectives, pronouns. For Spanish/Italian: adjust adjective agreement.
-- Formality: {formality} — use appropriate register. For Korean: casual=반말, polite=존댓말, formal=격식체. For Japanese: casual=タメ口, polite=です/ます, formal=敬語. For Chinese: casual=street/口語 (e.g. 老闆買單, 我要吃拉麵), polite=standard (e.g. 請問可以結帳嗎), formal=written/公文. IMPORTANT: If casual, translate like how a young Taiwanese person would actually say it in daily life — short, direct, colloquial. Do NOT use 請問/可以...嗎 patterns for casual speech.
-The "formality" field in the response MUST be "{formality}".
-"""
-    prompt = prompt + "\n" + speaker_block
-
-    model = get_model_for_language(target_language)
-
-    taiwan_chinese_rules = """
-TAIWAN CHINESE RULES (apply when target is Chinese or explanations are in Chinese):
-- Use ONLY Traditional Chinese (繁體中文) with Taiwan usage (台灣用法)
-- NEVER use mainland China phrasing. Use Taiwanese daily speech patterns.
-- Examples of correct Taiwan vs incorrect mainland usage:
-  - ✅ 跟我說一個笑話 / ❌ 給我講一個笑話
-  - ✅ 講個笑話給我聽 / ❌ 給我講個笑話
-  - ✅ 好棒 / ❌ 真棒
-  - ✅ 沒問題 / ❌ 沒事兒
-  - ✅ 很厲害 / ❌ 牛逼
-  - ✅ 軟體 / ❌ 軟件
-  - ✅ 資訊 / ❌ 信息
-  - ✅ 影片 / ❌ 視頻
-  - ✅ 計程車 / ❌ 出租車
-  - ✅ 捷運 / ❌ 地鐵
-  - ✅ 腳踏車 / ❌ 自行車
-"""
-
-    explanation_lang_instruction = f"CRITICAL: ALL explanations (meaning, grammar_notes, note, cultural_note) MUST be written in {source_lang_short}. Do NOT write explanations in any other language."
+    model = get_model_for_language(lang_code)
 
     if lang_code == "zh":
-        casual_hint = ""
-        if formality == "casual":
-            casual_hint = "口語程度：口語/街頭用法。像台灣年輕人跟朋友或在小吃店講話一樣。例：'Can I get the bill?' → '老闆，買單！'，不要用'請問可以開帳單嗎'。簡短、直接、自然。"
-        elif formality == "formal":
-            casual_hint = "口語程度：正式/書面用法。使用敬語和完整句型。"
-        else:
-            casual_hint = "口語程度：禮貌/標準用法。"
-        system_msg = f"你是一位台灣華語教師，專門教外國人學繁體中文（台灣用法）。翻譯必須完全使用繁體中文，絕對不可以使用簡體字或大陸用語。{casual_hint} 重要：翻譯中不可以夾雜任何英文單字（例如 menu 要翻成「菜單」，bill 要翻成「帳單」）。{explanation_lang_instruction} 請只回傳有效的 JSON 格式。\n{taiwan_chinese_rules}"
-    elif input_is_chinese and lang_code == "en":
-        system_msg = f"You are an English language teacher helping Chinese speakers learn English. The user writes in Chinese and you translate into ENGLISH. The 'translation' field MUST be in English. The 'pronunciation' field should be English pronunciation guide. The 'word' fields in breakdown MUST be English words. {explanation_lang_instruction} The 'native_expression' field should show how a native English speaker would naturally say it in English, with 繁體中文 explanation. Always respond with valid JSON only.\n{taiwan_chinese_rules}"
+        system_msg = f"台灣華語教師。繁體中文台灣用法，禁簡體/大陸用語。所有解釋用{source_lang_short}。JSON only."
     elif input_is_chinese:
-        system_msg = f"You are a {lang_name} language teacher. You ONLY output {lang_name} translations. You NEVER translate into Chinese unless the target language is Chinese. When the target is Korean, you write in 한국어. When Japanese, you write in 日本語. {explanation_lang_instruction} Always respond with valid JSON only.\n{taiwan_chinese_rules}"
+        system_msg = f"{lang_name} teacher. Translate into {lang_name} only. Explanations in {source_lang_short}. 繁體中文 for Chinese text. JSON only."
     else:
-        system_msg = f"You are a {lang_name} language teacher. You ONLY output {lang_name} translations. You NEVER translate into Chinese unless the target language is Chinese. When the target is Korean, you write in 한국어. When Japanese, you write in 日本語. {explanation_lang_instruction} Always respond with valid JSON only."
+        system_msg = f"{lang_name} teacher. Translate into {lang_name} only. Explanations in {source_lang_short}. JSON only."
 
     text = await ollama_chat(
         [{"role": "system", "content": system_msg}, {"role": "user", "content": prompt}],
-        model=model, temperature=0.3, num_predict=2048, timeout=120
+        model=model, temperature=0.3, num_predict=1024, timeout=60
     )
 
     if text is None:
@@ -468,20 +411,17 @@ async def learn_fast(
     }
     script_hint = script_examples.get(lang_code, f"{lang_name} script")
 
-    prompt = f"""Translate into {lang_name}: "{req.sentence}"
-Speaker: {gender}, {formality}
-Target script: {script_hint}
+    prompt = f"""Translate into {lang_name} ({script_hint}): "{req.sentence}"
+Speaker: {gender}, {formality}. Explain in {source_lang_short}.
+JSON only: {{"translation":"...","pronunciation":"romanized","literal":"word-by-word in {source_lang_short}","formality":"{formality}","native_expression":"native way | pronunciation | explanation in {source_lang_short}, or null"}}"""
 
-Return ONLY valid JSON (no markdown):
-{{"translation": "the translation in {lang_name} script", "pronunciation": "full romanized pronunciation", "literal": "word-by-word literal translation in {source_lang_short}", "formality": "{formality}", "native_expression": "how a native speaker would naturally say this, or null if the direct translation is already natural. Format: native sentence | pronunciation | brief explanation in {source_lang_short}"}}"""
-
-    system_msg = f"You are a {lang_name} language teacher. Translate accurately. Return valid JSON only."
+    system_msg = f"{lang_name} translator. JSON only."
     if lang_code == "zh":
-        system_msg += " Use ONLY Traditional Chinese (繁體中文) with Taiwan usage."
+        system_msg += " 繁體中文 Taiwan usage only."
 
     text = await ollama_chat(
         [{"role": "system", "content": system_msg}, {"role": "user", "content": prompt}],
-        model=OLLAMA_MODEL, temperature=0.3, num_predict=256, timeout=30
+        model=get_model_for_language(lang_code), temperature=0.3, num_predict=192, timeout=25
     )
 
     if text is None:
@@ -497,6 +437,7 @@ Return ONLY valid JSON (no markdown):
         raise HTTPException(502, "Failed to parse LLM response")
 
     translation_text = result.get("translation", "")
+
     det_pron = deterministic_pronunciation(translation_text, lang_code)
     if det_pron:
         result["pronunciation"] = det_pron

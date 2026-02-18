@@ -23,6 +23,7 @@ from models import SUPPORTED_LANGUAGES
 # --- Config ---
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_MODEL = "qwen2.5:14b-instruct-q3_K_M"
+OLLAMA_MODEL_FAST = "qwen2.5:7b"  # Smaller model for fast translation path
 TAIDE_MODEL = "jcai/llama3-taide-lx-8b-chat-alpha1:Q4_K_M"
 
 # Per-language model overrides for languages where the default model produces garbled output
@@ -787,6 +788,7 @@ async def ollama_chat(messages: list, model: str = None, temperature: float = 0.
                 "model": model,
                 "messages": messages,
                 "stream": False,
+                "keep_alive": "10m",
                 "options": {"temperature": temperature, "num_predict": num_predict},
             },
         )
