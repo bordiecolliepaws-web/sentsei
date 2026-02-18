@@ -405,7 +405,7 @@ export function filterResultsByLanguage(langCode) {
 }
 
 // === Render result card ===
-export function renderResult(data, original, reqCtx) {
+export function renderResult(data, original, reqCtx, elapsedMs) {
     const targetLang = (reqCtx.target_language || DOM.langSelect.value || '').trim().toLowerCase();
     const activeReqCtx = {
         ...reqCtx,
@@ -445,6 +445,7 @@ export function renderResult(data, original, reqCtx) {
                 <div class="result-formality">${data.formality}</div>
                 ${data.sentence_difficulty ? `<div class="result-difficulty result-difficulty--${data.sentence_difficulty.level}" title="${(data.sentence_difficulty.factors || []).join(', ')}">${data.sentence_difficulty.level === 'beginner' ? '🟢' : data.sentence_difficulty.level === 'intermediate' ? '🟡' : '🔴'} ${data.sentence_difficulty.level}</div>` : ''}
                 ${data.from_cache && data.ollama_offline ? '<div class="cached-badge" title="Served from cache while translation engine is offline">📦 cached</div>' : ''}
+                ${elapsedMs ? `<div class="response-time" title="Response time">⚡ ${elapsedMs >= 1000 ? (elapsedMs / 1000).toFixed(1) + 's' : elapsedMs + 'ms'}</div>` : ''}
             </div>
             <div class="result-actions">
                 <button type="button" class="speak-btn" aria-label="Listen to pronunciation" data-lang="${activeReqCtx.target_language}">

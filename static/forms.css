@@ -506,6 +506,21 @@ body.hide-romanization .ctx-pron {
     border: 1px solid #5a4d20;
 }
 
+.response-time {
+    font-size: 0.7rem;
+    background: #1a2a1a;
+    color: #60c060;
+    padding: 2px 8px;
+    border-radius: 8px;
+    border: 1px solid #2a5a2a;
+    white-space: nowrap;
+}
+[data-theme="light"] .response-time {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border-color: #81c784;
+}
+
 /* Learn button offline state */
 .offline-disabled {
     opacity: 0.6;

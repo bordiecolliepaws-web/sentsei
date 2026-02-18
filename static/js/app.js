@@ -293,6 +293,7 @@ async function learn() {
     const timeoutMs = isMulti ? Math.min(sentence.split(/(?<=[.!?。！？])\s*/).filter(s => s.trim()).length, 10) * 120000 : LEARN_TIMEOUT_MS;
     const timeoutId = setTimeout(() => state.currentAbortController.abort(), timeoutMs);
 
+    const _fetchStart = performance.now();
     try {
         if (isMulti) {
             const resp = await fetch('/api/learn-multi', {
@@ -315,10 +316,11 @@ async function learn() {
             if (!resp.ok) throw new Error(await friendlyError(resp));
             updateRateLimitDisplay(resp);
             const data = await resp.json();
+            const _elapsedMs = Math.round(performance.now() - _fetchStart);
             const reqCtx = { target_language: DOM.langSelect.value, input_language: state.selectedInputLang, sentence: sentence };
             const successfulResults = Array.isArray(data.results) ? data.results.filter(item => item && item.result) : [];
             successfulResults.forEach(item => {
-                renderResult(item.result, item.sentence, { ...reqCtx, sentence: item.sentence });
+                renderResult(item.result, item.sentence, { ...reqCtx, sentence: item.sentence }, _elapsedMs);
             });
             saveSentenceToHistory(sentence, reqCtx.target_language);
             if (successfulResults.length) {
@@ -350,8 +352,9 @@ async function learn() {
             if (!resp.ok) throw new Error(await friendlyError(resp));
             updateRateLimitDisplay(resp);
             const data = await resp.json();
+            const _elapsedMs = Math.round(performance.now() - _fetchStart);
             const reqCtx = { target_language: DOM.langSelect.value, input_language: state.selectedInputLang, sentence: sentence };
-            renderResult(data, sentence, reqCtx);
+            renderResult(data, sentence, reqCtx, _elapsedMs);
             saveSentenceToHistory(sentence, reqCtx.target_language);
             addToRichHistory(sentence, data.translation, DOM.langSelect.value, data.pronunciation);
             recordLearnProgress(DOM.langSelect.value, 1);
