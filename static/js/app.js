@@ -17,6 +17,7 @@ import {
     loadSRSDeck, saveSRSDeck, addToSRS, getDueItems, updateSRSItem,
     updateReviewBadge, formatTimeUntil, enterReviewMode, exitReviewMode,
     toggleReviewMode, loadReviewQuestion, setSRSDeps,
+    loadSRSDeckFromServerOnInit, syncSRSDeckOnLogin,
     enterBatchReview, handleReviewNext
 } from './srs.js';
 import {
@@ -597,6 +598,7 @@ function initAuth() {
             localStorage.setItem(KEYS.AUTH_USERNAME, state.authUsername);
             closeAuthModal();
             updateAuthUI();
+            await syncSRSDeckOnLogin();
             await pullAllFromServer();
             await loadFavoritesFromServer();
             updateFavoriteBadge();
@@ -610,6 +612,7 @@ function initAuth() {
 
     updateAuthUI();
     if (state.authToken) {
+        loadSRSDeckFromServerOnInit();
         fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + state.authToken } })
             .then(r => { if (!r.ok) throw new Error(); return r.json(); })
             .then(d => { state.authUsername = d.username; localStorage.setItem(KEYS.AUTH_USERNAME, d.username); updateAuthUI(); })
@@ -628,10 +631,6 @@ const SYNC_KEYS_MAP = {
     'rich_history': {
         get: () => state.richHistory,
         set: (d) => { state.richHistory = d || []; saveRichHistory(); renderHistoryPanel(); updateHistoryBadge(); }
-    },
-    'srs_deck': {
-        get: () => state.srsDeck,
-        set: (d) => { state.srsDeck = d || []; saveSRSDeck(); updateReviewBadge(); }
     },
     'progress': {
         get: () => state.progressStats,
@@ -722,7 +721,6 @@ function initSideMenu() {
 // === Sync hooks ===
 function initSyncHooks() {
     hooks.afterSaveRichHistory.push(() => syncToServer('rich_history', state.richHistory));
-    hooks.afterSaveSRSDeck.push(() => syncToServer('srs_deck', state.srsDeck));
     hooks.afterSaveProgressStats.push(() => syncToServer('progress', state.progressStats));
 }
 

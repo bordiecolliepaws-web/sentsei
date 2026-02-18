@@ -1,12 +1,162 @@
 // Spaced Repetition System (SRS) logic
 import { state, KEYS, DAY_MS, DOM, hooks } from './state.js';
 
+const SRS_ENDPOINTS = {
+    deck: '/api/srs/deck',
+    item: '/api/srs/item',
+    review: '/api/srs/review'
+};
+
+function getAuthToken() {
+    return state.authToken || localStorage.getItem(KEYS.AUTH_TOKEN) || '';
+}
+
+function getAuthHeaders(withJson = false) {
+    const token = getAuthToken();
+    if (!token) return null;
+    const headers = { Authorization: `Bearer ${token}` };
+    if (withJson) headers['Content-Type'] = 'application/json';
+    return headers;
+}
+
+function isDeckItem(item) {
+    return !!item && typeof item === 'object' && !Array.isArray(item);
+}
+
+function normalizeDeck(deck) {
+    if (!Array.isArray(deck)) return [];
+    return deck.filter(isDeckItem);
+}
+
+function deckItemKey(item) {
+    return `${item?.sentence || ''}||${item?.lang || ''}`;
+}
+
+function choosePreferredItem(existingItem, incomingItem) {
+    const existingReviews = Number(existingItem?.reviewCount) || 0;
+    const incomingReviews = Number(incomingItem?.reviewCount) || 0;
+    if (incomingReviews !== existingReviews) {
+        return incomingReviews > existingReviews ? incomingItem : existingItem;
+    }
+
+    const existingNext = Number(existingItem?.nextReview) || 0;
+    const incomingNext = Number(incomingItem?.nextReview) || 0;
+    if (incomingNext !== existingNext) {
+        return incomingNext > existingNext ? incomingItem : existingItem;
+    }
+
+    const existingAdded = Number(existingItem?.addedAt) || 0;
+    const incomingAdded = Number(incomingItem?.addedAt) || 0;
+    return incomingAdded >= existingAdded ? incomingItem : existingItem;
+}
+
+function mergeDecks(localDeck, serverDeck) {
+    const merged = new Map();
+    normalizeDeck(serverDeck).forEach(item => merged.set(deckItemKey(item), item));
+    normalizeDeck(localDeck).forEach(item => {
+        const key = deckItemKey(item);
+        const existing = merged.get(key);
+        if (!existing) {
+            merged.set(key, item);
+            return;
+        }
+        merged.set(key, choosePreferredItem(existing, item));
+    });
+    return Array.from(merged.values());
+}
+
+async function fetchServerDeck() {
+    const headers = getAuthHeaders();
+    if (!headers) return null;
+    try {
+        const resp = await fetch(SRS_ENDPOINTS.deck, { headers });
+        if (!resp.ok) return null;
+        return normalizeDeck(await resp.json());
+    } catch {
+        return null;
+    }
+}
+
+async function putServerDeck(deck) {
+    const headers = getAuthHeaders(true);
+    if (!headers) return false;
+    try {
+        const resp = await fetch(SRS_ENDPOINTS.deck, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify(normalizeDeck(deck))
+        });
+        return resp.ok;
+    } catch {
+        return false;
+    }
+}
+
+async function addServerItem(item) {
+    const headers = getAuthHeaders(true);
+    if (!headers) return;
+    try {
+        const resp = await fetch(SRS_ENDPOINTS.item, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(item)
+        });
+        if (!resp.ok) {
+            await putServerDeck(state.srsDeck);
+        }
+    } catch {
+        await putServerDeck(state.srsDeck);
+    }
+}
+
+async function removeServerItem(sentence, lang) {
+    const headers = getAuthHeaders();
+    if (!headers) return;
+    const q = new URLSearchParams({ sentence, lang });
+    try {
+        const resp = await fetch(`${SRS_ENDPOINTS.item}?${q.toString()}`, {
+            method: 'DELETE',
+            headers
+        });
+        if (!resp.ok) {
+            await putServerDeck(state.srsDeck);
+        }
+    } catch {
+        await putServerDeck(state.srsDeck);
+    }
+}
+
+async function saveServerReview(item) {
+    const headers = getAuthHeaders(true);
+    if (!headers) return;
+    const payload = {
+        sentence: item.sentence,
+        lang: item.lang,
+        interval: item.interval,
+        easeFactor: item.easeFactor,
+        nextReview: item.nextReview,
+        reviewCount: item.reviewCount
+    };
+    try {
+        const resp = await fetch(SRS_ENDPOINTS.review, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload)
+        });
+        if (!resp.ok) {
+            await putServerDeck(state.srsDeck);
+        }
+    } catch {
+        await putServerDeck(state.srsDeck);
+    }
+}
+
 export function loadSRSDeck() {
     try {
         const raw = localStorage.getItem(KEYS.SRS);
         if (!raw) return [];
         const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [];
+        return normalizeDeck(parsed);
     } catch { return []; }
 }
 
@@ -15,11 +165,43 @@ export function saveSRSDeck() {
     hooks.afterSaveSRSDeck.forEach(fn => fn());
 }
 
+export async function loadSRSDeckFromServerOnInit() {
+    const token = getAuthToken();
+    if (!token) return state.srsDeck;
+    const serverDeck = await fetchServerDeck();
+    if (!serverDeck) return state.srsDeck;
+    state.srsDeck = serverDeck;
+    saveSRSDeck();
+    updateReviewBadge();
+    return state.srsDeck;
+}
+
+export async function syncSRSDeckOnLogin() {
+    const token = getAuthToken();
+    if (!token) return state.srsDeck;
+
+    const localDeck = loadSRSDeck();
+    const serverDeck = await fetchServerDeck();
+    if (!serverDeck) {
+        state.srsDeck = localDeck;
+        saveSRSDeck();
+        updateReviewBadge();
+        return state.srsDeck;
+    }
+
+    const mergedDeck = mergeDecks(localDeck, serverDeck);
+    state.srsDeck = mergedDeck;
+    saveSRSDeck();
+    updateReviewBadge();
+    await putServerDeck(mergedDeck);
+    return state.srsDeck;
+}
+
 export function addToSRS(sentence, translation, lang, pronunciation) {
     if (!sentence || !translation) return;
     const exists = state.srsDeck.some(item => item.sentence === sentence && item.lang === lang);
     if (exists) return;
-    state.srsDeck.push({
+    const newItem = {
         sentence,
         translation,
         lang,
@@ -29,9 +211,25 @@ export function addToSRS(sentence, translation, lang, pronunciation) {
         interval: DAY_MS,
         easeFactor: 2.5,
         reviewCount: 0
-    });
+    };
+    state.srsDeck.push(newItem);
     saveSRSDeck();
     updateReviewBadge();
+    if (getAuthToken()) {
+        void addServerItem(newItem);
+    }
+}
+
+export function removeFromSRS(sentence, lang) {
+    const before = state.srsDeck.length;
+    state.srsDeck = state.srsDeck.filter(item => !(item.sentence === sentence && item.lang === lang));
+    if (state.srsDeck.length === before) return false;
+    saveSRSDeck();
+    updateReviewBadge();
+    if (getAuthToken()) {
+        void removeServerItem(sentence, lang);
+    }
+    return true;
 }
 
 export function getDueItems() {
@@ -59,6 +257,9 @@ export function updateSRSItem(item, correct) {
     item.nextReview = now + item.interval;
     saveSRSDeck();
     updateReviewBadge();
+    if (getAuthToken()) {
+        void saveServerReview(item);
+    }
 }
 
 export function updateReviewBadge() {

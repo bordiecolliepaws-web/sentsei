@@ -56,6 +56,7 @@ from stream_routes import router as stream_router
 from segment_routes import router as segment_router
 from compare_routes import router as compare_router
 from favorites_routes import router as favorites_router
+from srs_routes import router as srs_router
 
 router = APIRouter()
 router.include_router(surprise_router)
@@ -66,6 +67,7 @@ router.include_router(stream_router)
 router.include_router(segment_router)
 router.include_router(compare_router)
 router.include_router(favorites_router)
+router.include_router(srs_router)
 
 # Re-export for backward compatibility
 from learn_routes import _learn_sentence_impl, _detect_input_language, MAX_INPUT_LEN, _check_injection
