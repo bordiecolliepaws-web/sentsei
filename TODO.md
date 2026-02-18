@@ -121,7 +121,7 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Multi-user support** ✅ 2026-02-16 — SQLite backend with users/sessions/user_data tables. Register/login/logout endpoints, Bearer token auth (30-day TTL), server-side sync for history/SRS/progress/preferences. Optional — app still works without login. Frontend auth modal + auto-sync on data changes.
 - [x] **Difficulty auto-detection** ✅ 2026-02-16 — Heuristic analysis (word count, sentence length, CJK diversity, complexity markers, breakdown word difficulty). Returns beginner/intermediate/advanced with 0-100 score + factors. Color-coded badge on result cards with tooltip.
 - [x] **Romanization toggle** ✅ 2026-02-16 — "Aa" toggle pill hides/shows all pronunciation (romaji, pinyin, romanized Korean) across result cards, word chips, quiz, compare, and context examples. Persisted to localStorage. Default ON.
-- [ ] **Backend test coverage for SRS/review** — Currently no backend tests needed (SRS is frontend-only), but if SRS moves server-side for multi-user, add comprehensive tests.
+- [x] **Backend test coverage for SRS/review** ✅ 2026-02-18 — SRS moved server-side with srs_routes.py (5 endpoints). 16 total backend tests including edge cases (404, duplicates, EF boundaries, missing fields).
 
 ## P9 — Code Health & UX (from 2026-02-17 reflection #2)
 - [x] **DRY auth checks with FastAPI Depends** ✅ 2026-02-17 — 17 endpoints refactored to use `require_password` FastAPI dependency. Zero manual password checks remaining.
@@ -155,7 +155,7 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Frontend JS module consolidation** ✅ 2026-02-17 — Extracted `story.js` (119 lines), `compare.js` (72 lines), `grammar.js` (92 lines) from app.js. Reduced from 1305→1040 lines.
 - [x] **Translation quality feedback loop** ✅ 2026-02-17 — Feedback now optionally includes sentence/translation/target language. Negative feedback messages ("👎", "translation is wrong", etc.) mark that translation as low-quality, evict it from the cache, and prevent it from being cached again. Low-quality combos are tracked in bad_translations.json for future prompt tuning.
 - [x] **Batch SRS review** ✅ 2026-02-18 — "Review 10" mode with progress bar, stats summary (correct %, avg time, streak, grade).
-- [ ] **Server-side SRS for multi-user** — SRS is currently frontend-only localStorage. For multi-user to be meaningful, migrate SRS deck to SQLite user_data with sync. Then add backend test coverage (currently deferred in P6).
+- [x] **Server-side SRS for multi-user** ✅ 2026-02-18 — Migrated to SQLite via srs_routes.py with 5 endpoints (GET/PUT deck, POST/DELETE item, POST review). Frontend syncs to server when logged in, localStorage fallback for anonymous.
 - [x] **API documentation** ✅ 2026-02-17 — OpenAPI metadata (title, description, version), all 29 endpoints tagged and summarized, /docs (Swagger UI) + /redoc endpoints, API Docs link in side menu.
 
 ## P11 — Polish & Robustness (from 2026-02-18 reflection)
@@ -164,15 +164,15 @@ _Items for cron iterations to work through, in priority order._
 - [x] **Batch SRS review mode** ✅ 2026-02-18 — Queue up to 10 due cards, progress bar, summary with correct %, score, avg time, best streak, grade system.
 - [x] **Sentence favorites / bookmarks** ✅ 2026-02-18 — Star button on results, separate from history. localStorage + server sync for logged-in users. Favorites panel in side menu, Anki TSV export. No entry limit.
 - [x] **Learn endpoint returns empty `words` field** ✅ 2026-02-18 — Non-issue: field doesn't exist in current codebase, already clean.
-- [ ] **Frontend smoke tests** — Playwright or Puppeteer headless tests: load page, enter sentence, get result, check word chips expand, verify history saves. Run in CI alongside backend tests.
+- [x] **Frontend smoke tests** ✅ 2026-02-18 — Playwright + Chromium smoke suite: onboarding, language picker, main input, LLM result, word chips, theme toggle, stats modal. Full user path E2E.
 
 ## P12 — Polish & Developer Experience (from 2026-02-18 reflection #2)
 - [x] **Auto dark/light theme from OS** ✅ 2026-02-18 — Detect `prefers-color-scheme` media query on load and on change. Only apply if user hasn't explicitly toggled (check localStorage). Saves one click for most users.
 - [x] **Split app.js further** ✅ 2026-02-18 — Extracted `onboarding.js`, `speculative.js`, `offline.js`. app.js reduced from 1105→941 lines. Dependency injection for cross-module refs.
 - [x] **Split learn_routes.py** — ✅ 2026-02-18 — Split into learn_routes.py (516), stream_routes.py (118), segment_routes.py (167). All 38 tests pass.
-- [ ] **Improve LLM response time** — `/api/learn` p99 is 33s. Investigate: shorter prompts, smaller model for simple sentences, or parallel breakdown + translation calls. Target p99 <15s.
-- [ ] **Frontend smoke tests** — (moved from P11) Playwright headless: load page, enter sentence, get result, verify word chips expand, check history saves. Run alongside backend tests.
-- [ ] **Server-side SRS for multi-user** — (moved from P10) Migrate SRS deck to SQLite `user_data`. Sync endpoints. Add backend test coverage.
+- [x] **Improve LLM response time** ✅ 2026-02-18 — Cut prompt size and num_predict, added Ollama keep_alive, fixed model bug. learn-fast ~3-8s (from ~8-33s), full learn ~30s (from ~33s).
+- [x] **Frontend smoke tests** ✅ 2026-02-18 — (see P11)
+- [x] **Server-side SRS for multi-user** ✅ 2026-02-18 — (see P10)
 
 ## Cron Test Matrix
 Each iteration should run these checks:
