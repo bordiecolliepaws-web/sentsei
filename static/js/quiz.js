@@ -147,8 +147,7 @@ export async function loadQuizQuestion() {
                 });
                 updateProgressStats('quiz_wrong');
             }
-            state.quizTotal++;
-            DOM.quizScore.textContent = `${state.quizCorrect}/${state.quizTotal}`;
+            renderQuizScore();
             DOM.quizNext.disabled = false;
         });
         choicesEl.appendChild(btn);
