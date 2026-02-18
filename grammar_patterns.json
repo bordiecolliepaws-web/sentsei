@@ -3310,9 +3310,14 @@
         "source": "hello",
         "translation": "안녕하세요",
         "timestamp": 1771296989.3526454
+      },
+      {
+        "source": "Hello world",
+        "translation": "안녕하세요 세계",
+        "timestamp": 1771405718.9666455
       }
     ],
-    "count": 1
+    "count": 2
   },
   "72ded4d89136e54b": {
     "id": "72ded4d89136e54b",
@@ -3588,7 +3593,7 @@
         "timestamp": 1771318688.499739
       }
     ],
-    "count": 1
+    "count": 2
   },
   "593446bbe538600d": {
     "id": "593446bbe538600d",
@@ -4016,6 +4021,118 @@
         "source": "Please teach me",
         "translation": "私を教えてください。",
         "timestamp": 1771396720.7840502
+      }
+    ],
+    "count": 1
+  },
+  "86506d526c0e5bf6": {
+    "id": "86506d526c0e5bf6",
+    "name": "Use of the verb 想 (xiǎng) to express desire or int",
+    "lang": "zh",
+    "explanation": "Use of the verb 想 (xiǎng) to express desire or intention.",
+    "examples": [
+      {
+        "source": "I want to order a coffee",
+        "translation": "我想點一杯咖啡",
+        "timestamp": 1771403922.7218084
+      }
+    ],
+    "count": 1
+  },
+  "8b625de7c9b22c8a": {
+    "id": "8b625de7c9b22c8a",
+    "name": "Measure word 杯 (bēi) used for liquid quantities li",
+    "lang": "zh",
+    "explanation": "Measure word 杯 (bēi) used for liquid quantities like coffee.",
+    "examples": [
+      {
+        "source": "I want to order a coffee",
+        "translation": "我想點一杯咖啡",
+        "timestamp": 1771403922.7218149
+      }
+    ],
+    "count": 1
+  },
+  "17e21c9d4259c45b": {
+    "id": "17e21c9d4259c45b",
+    "name": "想 (xiǎng) is used as a verb meaning 'to want' in t",
+    "lang": "zh",
+    "explanation": "想 (xiǎng) is used as a verb meaning 'to want' in this context.",
+    "examples": [
+      {
+        "source": "I want to order a coffee",
+        "translation": "我想點一杯咖啡",
+        "timestamp": 1771403946.6747248
+      }
+    ],
+    "count": 1
+  },
+  "d2e0762ddf58dd10": {
+    "id": "d2e0762ddf58dd10",
+    "name": "たい",
+    "lang": "ja",
+    "explanation": "The polite form of expressing a desire to do something (verb-stem + -たい + です)",
+    "examples": [
+      {
+        "source": "I want to eat ramen",
+        "translation": "ラーメンを食べたいです",
+        "timestamp": 1771403977.8568702
+      }
+    ],
+    "count": 1
+  },
+  "2e6f5d3f3fd2e016": {
+    "id": "2e6f5d3f3fd2e016",
+    "name": "です)",
+    "lang": "ja",
+    "explanation": "The polite form of expressing a desire to do something (verb-stem + -たい + です)",
+    "examples": [
+      {
+        "source": "I want to eat ramen",
+        "translation": "ラーメンを食べたいです",
+        "timestamp": 1771403977.8568757
+      }
+    ],
+    "count": 1
+  },
+  "998a3e8fcd5cb82b": {
+    "id": "998a3e8fcd5cb82b",
+    "name": "Use of '正在' to indicate ongoing action",
+    "lang": "zh",
+    "explanation": "Use of '正在' to indicate ongoing action.",
+    "examples": [
+      {
+        "source": "Information technology is developing rapidly",
+        "translation": "資訊科技正在快速發展",
+        "timestamp": 1771404025.7060103
+      }
+    ],
+    "count": 1
+  },
+  "38c8f2b22cb5f79a": {
+    "id": "38c8f2b22cb5f79a",
+    "name": "Word order in Chinese for describing current state",
+    "lang": "zh",
+    "explanation": "Word order in Chinese for describing current state or process.",
+    "examples": [
+      {
+        "source": "Information technology is developing rapidly",
+        "translation": "資訊科技正在快速發展",
+        "timestamp": 1771404025.7060208
+      }
+    ],
+    "count": 1
+  },
+  "c89c3c3990b1da87": {
+    "id": "c89c3c3990b1da87",
+    "name": "Use of 正在 (zhèng zài) to indicate present progress",
+    "lang": "zh",
+    "explanation": "Use of 正在 (zhèng zài) to indicate present progressive tense.",
+    "examples": [
+      {
+        "source": "Information technology is developing rapidly",
+        "translation": "資訊科技正在快速發展",
+        "timestamp": 1771404049.6070971
       }
     ],
     "count": 1

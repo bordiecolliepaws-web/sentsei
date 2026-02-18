@@ -354,6 +354,7 @@ Rules: translation MUST be in {lang_name} script. All meanings/notes in {source_
     # Attach minimal context so feedback-based cache invalidation can work
     result.setdefault("original_sentence", req.sentence)
     result.setdefault("target_language", req.target_language)
+    result["detected_input_language"] = "zh" if input_is_chinese else "en"
     result = ensure_traditional_chinese(result)
     cache_put(ck, result)
 
@@ -452,6 +453,7 @@ JSON only: {{"translation":"...","pronunciation":"romanized","literal":"word-by-
         native_pron = deterministic_pronunciation(native_sentence, lang_code) or ""
         result["native_expression"] = f"{native_sentence} | {native_pron} | {native_explanation}".rstrip(" |")
 
+    result["detected_input_language"] = "zh" if input_is_chinese else "en"
     result["complete"] = False
     return result
 

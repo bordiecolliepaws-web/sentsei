@@ -520,6 +520,20 @@ body.hide-romanization .ctx-pron {
     color: #2e7d32;
     border-color: #81c784;
 }
+.detected-lang-badge {
+    font-size: 0.7rem;
+    background: #1a1a2a;
+    color: #6090e0;
+    padding: 2px 8px;
+    border-radius: 8px;
+    border: 1px solid #2a3a6a;
+    white-space: nowrap;
+}
+[data-theme="light"] .detected-lang-badge {
+    background: #e3f2fd;
+    color: #1565c0;
+    border-color: #64b5f6;
+}
 
 /* Learn button offline state */
 .offline-disabled {

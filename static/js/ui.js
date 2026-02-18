@@ -445,6 +445,7 @@ export function renderResult(data, original, reqCtx, elapsedMs) {
                 <div class="result-formality">${data.formality}</div>
                 ${data.sentence_difficulty ? `<div class="result-difficulty result-difficulty--${data.sentence_difficulty.level}" title="${(data.sentence_difficulty.factors || []).join(', ')}">${data.sentence_difficulty.level === 'beginner' ? '🟢' : data.sentence_difficulty.level === 'intermediate' ? '🟡' : '🔴'} ${data.sentence_difficulty.level}</div>` : ''}
                 ${data.from_cache && data.ollama_offline ? '<div class="cached-badge" title="Served from cache while translation engine is offline">📦 cached</div>' : ''}
+                ${data.detected_input_language ? `<div class="detected-lang-badge" title="Detected input language">🌐 ${data.detected_input_language === 'zh' ? '中文' : 'English'}</div>` : ''}
                 ${elapsedMs ? `<div class="response-time" title="Response time">⚡ ${elapsedMs >= 1000 ? (elapsedMs / 1000).toFixed(1) + 's' : elapsedMs + 'ms'}</div>` : ''}
             </div>
             <div class="result-actions">
