@@ -136,9 +136,14 @@
         "source": "我覺得我們迷路了，讓我看一下地圖",
         "translation": "私たちが迷子になったと思います、地図を見せてください",
         "timestamp": 1771315553.1516297
+      },
+      {
+        "source": "Please teach me",
+        "translation": "私を教えてください。",
+        "timestamp": 1771396720.7840354
       }
     ],
-    "count": 4
+    "count": 5
   },
   "044a22341c34145f": {
     "id": "044a22341c34145f",
@@ -3363,7 +3368,7 @@
         "timestamp": 1771304827.1412444
       }
     ],
-    "count": 1
+    "count": 2
   },
   "aeac8c472fd0cea4": {
     "id": "aeac8c472fd0cea4",
@@ -3983,6 +3988,34 @@
         "source": "The more I practice, the more confident I feel",
         "translation": "練習するほど、自信が増していきます。",
         "timestamp": 1771390112.846011
+      }
+    ],
+    "count": 1
+  },
+  "becd202d5afd2f18": {
+    "id": "becd202d5afd2f18",
+    "name": "Use of 私 (watashi) as a neutral and polite way to",
+    "lang": "ja",
+    "explanation": "Use of 私 (watashi) as a neutral and polite way to refer to oneself.",
+    "examples": [
+      {
+        "source": "Please teach me",
+        "translation": "私を教えてください。",
+        "timestamp": 1771396720.7840452
+      }
+    ],
+    "count": 1
+  },
+  "1caa950e5655584c": {
+    "id": "1caa950e5655584c",
+    "name": "The object marker を (wo)",
+    "lang": "ja",
+    "explanation": "The object marker を (wo).",
+    "examples": [
+      {
+        "source": "Please teach me",
+        "translation": "私を教えてください。",
+        "timestamp": 1771396720.7840502
       }
     ],
     "count": 1
